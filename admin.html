@@ -64,6 +64,7 @@
           <h2><i class="fas fa-film"></i> Orodha ya Movies</h2>
           <button class="add-btn" id="addMovieBtn">
             <i class="fas fa-plus"></i>
+            <span>Ongeza Movie</span>
           </button>
         </div>
         <div class="table-container" id="moviesTableContainer">
@@ -93,6 +94,7 @@
           <h2><i class="fas fa-users"></i> Watumizi Waliosajiliwa</h2>
           <button class="add-btn" id="addUserBtn">
             <i class="fas fa-plus"></i>
+            <span>Ongeza Mtumiaji</span>
           </button>
         </div>
         <div class="table-container">
@@ -206,51 +208,57 @@
       </div>
       <form id="movieForm">
         <input type="hidden" id="movieId" />
-        <div class="form-group">
-          <label>Jina la Movie</label>
-          <input type="text" id="movieTitle" placeholder="Jina la movie" required />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Jina la Movie</label>
+            <input type="text" id="movieTitle" placeholder="Jina la movie" required />
+          </div>
+          <div class="form-group">
+            <label>Aina ya Movie</label>
+            <select id="movieType" required>
+              <option value="">Chagua aina</option>
+              <option value="Imetafsiriwa">Imetafsiriwa</option>
+              <option value="Haijatafsiriwa">Haijatafsiriwa</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Aina ya Movie</label>
-          <select id="movieType" required>
-            <option value="">Chagua aina</option>
-            <option value="Imetafsiriwa">Imetafsiriwa</option>
-            <option value="Haijatafsiriwa">Haijatafsiriwa</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nchi</label>
+            <select id="movieCountry" required>
+              <option value="">Chagua nchi</option>
+              <option value="Bongo">Bongo Movies</option>
+              <option value="Kiarabu">Kiarabu</option>
+              <option value="Kifilipino">Kifilipino</option>
+              <option value="Kihindi">Kihindi</option>
+              <option value="Kiitaliano">Kiitaliano</option>
+              <option value="Kikorea">Kikorea</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Lugha</label>
+            <input type="text" id="movieLang" placeholder="Lugha ya movie" required />
+          </div>
         </div>
-        <div class="form-group">
-          <label>Nchi</label>
-          <select id="movieCountry" required>
-            <option value="">Chagua nchi</option>
-            <option value="Bongo">Bongo Movies</option>
-            <option value="Kiarabu">Kiarabu</option>
-            <option value="Kifilipino">Kifilipino</option>
-            <option value="Kihindi">Kihindi</option>
-            <option value="Kiitaliano">Kiitaliano</option>
-            <option value="Kikorea">Kikorea</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Lugha</label>
-          <input type="text" id="movieLang" placeholder="Lugha ya movie" required />
-        </div>
-        <div class="form-group">
-          <label>Kategoria</label>
-          <select id="movieCategory" required>
-            <option value="">Chagua kategoria</option>
-            <option value="Action">Action</option>
-            <option value="Love story">Love story</option>
-            <option value="Drama">Drama</option>
-            <option value="Mix">Mix</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Mwaka</label>
-          <input type="number" id="movieYear" placeholder="2024" required />
-        </div>
-        <div class="form-group">
-          <label>Bei (TSh)</label>
-          <input type="number" id="moviePrice" placeholder="15000" required />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kategoria</label>
+            <select id="movieCategory" required>
+              <option value="">Chagua kategoria</option>
+              <option value="Action">Action</option>
+              <option value="Love story">Love story</option>
+              <option value="Drama">Drama</option>
+              <option value="Mix">Mix</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mwaka</label>
+            <input type="number" id="movieYear" placeholder="2024" required />
+          </div>
+          <div class="form-group">
+            <label>Bei (TSh)</label>
+            <input type="number" id="moviePrice" placeholder="15000" required />
+          </div>
         </div>
         <div class="form-group">
           <label>Maelezo</label>
@@ -284,43 +292,49 @@
       </div>
       <form id="userForm">
         <input type="hidden" id="userId" />
-        <div class="form-group">
-          <label>Jina Kamili</label>
-          <input type="text" id="userFullName" placeholder="Jina kamili" required />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Jina Kamili</label>
+            <input type="text" id="userFullName" placeholder="Jina kamili" required />
+          </div>
+          <div class="form-group">
+            <label>Namba ya Simu</label>
+            <input type="tel" id="userPhone" placeholder="07XX XXX XXX" required />
+          </div>
         </div>
-        <div class="form-group">
-          <label>Namba ya Simu</label>
-          <input type="tel" id="userPhone" placeholder="07XX XXX XXX" required />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nchi</label>
+            <select id="userCountry" required>
+              <option value="">Chagua nchi</option>
+              <option value="Tanzania">Tanzania</option>
+              <option value="Kenya">Kenya</option>
+              <option value="Uganda">Uganda</option>
+              <option value="Other">Nchi nyingine</option>
+            </select>
+          </div>
+          <div class="form-group" id="userRegionGroup" style="display:none;">
+            <label>Eneo</label>
+            <select id="userRegion">
+              <option value="">Chagua eneo</option>
+              <option value="Bara">Bara</option>
+              <option value="Zanzibar">Zanzibar</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Barua pepe</label>
+            <input type="email" id="userEmail" placeholder="jina@mfano.com" required />
+          </div>
         </div>
-        <div class="form-group">
-          <label>Nchi</label>
-          <select id="userCountry" required>
-            <option value="">Chagua nchi</option>
-            <option value="Tanzania">Tanzania</option>
-            <option value="Kenya">Kenya</option>
-            <option value="Uganda">Uganda</option>
-            <option value="Other">Nchi nyingine</option>
-          </select>
-        </div>
-        <div class="form-group" id="userRegionGroup" style="display:none;">
-          <label>Eneo</label>
-          <select id="userRegion">
-            <option value="">Chagua eneo</option>
-            <option value="Bara">Bara</option>
-            <option value="Zanzibar">Zanzibar</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Barua pepe</label>
-          <input type="email" id="userEmail" placeholder="jina@mfano.com" required />
-        </div>
-        <div class="form-group">
-          <label>Nenosiri</label>
-          <input type="password" id="userPassword" placeholder="Weka nenosiri" required />
-        </div>
-        <div class="form-group">
-          <label>Hakiki Nenosiri</label>
-          <input type="password" id="userPasswordConfirm" placeholder="Rudia nenosiri" required />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nenosiri</label>
+            <input type="password" id="userPassword" placeholder="Weka nenosiri" required />
+          </div>
+          <div class="form-group">
+            <label>Hakiki Nenosiri</label>
+            <input type="password" id="userPasswordConfirm" placeholder="Rudia nenosiri" required />
+          </div>
         </div>
         <div class="form-group">
           <label>Picha ya Wasifu</label>
