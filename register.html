@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TanzaFlix | Usajili</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <div class="hero-panel register-panel">
+      <div class="cinema-anim" aria-hidden="true">
+        <div class="film-strip film-strip-1">
+          <span>Burudani ya Kiswahili</span>
+          <span>Filamu za Bongo</span>
+          <span>Sinema ya Kihindi</span>
+        </div>
+        <div class="film-strip film-strip-2">
+          <span>Laini za ubunifu</span>
+          <span>Burudani ya kisupasta</span>
+          <span>Ulimi wa kisomi</span>
+        </div>
+        <div class="film-strip film-strip-3">
+          <span>Muonekano wa kweli</span>
+          <span>Safari ya sinema</span>
+          <span>Portal ya TanzaFlix</span>
+        </div>
+      </div>
+      <div class="hero-text">
+        <p class="eyebrow">Bomba!</p>
+        <h1>Jisajili kwa uhakika wa burudani ya kisupasta.</h1>
+        <p class="hero-copy">
+          Jaza maelezo yako kwa umakini wa kitaalamu. Tanza safari ya filamu na uzoefu wa mtumiaji ulioboreshwa kwa lugha ya Kiswahili ya kisomi.
+        </p>
+      </div>
+
+      <div class="login-card">
+        <div class="brand-box">
+          <span class="brand-mark">TF</span>
+          <div>
+            <p class="brand-name">TanzaFlix</p>
+            <p class="brand-tag">Usajili wa haraka, burudani ya kudumu</p>
+          </div>
+        </div>
+
+        <form id="registerForm" class="login-form" novalidate enctype="multipart/form-data">
+          <p class="form-intro">Jaza fomu hapa chini kwa usajili wa kisasa unaozingatia wateja.</p>
+
+          <label class="field-label" for="fullName">Jina Kamili</label>
+          <input id="fullName" name="fullName" type="text" placeholder="Jina lako kamili" required />
+
+          <label class="field-label" for="phone">Namba ya Simu</label>
+          <input id="phone" name="phone" type="tel" placeholder="07XX XXX XXX" required />
+
+          <label class="field-label" for="country">Nchi</label>
+          <select id="country" name="country" required>
+            <option value="">Chagua nchi</option>
+            <option value="Tanzania">Tanzania</option>
+            <option value="Kenya">Kenya</option>
+            <option value="Uganda">Uganda</option>
+            <option value="Other">Nchi nyingine</option>
+          </select>
+
+          <div id="tanzaniaRegion" class="nested-field hidden">
+            <label class="field-label" for="tzArea">Tanzania: Bara au Visiwa?</label>
+            <select id="tzArea" name="tzArea">
+              <option value="">Chagua eneo</option>
+              <option value="Bara">Bara</option>
+              <option value="Zanzibar">Zanzibar</option>
+            </select>
+          </div>
+
+          <div id="zanzibarIslandGroup" class="nested-field hidden">
+            <label class="field-label" for="zanzibarIsland">Zanzibar: Unguja au Pemba?</label>
+            <select id="zanzibarIsland" name="zanzibarIsland">
+              <option value="">Chagua kisiwa</option>
+              <option value="Unguja">Unguja</option>
+              <option value="Pemba">Pemba</option>
+            </select>
+          </div>
+
+          <label class="field-label" for="emailRegister">Barua pepe</label>
+          <input id="emailRegister" name="email" type="email" placeholder="jina@mfano.com" required />
+
+          <label class="field-label" for="passwordRegister">Nenosiri</label>
+          <div class="password-group">
+            <input id="passwordRegister" name="password" type="password" placeholder="Tengeneza nenosiri salama" required />
+            <button type="button" class="visibility-toggle" aria-label="Onyesha nenosiri" aria-pressed="false">
+              <span class="vis-icon">
+                <span class="icon-open" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="icon-closed" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-6 0-10-7-10-7 .86-1.6 2.08-3.17 3.62-4.5M3 3l18 18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.88 9.88A3 3 0 0 0 14.12 14.12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </span>
+              <span class="vis-label">Onyesha</span>
+            </button>
+          </div>
+          <p class="password-guidance">Tumia nenosiri lenye taratibu za kitaalamu: kila herufi tofauti, nambari ya angalau moja, na kīrege zaidi ya herufi 8. Hii inalinda akaunti yako kwa kiwango cha kisasa.</p>
+
+          <label class="field-label" for="passwordConfirm">Rudia Nenosiri</label>
+          <div class="password-group">
+            <input id="passwordConfirm" name="passwordConfirm" type="password" placeholder="Rudia nenosiri lako" required />
+            <button type="button" class="visibility-toggle" aria-label="Onyesha nenosiri" aria-pressed="false">
+              <span class="vis-icon">
+                <span class="icon-open" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="icon-closed" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-6 0-10-7-10-7 .86-1.6 2.08-3.17 3.62-4.5M3 3l18 18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.88 9.88A3 3 0 0 0 14.12 14.12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </span>
+              <span class="vis-label">Onyesha</span>
+            </button>
+          </div>
+          <p class="password-guidance">Rudia nenosiri ili kuhakikisha hakuna makosa ya kuingiza. Hii ni taratibu ya taaluma ya ulinzi wa mtumiaji.</p>
+
+          <label class="field-label" for="photo">Picha ya wasifu <span class="optional-badge">hiari</span></label>
+          <input id="photo" name="photo" type="file" accept="image/*" />
+          <div id="photoPreview" class="photo-preview hidden"></div>
+
+          <button type="submit" class="submit-btn">Jisajili sasa</button>
+
+          <div class="form-meta">
+            <span>Umewahi kuingia? <a href="index.html">Rudi kwenye Ingia</a></span>
+          </div>
+        </form>
+
+        <div class="login-notes">
+          <p><strong>Taifa la maudhui:</strong> TanzaFlix inakuhakikishia usajili wenye mwonekano wa hali ya juu, ulinzi wa mtumiaji, na fomu inayoonekana kupendeza machoni pa mteja.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/scripts.js"></script>
+  <script src="js/register.js"></script>
+</body>
+</html>

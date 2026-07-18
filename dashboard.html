@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TanzaFlix | Dashibodi</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="page-shell dashboard-shell">
+    <header class="dash-header">
+      <div>
+        <p class="eyebrow">TanzaFlix</p>
+        <h1 class="dashboard-title">Karibu Nyumbani, Mpenzi wa Filamu</h1>
+        <p class="hero-copy"><strong>TanzaFlix</strong><br><em>Nyumba ya Tamthilia na Michezo ya Filamu ya Kiswahili. Shuhudia visa, michezo ya kuigiza, na mfululizo wa visa vya kusisimua kwa ubora wa hali ya juu (HD) kutoka kwa mastaa unaowapenda.</em></p>
+      </div>
+      <nav class="dash-nav">
+        <a href="#">Nyumbani</a>
+        <a href="#">Filamu</a>
+        <a href="#">Malipo ya Akaunti</a>
+        <a href="#">Kuhusu Sisi</a>
+      </nav>
+    </header>
+
+    <section class="choice-panel" aria-label="Chaguzi za Maudhui">
+      <a href="#" class="choice-card choice-primary" id="translatedOption" role="button">
+        <div class="choice-content">
+          <h2>Michezo / Movies zilizotafsiriwa</h2>
+          <p>Chagua hii ikiwa ungependa maudhui yaliyotafsiriwa kwa lugha yako.</p>
+        </div>
+      </a>
+
+      <a href="#" class="choice-card choice-secondary" id="originalOption" role="button">
+        <div class="choice-content">
+          <h3>Michezo / Movies hazijatafsiriwa</h3>
+          <p>Chagua hii kwa maudhui asilia bila tafsiri.</p>
+        </div>
+      </a>
+    </section>
+
+    <section class="dash-grid">
+      <article class="dash-card">
+        <p class="card-label">Picha ya Wasifu</p>
+        <div id="userPhotoContainer" style="text-align: center; margin: 15px 0;">
+          <img id="userPhoto" src="" alt="Picha ya wasifu" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #ddd; display: none;" />
+          <p id="noPhotoText" style="color: #999;">Hakuna picha ya wasifu</p>
+        </div>
+      </article>
+
+      <article class="dash-card highlight-card">
+        <p class="card-label">Jina la Mfumo</p>
+        <h2>TanzaFlix</h2>
+        <p>Jukwaa namba moja la Burudani ya Nyumbani. Sinema, tamthilia, na makala za Kiswahili kwa ubora wa juu kabisa (HD/4K) popote ulipo duniani..</p>
+      </article>
+
+      <article class="dash-card">
+        <p class="card-label">Uhalisia wa Akaunti</p>
+        <h2 id="userName">Mgeni</h2>
+        <p><strong>Mgeni (Guest):</strong> Karibu TanzaFlix! Jiunge leo uanze kufuatilia michezo ya filamu inayovuma zaidi Tanzania. Tazama sehemu ya kwanza (Episode 1) ya tamthilia yoyote bure kabisa!</p>
+        <p><strong>Mwanachama (Subscriber):</strong> Karibu tena, [Jina la Mtumiaji]. Endelea na Sehemu ya 4 pale ulipoishia jana, au gundua tamthilia mpya zilizoongezwa wiki hii.</p>
+      </article>
+
+      <article class="dash-card">
+        <p class="card-label">Stakabadhi ya Usajili</p>
+        <h2>100%</h2>
+        <p><strong>Usalama wa Akaunti:</strong> Ulinzi thabiti wa akaunti yako kwa kutumia JWT na mifumo ya kisasa ya usimbaji nenosiri. Taarifa zako za malipo ziko salama 100%.</p>
+        <p><strong>Ushuhuda wa Vipindi:</strong> Hifadhi kumbukumbu ya sehemu ulizotazama (Watch History) ili usipoteze mlolongo wa kisa chako hata ukitofautisha kifaa unachotazamia.</p>
+      </article>
+
+      <article class="dash-card">
+        <p class="card-label">Mapendekezo ya Kirafiki</p>
+        <ul class="feature-list">
+          <li><strong>Michezo ya Nyumbani (Kitaifa - Bongo Series):</strong> Tamthilia kali za Kitanzania zenye visa vya kifamilia, mapenzi, na usaliti zilizopendwa sana kwenye runinga na majukwaa ya ndani.</li>
+          <li><strong>Michezo ya Kikanda (Afrika Mashariki):</strong> Tamthilia maarufu kutoka Kenya na Uganda zenye mseto wa maisha ya kileo na tamaduni zetu.</li>
+          <li><strong>Michezo ya Kimataifa iliyotafsiriwa (World Series):</strong> Tamthilia za Kikorea (K-Drama), Kifilipino, na Kituruki zilizotafsiriwa kwa Kiswahili, pamoja na sauti za ma-DJ maarufu nchini.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="user-list-section">
+      <div class="user-list-header">
+        <h2>Watumiaji waliosajiliwa</h2>
+        <p>Ona watumiaji wote waliopo kwenye database kwa moja.</p>
+      </div>
+      <div class="user-list-card">
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Jina</th>
+              <th>Barua pepe</th>
+              <th>Simu</th>
+              <th>Nchi</th>
+              <th>Eneo</th>
+              <th>Wakati wa Usajili</th>
+            </tr>
+          </thead>
+          <tbody id="registeredUsersTableBody">
+            <tr>
+              <td colspan="7" class="empty-state" id="noUsersMessage">Inapakia watumiaji...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="action-panel">
+      <div class="action-card">
+        <h3>Huduma za Haraka</h3>
+        <ul class="feature-list">
+          <li><strong>Binge-Watching Mode:</strong> Inapakia sehemu inayofuata ndani ya sekunde 5 automatically bila wewe kuhangaika kubofya.</li>
+          <li><strong>Pakua Utazame Baadaye:</strong> Pakua mfululizo mzima wa mchezo unaoupenda ukiwa kwenye Wi-Fi ya ofisini au nyumbani, kisha utazame ukiwa safarini bila kutumia bando.</li>
+          <li><strong>Notification Bell:</strong> Weka kikumbusho ili upate ujumbe kwenye simu yako mara tu sehemu mpya inapowekwa kwenye jukwaa.</li>
+        </ul>
+      </div>
+      <div class="action-card secondary-card">
+        <h3>Burudani ya Kweli</h3>
+        <p>Furahia uchezaji mzito wa tamthilia zilizochaguliwa, zikiwekwa kwa sauti safi na ufumbuzi wa Kiswahili kwa kila tamthilia maarufu.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const queryParams = new URLSearchParams(window.location.search);
+    const name = queryParams.get('name') || 'Mgeni wa TanzaFlix';
+    document.getElementById('userName').textContent = name;
+  </script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

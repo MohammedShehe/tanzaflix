@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TanzaFlix | Movies</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="page-shell movies-page">
+    <header class="dash-header">
+      <div>
+        <p class="eyebrow">TanzaFlix</p>
+        <h1 id="moviesTitle">Orodha ya Filamu</h1>
+      </div>
+      <nav class="dash-nav"><a href="dashboard.html">Rudi Dashibodi</a></nav>
+    </header>
+
+    <main>
+      <section class="movies-hero">
+        <p class="eyebrow">Burudani ya Kukushangaza</p>
+        <h2 class="movies-hero-title">Chagua makundi ya kimataifa na kitaifa yenye rangi za kuvutia</h2>
+        <p class="movies-hero-copy">Kutoka hits kali za Bongo Movies hadi blockbusters za Kimataifa—shuhudia sinema za asili na michezo yenye muonekano wa kichawi na picha zenye rangi za kuvutia mno! Graphics za hatari, stori za kusisimua.</p>
+      </section>
+      <section id="categoryFilters" class="category-filters" aria-label="Aina za Filamu"></section>
+      <section class="continue-watching" aria-label="Inaendelea kuangaliwa">
+        <h3>Continue Watching</h3>
+        <div class="continue-row">
+          <div class="continue-card">
+            <span>Recently resumed</span>
+            <strong>Safari ya Mtaa</strong>
+          </div>
+          <div class="continue-card">
+            <span>Next episode</span>
+            <strong>The Silent Shore</strong>
+          </div>
+          <div class="continue-card">
+            <span>Last watched</span>
+            <strong>Mapenzi ya Mwanga</strong>
+          </div>
+        </div>
+      </section>
+      <section id="moviesList" class="dash-grid"></section>
+    </main>
+  </div>
+
+  <script src="js/movies.js"></script>
+</body>
+</html>

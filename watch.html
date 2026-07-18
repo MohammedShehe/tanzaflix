@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TanzaFlix | Watch</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    :root {
+      --netflix-bg: #060816;
+      --netflix-panel: #11152d;
+      --netflix-panel-2: #171b35;
+      --netflix-accent: #e50914;
+      --netflix-accent-2: #4f46e5;
+      --netflix-text: #f8fafc;
+      --netflix-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #182042 0%, var(--netflix-bg) 45%, #03050c 100%);
+      color: var(--netflix-text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+    }
+
+    .watch-shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 20px 40px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      color: #c7d2fe;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: #fff;
+    }
+
+    .watch-card {
+      background: linear-gradient(135deg, rgba(17,21,45,0.98), rgba(23,27,53,0.96));
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+    }
+
+    .watch-hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      padding: 18px;
+      border-radius: 16px;
+      background: linear-gradient(120deg, rgba(229,9,20,0.18), rgba(79,70,229,0.16));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 24px rgba(0,0,0,0.18);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .watch-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(0,0,0,0.22), rgba(0,0,0,0));
+      pointer-events: none;
+    }
+
+    .watch-title {
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
+      margin: 0 0 6px;
+      font-weight: 700;
+    }
+
+    .watch-meta {
+      margin: 0;
+      color: var(--netflix-muted);
+      font-size: 0.95rem;
+    }
+
+    .watch-metadata {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .watch-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      color: #e2e8f0;
+      font-size: 0.84rem;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .watch-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .watch-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 999px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .watch-btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .watch-btn-play {
+      background: linear-gradient(135deg, var(--netflix-accent), #ff4d4f);
+      color: white;
+      box-shadow: 0 10px 25px rgba(229,9,20,0.25);
+      animation: playGlow 2.2s ease-in-out infinite;
+    }
+
+    @keyframes playGlow {
+      0%, 100% { box-shadow: 0 10px 24px rgba(229,9,20,0.25); }
+      50% { box-shadow: 0 12px 34px rgba(255, 77, 79, 0.45); }
+    }
+
+    .watch-btn-trailer {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .watch-btn-list {
+      background: rgba(255,255,255,0.12);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+
+    .rating-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .rating-bar {
+      width: 180px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      overflow: hidden;
+    }
+
+    .rating-fill {
+      height: 100%;
+      width: 92%;
+      background: linear-gradient(90deg, #22c55e, #84cc16);
+      border-radius: inherit;
+    }
+
+    .rating-text {
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .watch-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(229, 9, 20, 0.2);
+      color: #ffb3b8;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: 1px solid rgba(229, 9, 20, 0.25);
+    }
+
+    .watch-description {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .watch-poster-banner {
+      margin: 18px 0 16px;
+      min-height: 240px;
+      border-radius: 18px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+    }
+
+    .watch-poster-banner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 55%, rgba(0,0,0,0.5) 100%);
+      pointer-events: none;
+    }
+
+    .watch-poster-banner::before {
+      content: '▶';
+      position: absolute;
+      top: 50%;
+      right: 24px;
+      transform: translateY(-50%);
+      font-size: 2.2rem;
+      color: white;
+      background: rgba(229,9,20,0.9);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      z-index: 2;
+    }
+
+    .watch-poster-content {
+      position: relative;
+      z-index: 1;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      height: 100%;
+      min-height: 240px;
+    }
+
+    .watch-poster-title {
+      font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+      font-weight: 800;
+      margin: 0 0 8px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    }
+
+    .watch-poster-copy {
+      color: #e2e8f0;
+      max-width: 560px;
+      line-height: 1.6;
+      margin: 0 0 12px;
+    }
+
+    .watch-stars {
+      display: inline-flex;
+      gap: 4px;
+      color: #fbbf24;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .recommendations {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .recommendations h3 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+    }
+
+    .recommendation-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .recommendation-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 10px;
+      color: #fff;
+    }
+
+    .recommendation-card strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+
+    .recommendation-card span {
+      color: #cbd5e1;
+      font-size: 0.85rem;
+    }
+
+    .watch-description h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .watch-description p {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 16px;
+      background: #000;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+      outline: none;
+    }
+
+    video::-webkit-media-controls-panel {
+      background-color: rgba(0,0,0,0.88);
+    }
+
+    @media (max-width: 700px) {
+      .watch-shell { padding: 16px 12px 28px; }
+      .watch-card { padding: 14px; }
+      .watch-badge { margin-top: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="watch-shell">
+    <a href="movies.html" class="back-link">← Rudi kwenye Movies</a>
+    <div class="watch-card">
+      <div class="watch-hero">
+        <div>
+          <h1 id="watchTitle" class="watch-title">Inapakia...</h1>
+          <p id="watchMeta" class="watch-meta"></p>
+          <div class="watch-metadata">
+            <span class="watch-chip" id="watchYear">2024</span>
+            <span class="watch-chip" id="watchGenre">Action</span>
+            <span class="watch-chip" id="watchRuntime">2h 10m</span>
+          </div>
+          <div class="rating-row">
+            <div class="rating-bar" aria-label="rating bar">
+              <div class="rating-fill"></div>
+            </div>
+            <span class="rating-text">8.9/10 ★</span>
+          </div>
+          <div class="watch-actions">
+            <a href="#" class="watch-btn watch-btn-play">▶ Play</a>
+            <a href="#" class="watch-btn watch-btn-trailer">▶ Play Trailer</a>
+            <a href="#" class="watch-btn watch-btn-list">＋ Add to My List</a>
+          </div>
+        </div>
+        <div class="watch-badge">▶ Netflix-style Player</div>
+      </div>
+      <div class="watch-poster-banner" id="watchPosterBanner">
+        <div class="watch-poster-content">
+          <div class="watch-stars">★ ★ ★ ★ ★</div>
+          <h2 class="watch-poster-title" id="watchPosterTitle">Loading title...</h2>
+          <p class="watch-poster-copy" id="watchPosterCopy">Streaming experience with cinematic visuals and premium style.</p>
+        </div>
+      </div>
+      <video id="watchVideo" controls preload="metadata" poster="">
+        <source id="watchSource" src="" type="video/mp4" />
+        Kivinjari chako hakiwezi kucheza video hii.
+      </video>
+    </div>
+  </div>
+
+  <script>
+    (async function () {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const title = document.getElementById('watchTitle');
+      const meta = document.getElementById('watchMeta');
+      const video = document.getElementById('watchVideo');
+      const source = document.getElementById('watchSource');
+
+      if (!id) {
+        title.textContent = 'Hakuna filamu iliyochaguliwa';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/content?id=${encodeURIComponent(id)}`);
+        const data = await res.json();
+        const item = (data && data.items && data.items[0]) || null;
+
+        if (!item) {
+          title.textContent = 'Filamu haipatikani';
+          return;
+        }
+
+        title.textContent = item.title || 'Filamu';
+        meta.textContent = `Kategoria: ${item.category || 'Asili'} | Lugha: ${item.lang || 'Unknown'}`;
+
+        const year = item.year || '2024';
+        const genre = item.genre || 'Action';
+        const runtime = item.runtime || '2h 10m';
+        const description = item.description || 'Mchezo wa kuvutia wenye hadithi kali, picha zenye nguvu, na burudani ya hali ya juu.';
+        document.getElementById('watchYear').textContent = year;
+        document.getElementById('watchGenre').textContent = genre;
+        document.getElementById('watchRuntime').textContent = runtime;
+
+        const badge = document.querySelector('.watch-badge');
+        if (badge) {
+          badge.textContent = item.is_new ? '✨ New' : '▶ Netflix-style Player';
+        }
+
+        source.src = item.video_url || item.videoUrl || '';
+        video.poster = item.poster_url || item.posterUrl || '';
+        video.load();
+
+        document.getElementById('watchPosterTitle').textContent = item.title || 'Filamu';
+        document.getElementById('watchPosterCopy').textContent = description;
+        document.getElementById('watchPosterBanner').style.backgroundImage = `url('${item.poster_url || item.posterUrl || 'img/default-poster.svg'}')`;
+
+        const descriptionBox = document.createElement('div');
+        descriptionBox.className = 'watch-description';
+        descriptionBox.innerHTML = `
+          <h3>About this movie</h3>
+          <p>${description}</p>
+        `;
+
+        const card = document.querySelector('.watch-card');
+        if (card) {
+          card.appendChild(descriptionBox);
+        }
+
+        const recommendations = document.createElement('div');
+        recommendations.className = 'recommendations';
+        recommendations.innerHTML = `
+          <h3>More like this</h3>
+          <div class="recommendation-row">
+            <div class="recommendation-card">
+              <span>Drama</span>
+              <strong>Love in the Sky</strong>
+            </div>
+            <div class="recommendation-card">
+              <span>Action</span>
+              <strong>Midnight Rush</strong>
+            </div>
+            <div class="recommendation-card">
+              <span>Romance</span>
+              <strong>Golden Horizon</strong>
+            </div>
+          </div>
+        `;
+
+        if (card) {
+          card.appendChild(recommendations);
+        }
+      } catch (e) {
+        title.textContent = 'Hitilafu ya kupakia video';
+        console.error(e);
+      }
+    })();
+  </script>
+</body>
+</html>

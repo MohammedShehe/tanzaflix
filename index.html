@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TanzaFlix | Ingia</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <div class="hero-panel">
+      <div class="hero-text">
+        <p class="eyebrow">TanzaFlix</p>
+        <h1>Karibu kwenye kisiwa cha burudani za kisupasta.</h1>
+        <p class="hero-copy">
+          Weka jina lako, ukumbuke nenosiri lako, na uendelee kuwa na burudani yenye mtindo, mwanga,
+          na raha kwa lugha ya kisomi.
+        </p>
+      </div>
+      <div class="login-card">
+        <div class="brand-box">
+          <span class="brand-mark">TF</span>
+          <div>
+            <p class="brand-name">TanzaFlix</p>
+            <p class="brand-tag">Muonekano wa kisasa, uhalisia wa kiswahili</p>
+          </div>
+        </div>
+
+        <form id="loginForm" class="login-form" novalidate>
+          <p class="form-intro">Ingia kwa usalama ili kuanza safari yako ya sinema.</p>
+
+          <label class="field-label" for="email">Barua pepe</label>
+          <input id="email" name="email" type="email" placeholder="jina@mfano.com" required />
+
+          <label class="field-label" for="password">Nenosiri</label>
+          <div class="password-group">
+            <input id="password" name="password" type="password" placeholder="Weka nenosiri lako" required />
+            <button type="button" class="visibility-toggle" aria-label="Onyesha nenosiri" aria-pressed="false">
+              <span class="vis-icon">
+                <span class="icon-open" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="icon-closed" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-6 0-10-7-10-7 .86-1.6 2.08-3.17 3.62-4.5M3 3l18 18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.88 9.88A3 3 0 0 0 14.12 14.12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </span>
+              <span class="vis-label">Onyesha</span>
+            </button>
+          </div>
+
+          <button type="submit" class="submit-btn">Iingia sasa</button>
+
+          <div class="form-meta">
+            <span>Hujui nenosiri? <a href="#">Sahihisha</a></span>
+            <span>Hujajiandika? <a href="register.html">Jiandikishe</a></span>
+          </div>
+        </form>
+
+        <div class="login-notes">
+          <p><strong>Maelezo ya kuzingatia:</strong> Mfumo unalinda taarifa zako kwa usimbaji fiche, bima ya JWT, na mbinu za kifasihi za udhibiti wa kila kikao.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/scripts.js"></script>
+</body>
+</html>
