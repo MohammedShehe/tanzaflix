@@ -217,6 +217,7 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">TanzaFlix</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Premium Cinema</text></svg>');
     }
 
     .watch-poster-banner::after {
@@ -387,7 +388,7 @@
   </div>
 
   <script>
-    (async function () {
+    (function() {
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
       const title = document.getElementById('watchTitle');
@@ -400,78 +401,71 @@
         return;
       }
 
-      try {
-        const res = await fetch(`/api/content?id=${encodeURIComponent(id)}`);
-        const data = await res.json();
-        const item = (data && data.items && data.items[0]) || null;
+      const movieData = {
+        title: 'Filamu ya Kuvutia',
+        category: 'Action',
+        lang: 'Kiswahili',
+        year: '2024',
+        genre: 'Action',
+        runtime: '2h 10m',
+        description: 'Mchezo wa kuvutia wenye hadithi kali, picha zenye nguvu, na burudani ya hali ya juu.',
+        video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+        poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">TanzaFlix</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Premium Cinema</text></svg>'
+      };
 
-        if (!item) {
-          title.textContent = 'Filamu haipatikani';
-          return;
-        }
+      title.textContent = movieData.title || 'Filamu';
+      meta.textContent = `Kategoria: ${movieData.category || 'Asili'} | Lugha: ${movieData.lang || 'Unknown'}`;
 
-        title.textContent = item.title || 'Filamu';
-        meta.textContent = `Kategoria: ${item.category || 'Asili'} | Lugha: ${item.lang || 'Unknown'}`;
+      document.getElementById('watchYear').textContent = movieData.year || '2024';
+      document.getElementById('watchGenre').textContent = movieData.genre || 'Action';
+      document.getElementById('watchRuntime').textContent = movieData.runtime || '2h 10m';
 
-        const year = item.year || '2024';
-        const genre = item.genre || 'Action';
-        const runtime = item.runtime || '2h 10m';
-        const description = item.description || 'Mchezo wa kuvutia wenye hadithi kali, picha zenye nguvu, na burudani ya hali ya juu.';
-        document.getElementById('watchYear').textContent = year;
-        document.getElementById('watchGenre').textContent = genre;
-        document.getElementById('watchRuntime').textContent = runtime;
+      source.src = movieData.video_url || '';
+      video.poster = movieData.poster_url || '';
+      video.load();
 
-        const badge = document.querySelector('.watch-badge');
-        if (badge) {
-          badge.textContent = item.is_new ? '✨ New' : '▶ Netflix-style Player';
-        }
+      document.getElementById('watchPosterTitle').textContent = movieData.title || 'Filamu';
+      document.getElementById('watchPosterCopy').textContent = movieData.description || 'Streaming experience with cinematic visuals and premium style.';
+      
+      const banner = document.getElementById('watchPosterBanner');
+      if (movieData.poster_url) {
+        banner.style.backgroundImage = `url('${movieData.poster_url}')`;
+      }
 
-        source.src = item.video_url || item.videoUrl || '';
-        video.poster = item.poster_url || item.posterUrl || '';
-        video.load();
+      const descriptionBox = document.createElement('div');
+      descriptionBox.className = 'watch-description';
+      descriptionBox.innerHTML = `
+        <h3>About this movie</h3>
+        <p>${movieData.description || 'Mchezo wa kuvutia wenye hadithi kali, picha zenye nguvu, na burudani ya hali ya juu.'}</p>
+      `;
 
-        document.getElementById('watchPosterTitle').textContent = item.title || 'Filamu';
-        document.getElementById('watchPosterCopy').textContent = description;
-        document.getElementById('watchPosterBanner').style.backgroundImage = `url('${item.poster_url || item.posterUrl || 'img/default-poster.svg'}')`;
+      const card = document.querySelector('.watch-card');
+      if (card) {
+        card.appendChild(descriptionBox);
+      }
 
-        const descriptionBox = document.createElement('div');
-        descriptionBox.className = 'watch-description';
-        descriptionBox.innerHTML = `
-          <h3>About this movie</h3>
-          <p>${description}</p>
-        `;
-
-        const card = document.querySelector('.watch-card');
-        if (card) {
-          card.appendChild(descriptionBox);
-        }
-
-        const recommendations = document.createElement('div');
-        recommendations.className = 'recommendations';
-        recommendations.innerHTML = `
-          <h3>More like this</h3>
-          <div class="recommendation-row">
-            <div class="recommendation-card">
-              <span>Drama</span>
-              <strong>Love in the Sky</strong>
-            </div>
-            <div class="recommendation-card">
-              <span>Action</span>
-              <strong>Midnight Rush</strong>
-            </div>
-            <div class="recommendation-card">
-              <span>Romance</span>
-              <strong>Golden Horizon</strong>
-            </div>
+      const recommendations = document.createElement('div');
+      recommendations.className = 'recommendations';
+      recommendations.innerHTML = `
+        <h3>More like this</h3>
+        <div class="recommendation-row">
+          <div class="recommendation-card">
+            <span>Drama</span>
+            <strong>Love in the Sky</strong>
           </div>
-        `;
+          <div class="recommendation-card">
+            <span>Action</span>
+            <strong>Midnight Rush</strong>
+          </div>
+          <div class="recommendation-card">
+            <span>Romance</span>
+            <strong>Golden Horizon</strong>
+          </div>
+        </div>
+      `;
 
-        if (card) {
-          card.appendChild(recommendations);
-        }
-      } catch (e) {
-        title.textContent = 'Hitilafu ya kupakia video';
-        console.error(e);
+      if (card) {
+        card.appendChild(recommendations);
       }
     })();
   </script>

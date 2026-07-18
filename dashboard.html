@@ -16,21 +16,21 @@
       </div>
       <nav class="dash-nav">
         <a href="#">Nyumbani</a>
-        <a href="#">Filamu</a>
+        <a href="movies.html">Filamu</a>
         <a href="#">Malipo ya Akaunti</a>
         <a href="#">Kuhusu Sisi</a>
       </nav>
     </header>
 
     <section class="choice-panel" aria-label="Chaguzi za Maudhui">
-      <a href="#" class="choice-card choice-primary" id="translatedOption" role="button">
+      <a href="movies.html?translated=1" class="choice-card choice-primary" id="translatedOption" role="button">
         <div class="choice-content">
           <h2>Michezo / Movies zilizotafsiriwa</h2>
           <p>Chagua hii ikiwa ungependa maudhui yaliyotafsiriwa kwa lugha yako.</p>
         </div>
       </a>
 
-      <a href="#" class="choice-card choice-secondary" id="originalOption" role="button">
+      <a href="movies.html?translated=0" class="choice-card choice-secondary" id="originalOption" role="button">
         <div class="choice-content">
           <h3>Michezo / Movies hazijatafsiriwa</h3>
           <p>Chagua hii kwa maudhui asilia bila tafsiri.</p>
@@ -92,12 +92,13 @@
               <th>Simu</th>
               <th>Nchi</th>
               <th>Eneo</th>
+              <th>Picha</th>
               <th>Wakati wa Usajili</th>
             </tr>
           </thead>
           <tbody id="registeredUsersTableBody">
             <tr>
-              <td colspan="7" class="empty-state" id="noUsersMessage">Inapakia watumiaji...</td>
+              <td colspan="8" class="empty-state" id="noUsersMessage">Inapakia watumiaji...</td>
             </tr>
           </tbody>
         </table>
@@ -120,11 +121,6 @@
     </section>
   </div>
 
-  <script>
-    const queryParams = new URLSearchParams(window.location.search);
-    const name = queryParams.get('name') || 'Mgeni wa TanzaFlix';
-    document.getElementById('userName').textContent = name;
-  </script>
   <script src="js/dashboard.js"></script>
 </body>
 </html>

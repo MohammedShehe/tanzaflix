@@ -289,7 +289,6 @@ input::placeholder {
   color: rgba(255, 255, 255, 0.45);
 }
 
-/* Enhanced select styling: visible, attractive and with arrow */
 select {
   -webkit-appearance: none;
   appearance: none;
@@ -308,11 +307,6 @@ select:focus {
   box-shadow: 0 0 0 6px rgba(109,99,255,0.10), 0 0 28px rgba(109,99,255,0.18);
   border-color: rgba(109,99,255,0.8);
   outline: none;
-}
-
-/* Make sure dropdown options are not clipped by parent */
-select, select option {
-  position: relative;
 }
 
 input:focus,
@@ -354,7 +348,6 @@ button:focus {
 .visibility-toggle[aria-pressed="true"] .vis-label { color: #7c5cff; }
 .visibility-toggle:focus { outline: none; }
 
-/* Icon swap animation: keep both SVGs in DOM and fade/scale between them */
 .vis-icon { display: inline-flex; align-items: center; justify-content: center; }
 .vis-icon .icon-open,
 .vis-icon .icon-closed {
@@ -367,7 +360,6 @@ button:focus {
 .visibility-toggle.active .vis-icon .icon-open { opacity: 0; transform: scale(0.88); }
 .visibility-toggle.active .vis-icon .icon-closed { opacity: 1; transform: scale(1); }
 
-/* Small hover/press animation and pulse for affordance */
 .visibility-toggle {
   display: inline-flex;
   align-items: center;
@@ -393,7 +385,6 @@ button:focus {
   animation: visPulse 900ms ease-out;
 }
 
-/* Ensure icon colors and smooth transitions */
 .visibility-toggle .vis-icon svg { color: #cbd5ff; transition: color 150ms ease; }
 .visibility-toggle.active .vis-icon svg { color: #7c5cff; }
 
@@ -675,7 +666,6 @@ button:focus {
   padding: 1.5rem;
 }
 
-/* Choice panel: two animated option cards (do not remove existing dashboard text) */
 .choice-panel {
   display: flex;
   gap: 1rem;
@@ -861,7 +851,6 @@ button:focus {
   100% { background-position: 0% 50%; }
 }
 
-/* Small hover/tap emphasis without changing dashboard copy */
 .choice-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 28px 64px rgba(0,0,0,0.28);
@@ -873,7 +862,6 @@ button:focus {
   }
 }
 
-/* Entrance animations for choice cards */
 .enter-zoom {
   animation: enterZoom 800ms cubic-bezier(.2,.9,.3,1) both;
 }
@@ -894,7 +882,6 @@ button:focus {
   100% { transform: translateX(0) scale(1); opacity: 1; }
 }
 
-/* click feedback badge */
 .choice-badge {
   position: absolute;
   top: 10px;
@@ -926,7 +913,6 @@ button:focus {
   box-shadow: 0 22px 56px rgba(0, 0, 0, 0.32);
 }
 
-/* Force password input text visibility and darker background for readability */
 .password-group input {
   color: #ffffff !important;
   background-color: #1a1f2c !important;
@@ -1039,6 +1025,7 @@ button:focus {
   font-size: 0.85rem;
 }
 
+@media (max-width: 900px) {
   .dash-nav {
     justify-content: flex-start;
   }

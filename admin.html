@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TanzaFlix | Admin Panel</title>
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <div class="admin-wrapper">
+    <header class="admin-header">
+      <div class="header-left">
+        <div class="brand">
+          <span class="brand-mark">TF</span>
+          <span class="brand-name">TanzaFlix Admin</span>
+        </div>
+      </div>
+      <div class="header-center">
+        <div class="realtime-clock" id="realtimeClock">
+          <span class="time" id="clockTime">00:00:00</span>
+          <span class="date" id="clockDate">Jumatano, 1 Januari 2024</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="admin-profile" id="adminProfile">
+          <span class="admin-email" id="adminEmail">admin@tanzaflix.com</span>
+          <div class="admin-avatar" id="adminAvatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="profile-dropdown" id="profileDropdown">
+            <button class="dropdown-item" id="logoutBtn">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Ondoka</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="admin-nav">
+      <button class="nav-item active" data-tab="movies">
+        <i class="fas fa-film"></i>
+        <span>Movies</span>
+      </button>
+      <button class="nav-item" data-tab="users">
+        <i class="fas fa-users"></i>
+        <span>Watumizi</span>
+      </button>
+      <button class="nav-item" data-tab="transactions">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Manunuzi</span>
+      </button>
+      <button class="nav-item" data-tab="activities">
+        <i class="fas fa-chart-line"></i>
+        <span>Shughuli</span>
+      </button>
+    </nav>
+
+    <main class="admin-content">
+      <!-- Movies Tab -->
+      <section id="moviesTab" class="tab-content active">
+        <div class="tab-header">
+          <h2><i class="fas fa-film"></i> Orodha ya Movies</h2>
+          <button class="add-btn" id="addMovieBtn">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div class="table-container" id="moviesTableContainer">
+          <table class="admin-table" id="moviesTable">
+            <thead>
+              <tr>
+                <th>Jina</th>
+                <th>Aina</th>
+                <th>Nchi</th>
+                <th>Lugha</th>
+                <th>Kategoria</th>
+                <th>Mwaka</th>
+                <th>Bei</th>
+                <th>Vitendo</th>
+              </tr>
+            </thead>
+            <tbody id="moviesTableBody">
+              <!-- Movies will be rendered here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Users Tab -->
+      <section id="usersTab" class="tab-content">
+        <div class="tab-header">
+          <h2><i class="fas fa-users"></i> Watumizi Waliosajiliwa</h2>
+          <button class="add-btn" id="addUserBtn">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div class="table-container">
+          <table class="admin-table" id="usersTable">
+            <thead>
+              <tr>
+                <th>Jina</th>
+                <th>Barua pepe</th>
+                <th>Simu</th>
+                <th>Nchi</th>
+                <th>Eneo</th>
+                <th>Picha</th>
+                <th>Vitendo</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- Users will be rendered here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Transactions Tab -->
+      <section id="transactionsTab" class="tab-content">
+        <div class="tab-header">
+          <h2><i class="fas fa-shopping-cart"></i> Manunuzi & Mapato</h2>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-info">
+              <p class="stat-label">Jumla ya Mapato</p>
+              <p class="stat-value" id="totalIncome">TSh 0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info">
+              <p class="stat-label">Manunuzi Yamekamilika</p>
+              <p class="stat-value" id="completedTransactions">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div class="stat-info">
+              <p class="stat-label">Manunuzi Yanayosubiri</p>
+              <p class="stat-value" id="pendingTransactions">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+              <p class="stat-label">Wateja Walionunua</p>
+              <p class="stat-value" id="totalCustomers">0</p>
+            </div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="admin-table" id="transactionsTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Mteja</th>
+                <th>Movie</th>
+                <th>Kiasi</th>
+                <th>Hali</th>
+                <th>Tarehe</th>
+                <th>Vitendo</th>
+              </tr>
+            </thead>
+            <tbody id="transactionsTableBody">
+              <!-- Transactions will be rendered here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Activities Tab -->
+      <section id="activitiesTab" class="tab-content">
+        <div class="tab-header">
+          <h2><i class="fas fa-chart-line"></i> Shughuli za Watumizi</h2>
+        </div>
+        <div class="table-container">
+          <table class="admin-table" id="activitiesTable">
+            <thead>
+              <tr>
+                <th>Mtumiaji</th>
+                <th>Hali</th>
+                <th>Jukumu</th>
+                <th>Imeingia</th>
+                <th>Imetoka</th>
+                <th>Movie Zilizonunuliwa</th>
+                <th>Kitendo</th>
+              </tr>
+            </thead>
+            <tbody id="activitiesTableBody">
+              <!-- Activities will be rendered here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Movie Modal -->
+  <div class="modal" id="movieModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="movieModalTitle">Ongeza Movie</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="movieForm">
+        <input type="hidden" id="movieId" />
+        <div class="form-group">
+          <label>Jina la Movie</label>
+          <input type="text" id="movieTitle" placeholder="Jina la movie" required />
+        </div>
+        <div class="form-group">
+          <label>Aina ya Movie</label>
+          <select id="movieType" required>
+            <option value="">Chagua aina</option>
+            <option value="Imetafsiriwa">Imetafsiriwa</option>
+            <option value="Haijatafsiriwa">Haijatafsiriwa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nchi</label>
+          <select id="movieCountry" required>
+            <option value="">Chagua nchi</option>
+            <option value="Bongo">Bongo Movies</option>
+            <option value="Kiarabu">Kiarabu</option>
+            <option value="Kifilipino">Kifilipino</option>
+            <option value="Kihindi">Kihindi</option>
+            <option value="Kiitaliano">Kiitaliano</option>
+            <option value="Kikorea">Kikorea</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Lugha</label>
+          <input type="text" id="movieLang" placeholder="Lugha ya movie" required />
+        </div>
+        <div class="form-group">
+          <label>Kategoria</label>
+          <select id="movieCategory" required>
+            <option value="">Chagua kategoria</option>
+            <option value="Action">Action</option>
+            <option value="Love story">Love story</option>
+            <option value="Drama">Drama</option>
+            <option value="Mix">Mix</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Mwaka</label>
+          <input type="number" id="movieYear" placeholder="2024" required />
+        </div>
+        <div class="form-group">
+          <label>Bei (TSh)</label>
+          <input type="number" id="moviePrice" placeholder="15000" required />
+        </div>
+        <div class="form-group">
+          <label>Maelezo</label>
+          <textarea id="movieDescription" rows="3" placeholder="Maelezo ya movie"></textarea>
+        </div>
+        <div class="form-group">
+          <label>More Like This (hiari)</label>
+          <select id="movieMoreLike" multiple>
+            <option value="">Chagua movies zinazofanana</option>
+          </select>
+          <small>Shikilia Ctrl (Cmd) ili kuchagua zaidi ya moja</small>
+        </div>
+        <div class="form-group">
+          <label>Weka Movie (Video/File)</label>
+          <input type="file" id="movieFile" accept="video/*,.mp4,.mkv,.avi" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel">Ghairi</button>
+          <button type="submit" class="btn-submit">Hifadhi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- User Modal -->
+  <div class="modal" id="userModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="userModalTitle">Ongeza Mtumiaji</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="userForm">
+        <input type="hidden" id="userId" />
+        <div class="form-group">
+          <label>Jina Kamili</label>
+          <input type="text" id="userFullName" placeholder="Jina kamili" required />
+        </div>
+        <div class="form-group">
+          <label>Namba ya Simu</label>
+          <input type="tel" id="userPhone" placeholder="07XX XXX XXX" required />
+        </div>
+        <div class="form-group">
+          <label>Nchi</label>
+          <select id="userCountry" required>
+            <option value="">Chagua nchi</option>
+            <option value="Tanzania">Tanzania</option>
+            <option value="Kenya">Kenya</option>
+            <option value="Uganda">Uganda</option>
+            <option value="Other">Nchi nyingine</option>
+          </select>
+        </div>
+        <div class="form-group" id="userRegionGroup" style="display:none;">
+          <label>Eneo</label>
+          <select id="userRegion">
+            <option value="">Chagua eneo</option>
+            <option value="Bara">Bara</option>
+            <option value="Zanzibar">Zanzibar</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Barua pepe</label>
+          <input type="email" id="userEmail" placeholder="jina@mfano.com" required />
+        </div>
+        <div class="form-group">
+          <label>Nenosiri</label>
+          <input type="password" id="userPassword" placeholder="Weka nenosiri" required />
+        </div>
+        <div class="form-group">
+          <label>Hakiki Nenosiri</label>
+          <input type="password" id="userPasswordConfirm" placeholder="Rudia nenosiri" required />
+        </div>
+        <div class="form-group">
+          <label>Picha ya Wasifu</label>
+          <input type="file" id="userPhoto" accept="image/*" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel">Ghairi</button>
+          <button type="submit" class="btn-submit">Hifadhi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div class="modal" id="confirmModal">
+    <div class="modal-content confirm-modal">
+      <div class="modal-header">
+        <h3>Thibitisha Kufuta</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <p id="confirmMessage">Je, una uhakika unataka kufuta hii?</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel">Ghairi</button>
+        <button type="button" class="btn-delete" id="confirmDeleteBtn">Futa</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

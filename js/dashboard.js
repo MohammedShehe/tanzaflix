@@ -1,11 +1,7 @@
-// Dashboard entrance animation + simple analytics (click tally)
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
+  // Get user name from URL
   const params = new URLSearchParams(window.location.search);
   const name = params.get('name') || 'Mgeni wa TanzaFlix';
-  const kick = params.get('kick');
-
-  const primary = document.getElementById('translatedOption');
-  const secondary = document.getElementById('originalOption');
 
   const nameElement = document.getElementById('userName');
   if (nameElement) {
@@ -29,91 +25,109 @@
     console.warn('Error loading user photo:', err);
   }
 
-  if (kick && (primary || secondary)) {
-    if (primary) primary.classList.add('enter-zoom');
-    if (secondary) secondary.classList.add('enter-slide');
-    setTimeout(() => {
-      if (primary) primary.classList.remove('enter-zoom');
-      if (secondary) secondary.classList.remove('enter-slide');
-    }, 1800);
-  }
-
-  const STORAGE_KEY = 'tanzaflix_choice_counts_v1';
-  const loadCounts = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  const saveCounts = (c) => localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
-
-  const renderRegisteredUsers = (users) => {
+  // Render registered users with profile photos
+  const renderRegisteredUsers = () => {
     const tableBody = document.getElementById('registeredUsersTableBody');
-    const noUsersMessage = document.getElementById('noUsersMessage');
+    if (!tableBody) return;
 
-    if (!tableBody || !noUsersMessage) return;
-    tableBody.innerHTML = '';
+    // Sample users data with profile photos
+    const users = [
+      { 
+        id: 1, 
+        full_name: 'John Doe', 
+        email: 'john@example.com', 
+        phone: '0712345678', 
+        country: 'Tanzania', 
+        region: 'Dar es Salaam', 
+        photo_url: 'https://ui-avatars.com/api/?name=John+Doe&background=6c63ff&color=fff&size=40',
+        created_at: new Date(2024, 0, 15) 
+      },
+      { 
+        id: 2, 
+        full_name: 'Jane Smith', 
+        email: 'jane@example.com', 
+        phone: '0723456789', 
+        country: 'Kenya', 
+        region: 'Nairobi', 
+        photo_url: 'https://ui-avatars.com/api/?name=Jane+Smith&background=ff4eb0&color=fff&size=40',
+        created_at: new Date(2024, 1, 20) 
+      },
+      { 
+        id: 3, 
+        full_name: 'Ali Hassan', 
+        email: 'ali@example.com', 
+        phone: '0734567890', 
+        country: 'Tanzania', 
+        region: 'Zanzibar', 
+        photo_url: 'https://ui-avatars.com/api/?name=Ali+Hassan&background=22c55e&color=fff&size=40',
+        created_at: new Date(2024, 2, 10) 
+      },
+      { 
+        id: 4, 
+        full_name: 'Maria Jose', 
+        email: 'maria@example.com', 
+        phone: '0745678901', 
+        country: 'Other', 
+        region: 'Mozambique', 
+        photo_url: 'https://ui-avatars.com/api/?name=Maria+Jose&background=f59e0b&color=fff&size=40',
+        created_at: new Date(2024, 3, 5) 
+      },
+      { 
+        id: 5, 
+        full_name: 'Peter Ochieng', 
+        email: 'peter@example.com', 
+        phone: '0756789012', 
+        country: 'Uganda', 
+        region: 'Kampala', 
+        photo_url: 'https://ui-avatars.com/api/?name=Peter+Ochieng&background=3b82f6&color=fff&size=40',
+        created_at: new Date(2024, 4, 12) 
+      },
+    ];
 
-    if (!Array.isArray(users) || users.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="empty-state" id="noUsersMessage">Hakuna watumiaji waliopatikana.</td></tr>`;
-      return;
-    }
-
-    users.forEach((user) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${user.id || ''}</td>
-        <td>${user.full_name || user.name || ' - '}</td>
-        <td>${user.email || ' - '}</td>
-        <td>${user.phone || ' - '}</td>
-        <td>${user.country || ' - '}</td>
-        <td>${user.region || ' - '}</td>
-        <td>${new Date(user.created_at || user.createdAt || Date.now()).toLocaleString('sw-TZ', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
-      `;
-      tableBody.appendChild(row);
-    });
+    tableBody.innerHTML = users.map(user => `
+      <tr>
+        <td>${user.id}</td>
+        <td>${user.full_name}</td>
+        <td>${user.email}</td>
+        <td>${user.phone}</td>
+        <td>${user.country}</td>
+        <td>${user.region}</td>
+        <td>
+          <img src="${user.photo_url}" alt="${user.full_name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1);" />
+        </td>
+        <td>${new Date(user.created_at).toLocaleString('sw-TZ', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+      </tr>
+    `).join('');
   };
 
-  const loadRegisteredUsers = async () => {
-    try {
-      const response = await fetch('/api/users');
-      if (!response.ok) {
-        throw new Error('Haikuweza kupata watumiaji kutoka server.');
-      }
-      const data = await response.json();
-      if (!data.ok) {
-        throw new Error(data.error || 'Hitilafu kupakua watumiaji.');
-      }
-      renderRegisteredUsers(data.users || []);
-    } catch (err) {
-      const tableBody = document.getElementById('registeredUsersTableBody');
-      if (tableBody) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="empty-state">${String(err.message)}</td></tr>`;
-      }
-      console.error('Dashboard load users error:', err);
-    }
-  };
+  renderRegisteredUsers();
 
-  loadRegisteredUsers();
-
-  const setupCard = (el, targetUrl) => {
+  // Choice card click tracking
+  const setupCard = (el) => {
     if (!el) return;
     const id = el.id;
+    const STORAGE_KEY = 'tanzaflix_choice_counts_v1';
+    const loadCounts = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const saveCounts = (c) => localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
+    
     const counts = loadCounts();
     const badge = document.createElement('span');
     badge.className = 'choice-badge';
     badge.textContent = counts[id] || 0;
     el.appendChild(badge);
 
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
+    el.addEventListener('click', function(e) {
       const c = loadCounts();
       c[id] = (c[id] || 0) + 1;
       saveCounts(c);
       badge.textContent = c[id];
-      el.classList.add('clicked');
-      setTimeout(() => el.classList.remove('clicked'), 600);
-      if (targetUrl) {
-        window.location.href = targetUrl;
-      }
+      this.classList.add('clicked');
+      setTimeout(() => this.classList.remove('clicked'), 600);
     });
   };
 
-  setupCard(primary, 'movies.html?translated=1');
-  setupCard(secondary, 'movies.html?translated=0');
-})();
+  const primary = document.getElementById('translatedOption');
+  const secondary = document.getElementById('originalOption');
+  setupCard(primary);
+  setupCard(secondary);
+});
