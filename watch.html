@@ -6,32 +6,95 @@
   <title>TanzaFlix | Watch</title>
   <link rel="stylesheet" href="css/styles.css" />
   <style>
-    /* Watch page specific styles */
+    /* ===== Watch Page - Professional Streaming Style ===== */
     :root {
-      --netflix-bg: #060816;
-      --netflix-panel: #11152d;
-      --netflix-panel-2: #171b35;
-      --netflix-accent: #e50914;
-      --netflix-accent-2: #4f46e5;
-      --netflix-text: #f8fafc;
-      --netflix-muted: #94a3b8;
+      --watch-bg: #0a0e1a;
+      --watch-panel: rgba(12, 17, 37, 0.95);
+      --watch-accent: #e50914;
+      --watch-accent-hover: #ff1a2a;
+      --watch-text: #f8fafc;
+      --watch-muted: #94a3b8;
+      --watch-border: rgba(255, 255, 255, 0.06);
+      --watch-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
     }
 
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      background: radial-gradient(circle at top, #182042 0%, var(--netflix-bg) 45%, #03050c 100%);
-      color: var(--netflix-text);
+      background: radial-gradient(circle at top, #0f172a 0%, var(--watch-bg) 50%, #05080f 100%);
+      color: var(--watch-text);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       min-height: 100vh;
     }
 
     .watch-shell {
-      max-width: 1180px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 24px 20px 40px;
+      padding: 20px 20px 40px;
     }
 
+    /* ===== Navigation ===== */
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+      border-radius: 16px;
+      background: var(--watch-panel);
+      border: 1px solid var(--watch-border);
+      backdrop-filter: blur(18px);
+    }
+
+    .dash-header .eyebrow {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--watch-muted);
+    }
+
+    .dash-header h1 {
+      margin: 0;
+      font-size: clamp(1.2rem, 2vw, 1.8rem);
+      font-weight: 700;
+    }
+
+    .dash-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .dash-nav a {
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .dash-nav a:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .dash-nav a.active {
+      background: linear-gradient(135deg, #6c63ff, #ff4eb0);
+      border-color: transparent;
+    }
+
+    /* ===== Back Link ===== */
     .back-link {
       display: inline-flex;
       align-items: center;
@@ -41,137 +104,182 @@
       text-decoration: none;
       font-weight: 600;
       transition: color 0.2s ease;
+      padding: 8px 16px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .back-link:hover {
       color: #fff;
+      background: rgba(255, 255, 255, 0.08);
     }
 
+    /* ===== Main Video Player ===== */
     .watch-card {
-      background: linear-gradient(135deg, rgba(17,21,45,0.98), rgba(23,27,53,0.96));
-      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--watch-panel);
+      border: 1px solid var(--watch-border);
       border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
-      backdrop-filter: blur(10px);
+      padding: 0;
+      overflow: hidden;
+      box-shadow: var(--watch-shadow);
     }
 
-    .watch-hero {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: flex-start;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      padding: 18px;
-      border-radius: 16px;
-      background: linear-gradient(120deg, rgba(229,9,20,0.18), rgba(79,70,229,0.16));
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 24px rgba(0,0,0,0.18);
+    /* Video player - full width, dark background */
+    .video-wrapper {
+      background: #000;
       position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 aspect ratio */
       overflow: hidden;
     }
 
-    .watch-hero::after {
+    .video-wrapper video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      outline: none;
+      display: block;
+    }
+
+    /* Custom video controls overlay hint */
+    .video-wrapper::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, rgba(0,0,0,0.22), rgba(0,0,0,0));
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.6));
       pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
-    .watch-title {
+    .video-wrapper:hover::after {
+      opacity: 1;
+    }
+
+    /* ===== Movie Info Panel ===== */
+    .movie-info {
+      padding: 24px 28px;
+      background: linear-gradient(180deg, rgba(12, 17, 37, 0.98), rgba(8, 12, 26, 0.98));
+    }
+
+    .movie-info-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .movie-title {
       font-size: clamp(1.4rem, 2.2vw, 2rem);
-      margin: 0 0 6px;
       font-weight: 700;
+      margin: 0 0 4px;
+      line-height: 1.2;
     }
 
-    .watch-meta {
-      margin: 0;
-      color: var(--netflix-muted);
-      font-size: 0.95rem;
-    }
-
-    .watch-metadata {
+    .movie-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
+      gap: 12px;
+      margin: 0;
+      color: var(--watch-muted);
+      font-size: 0.9rem;
     }
 
-    .watch-chip {
+    .movie-meta span {
       display: inline-flex;
       align-items: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      color: #e2e8f0;
-      font-size: 0.84rem;
-      border: 1px solid rgba(255,255,255,0.08);
+      gap: 4px;
     }
 
-    .watch-actions {
+    .movie-meta .dot {
+      color: var(--watch-muted);
+      opacity: 0.4;
+    }
+
+    .movie-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      background: rgba(229, 9, 20, 0.15);
+      color: #ff6b7a;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid rgba(229, 9, 20, 0.2);
+      white-space: nowrap;
+    }
+
+    .movie-actions {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
-      margin-top: 12px;
+      gap: 10px;
+      margin-top: 14px;
     }
 
     .watch-btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 14px;
+      padding: 10px 20px;
       border: none;
       border-radius: 999px;
       font-weight: 700;
-      text-decoration: none;
+      font-size: 0.9rem;
       cursor: pointer;
-      transition: transform 0.2s ease, opacity 0.2s ease;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      font-family: inherit;
     }
 
     .watch-btn:hover {
-      transform: translateY(-1px);
-      opacity: 0.95;
+      transform: translateY(-2px);
     }
 
     .watch-btn-play {
-      background: linear-gradient(135deg, var(--netflix-accent), #ff4d4f);
-      color: white;
-      box-shadow: 0 10px 25px rgba(229,9,20,0.25);
-      animation: playGlow 2.2s ease-in-out infinite;
+      background: linear-gradient(135deg, var(--watch-accent), #ff3b4a);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(229, 9, 20, 0.3);
     }
 
-    @keyframes playGlow {
-      0%, 100% { box-shadow: 0 10px 24px rgba(229,9,20,0.25); }
-      50% { box-shadow: 0 12px 34px rgba(255, 77, 79, 0.45); }
+    .watch-btn-play:hover {
+      box-shadow: 0 12px 32px rgba(229, 9, 20, 0.45);
     }
 
-    .watch-btn-trailer {
-      background: rgba(255,255,255,0.1);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.14);
+    .watch-btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .watch-btn-list {
-      background: rgba(255,255,255,0.12);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.16);
+    .watch-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
     }
 
+    /* ===== Rating Bar ===== */
     .rating-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 14px;
+      margin-top: 12px;
       flex-wrap: wrap;
     }
 
     .rating-bar {
-      width: 180px;
-      height: 8px;
+      flex: 1;
+      max-width: 200px;
+      height: 6px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.08);
       overflow: hidden;
     }
 
@@ -183,227 +291,96 @@
     }
 
     .rating-text {
-      color: #cbd5e1;
-      font-size: 0.9rem;
+      color: var(--watch-muted);
+      font-size: 0.85rem;
       font-weight: 600;
     }
 
-    .watch-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(229, 9, 20, 0.2);
-      color: #ffb3b8;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      border: 1px solid rgba(229, 9, 20, 0.25);
+    .rating-text strong {
+      color: #fff;
     }
 
-    .watch-description {
+    /* ===== Description ===== */
+    .movie-description {
       margin-top: 16px;
-      padding: 16px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      padding: 16px 20px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
     }
 
-    .watch-poster-banner {
-      margin: 18px 0 16px;
-      min-height: 240px;
-      border-radius: 18px;
-      background-size: cover;
-      background-position: center;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">TanzaFlix</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Premium Cinema</text></svg>');
+    .movie-description p {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 0.95rem;
     }
 
-    .watch-poster-banner::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 55%, rgba(0,0,0,0.5) 100%);
-      pointer-events: none;
+    .movie-description .label {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--watch-muted);
+      margin-bottom: 4px;
+      font-weight: 600;
     }
 
-    .watch-poster-banner::before {
-      content: '▶';
-      position: absolute;
-      top: 50%;
-      right: 24px;
-      transform: translateY(-50%);
-      font-size: 2.2rem;
-      color: white;
-      background: rgba(229,9,20,0.9);
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      z-index: 2;
-    }
-
-    .watch-poster-content {
-      position: relative;
-      z-index: 1;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      height: 100%;
-      min-height: 240px;
-    }
-
-    .watch-poster-title {
-      font-size: clamp(1.4rem, 2.2vw, 1.9rem);
-      font-weight: 800;
-      margin: 0 0 8px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
-    }
-
-    .watch-poster-copy {
-      color: #e2e8f0;
-      max-width: 560px;
-      line-height: 1.6;
-      margin: 0 0 12px;
-    }
-
-    .watch-stars {
-      display: inline-flex;
-      gap: 4px;
-      color: #fbbf24;
-      margin-bottom: 8px;
-      font-size: 1rem;
-    }
-
+    /* ===== Recommendations ===== */
     .recommendations {
-      margin-top: 18px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--watch-border);
     }
 
     .recommendations h3 {
-      margin: 0 0 12px;
-      font-size: 1.05rem;
+      margin: 0 0 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
     }
 
     .recommendation-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 12px;
     }
 
-    .recommendation-card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+    .rec-card {
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--watch-border);
       border-radius: 12px;
-      padding: 10px;
-      color: #fff;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
 
-    .recommendation-card strong {
-      display: block;
-      margin-top: 8px;
-      font-size: 0.95rem;
+    .rec-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.12);
     }
 
-    .recommendation-card span {
-      color: #cbd5e1;
-      font-size: 0.85rem;
-    }
-
-    .watch-description h3 {
-      margin: 0 0 8px;
-      font-size: 1rem;
-      color: #fff;
-    }
-
-    .watch-description p {
-      margin: 0;
-      color: #cbd5e1;
-      line-height: 1.6;
-    }
-
-    video {
-      width: 100%;
-      border-radius: 16px;
-      background: #000;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-      outline: none;
-    }
-
-    video::-webkit-media-controls-panel {
-      background-color: rgba(0,0,0,0.88);
-    }
-
-    /* Navigation styles for watch page */
-    .dash-nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-3);
-      align-items: center;
-    }
-
-    .dash-nav a {
-      color: #fff;
-      text-decoration: none;
-      padding: 0.85rem 1.3rem;
-      border-radius: var(--radius-lg);
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(168, 85, 247, 0.18), rgba(16, 185, 129, 0.16));
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: 0.92rem;
-      box-shadow: 0 10px 24px rgba(56, 189, 248, 0.14);
-      transition: transform var(--dur-med) var(--ease-out), box-shadow var(--dur-med) var(--ease-out);
-    }
-
-    .dash-nav a:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 30px rgba(59, 130, 246, 0.18);
-    }
-
-    .dash-nav a.active {
-      background: linear-gradient(135deg, var(--brand-violet), var(--brand-pink));
-      border-color: transparent;
-    }
-
-    .dash-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: var(--space-7);
-      padding: var(--space-8);
-      margin-bottom: var(--space-7);
-      border-radius: var(--radius-2xl);
-      background: var(--surface-2);
-      border: 1px solid var(--line-soft);
-      backdrop-filter: blur(18px);
-    }
-
-    .eyebrow {
-      margin: 0 0 var(--space-4);
-      font-family: var(--font-display);
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.26em;
+    .rec-card .rec-category {
+      font-size: 0.7rem;
       text-transform: uppercase;
-      color: var(--ink-4);
+      letter-spacing: 0.05em;
+      color: var(--watch-muted);
     }
 
-    .dash-header h1 {
-      margin: 0;
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+    .rec-card strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.9rem;
+      color: #fff;
     }
 
-    /* Modal Styles */
+    .rec-card .rec-meta {
+      font-size: 0.8rem;
+      color: var(--watch-muted);
+    }
+
+    /* ===== Modal Styles ===== */
     .modal {
       position: fixed;
       z-index: 1000;
@@ -414,6 +391,7 @@
       background-color: rgba(0,0,0,0.7);
       backdrop-filter: blur(8px);
       animation: fadeIn 0.3s ease;
+      display: none;
     }
 
     .modal-content {
@@ -422,8 +400,8 @@
       padding: 30px;
       width: 90%;
       max-width: 550px;
-      border-radius: var(--radius-xl);
-      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
       box-shadow: 0 30px 70px rgba(0,0,0,0.6);
       animation: slideUp 0.3s ease;
       max-height: 80vh;
@@ -433,13 +411,13 @@
     .modal-content h2 {
       color: #fff;
       margin-top: 0;
-      font-family: var(--font-display);
+      font-size: 1.4rem;
     }
 
     .modal-content h3 {
       color: #c7d2fe;
       margin-top: 1.2rem;
-      font-family: var(--font-display);
+      font-size: 1.05rem;
     }
 
     .modal-content p {
@@ -454,12 +432,14 @@
     }
 
     .modal-close {
-      color: #aaa;
+      color: #94a3b8;
       float: right;
       font-size: 28px;
       font-weight: bold;
       cursor: pointer;
       transition: color 0.2s ease;
+      background: none;
+      border: none;
     }
 
     .modal-close:hover {
@@ -476,13 +456,39 @@
       to { transform: translateY(0); opacity: 1; }
     }
 
-    @media (max-width: 700px) {
-      .watch-shell { padding: 16px 12px 28px; }
-      .watch-card { padding: 14px; }
-      .watch-badge { margin-top: 6px; }
-      .dash-header { flex-direction: column; align-items: stretch; }
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+      .watch-shell { padding: 12px 12px 24px; }
+      .movie-info { padding: 16px 18px; }
+      .dash-header { flex-direction: column; align-items: stretch; padding: 14px 18px; }
       .dash-nav { justify-content: flex-start; flex-wrap: wrap; }
+      .movie-info-top { flex-direction: column; }
+      .recommendation-row { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
       .modal-content { margin: 20% auto; padding: 20px; }
+    }
+
+    @media (max-width: 480px) {
+      .watch-btn { padding: 8px 14px; font-size: 0.8rem; }
+      .movie-actions { gap: 6px; }
+      .recommendation-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Video controls customization */
+    video::-webkit-media-controls-panel {
+      background: linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.9));
+      padding: 0 16px;
+    }
+
+    video::-webkit-media-controls-play-button,
+    video::-webkit-media-controls-volume-slider,
+    video::-webkit-media-controls-timeline {
+      filter: brightness(1.2);
+    }
+
+    video::-webkit-media-controls-current-time-display,
+    video::-webkit-media-controls-time-remaining-display {
+      color: #fff;
+      font-weight: 500;
     }
   </style>
 </head>
@@ -505,7 +511,7 @@
     <!-- About Modal -->
     <div id="aboutModal" class="modal" style="display:none;">
       <div class="modal-content">
-        <span class="modal-close">&times;</span>
+        <button class="modal-close">&times;</button>
         <h2>Kuhusu TanzaFlix</h2>
         <p><strong>TanzaFlix</strong> ni jukwaa la kisasa la burudani ya mtandaoni linaloleta sinema, tamthilia, na mfululizo wa filamu kutoka Tanzania, Afrika Mashariki, na duniani kote.</p>
         <p>Lengo letu ni kuwaweka Watanzania na wapenzi wa Kiswahili karibu na burudani bora kwa lugha yao ya mama.</p>
@@ -523,47 +529,89 @@
     </div>
 
     <a href="movies.html" class="back-link">← Rudi kwenye Movies</a>
+
     <div class="watch-card">
-      <div class="watch-hero">
-        <div>
-          <h1 id="watchTitle" class="watch-title">Inapakia...</h1>
-          <p id="watchMeta" class="watch-meta"></p>
-          <div class="watch-metadata">
-            <span class="watch-chip" id="watchYear">2024</span>
-            <span class="watch-chip" id="watchGenre">Action</span>
-            <span class="watch-chip" id="watchRuntime">2h 10m</span>
-          </div>
-          <div class="rating-row">
-            <div class="rating-bar" aria-label="rating bar">
-              <div class="rating-fill"></div>
+      <!-- Video Player -->
+      <div class="video-wrapper">
+        <video id="watchVideo" controls preload="metadata" poster="">
+          <source id="watchSource" src="" type="video/mp4" />
+          Kivinjari chako hakiwezi kucheza video hii.
+        </video>
+      </div>
+
+      <!-- Movie Info -->
+      <div class="movie-info">
+        <div class="movie-info-top">
+          <div>
+            <h1 id="watchTitle" class="movie-title">Inapakia...</h1>
+            <div class="movie-meta">
+              <span id="watchYear">2024</span>
+              <span class="dot">•</span>
+              <span id="watchGenre">Action</span>
+              <span class="dot">•</span>
+              <span id="watchRuntime">2h 10m</span>
+              <span class="dot">•</span>
+              <span id="watchLang">Kiswahili</span>
             </div>
-            <span class="rating-text">8.9/10 ★</span>
           </div>
-          <div class="watch-actions">
-            <a href="#" class="watch-btn watch-btn-play">▶ Play</a>
-            <a href="#" class="watch-btn watch-btn-trailer">▶ Play Trailer</a>
-            <a href="#" class="watch-btn watch-btn-list">＋ Add to My List</a>
+          <div class="movie-badge">▶ Premium Streaming</div>
+        </div>
+
+        <!-- Rating -->
+        <div class="rating-row">
+          <div class="rating-bar" aria-label="rating bar">
+            <div class="rating-fill"></div>
+          </div>
+          <span class="rating-text"><strong>8.9</strong> / 10 ★</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="movie-actions">
+          <button class="watch-btn watch-btn-play" id="playBtn">▶ Play</button>
+          <button class="watch-btn watch-btn-secondary">+ Add to My List</button>
+          <button class="watch-btn watch-btn-secondary">🔊 Audio</button>
+          <button class="watch-btn watch-btn-secondary">📺 Quality</button>
+        </div>
+
+        <!-- Description -->
+        <div class="movie-description">
+          <span class="label">Maelezo</span>
+          <p id="watchDescription">Mchezo wa kuvutia wenye hadithi kali, picha zenye nguvu, na burudani ya hali ya juu.</p>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations">
+          <h3>★ Filamu Zinazofanana</h3>
+          <div class="recommendation-row" id="recommendationRow">
+            <div class="rec-card">
+              <span class="rec-category">Drama</span>
+              <strong>Love in the Sky</strong>
+              <span class="rec-meta">2h 15m</span>
+            </div>
+            <div class="rec-card">
+              <span class="rec-category">Action</span>
+              <strong>Midnight Rush</strong>
+              <span class="rec-meta">1h 58m</span>
+            </div>
+            <div class="rec-card">
+              <span class="rec-category">Romance</span>
+              <strong>Golden Horizon</strong>
+              <span class="rec-meta">2h 05m</span>
+            </div>
+            <div class="rec-card">
+              <span class="rec-category">Thriller</span>
+              <strong>Dark Waters</strong>
+              <span class="rec-meta">2h 20m</span>
+            </div>
           </div>
         </div>
-        <div class="watch-badge">▶ Netflix-style Player</div>
       </div>
-      <div class="watch-poster-banner" id="watchPosterBanner">
-        <div class="watch-poster-content">
-          <div class="watch-stars">★ ★ ★ ★ ★</div>
-          <h2 class="watch-poster-title" id="watchPosterTitle">Loading title...</h2>
-          <p class="watch-poster-copy" id="watchPosterCopy">Streaming experience with cinematic visuals and premium style.</p>
-        </div>
-      </div>
-      <video id="watchVideo" controls preload="metadata" poster="">
-        <source id="watchSource" src="" type="video/mp4" />
-        Kivinjari chako hakiwezi kucheza video hii.
-      </video>
     </div>
   </div>
 
   <script>
     (function() {
-      // ===== Navigation Functions =====
+      // ===== Navigation / Modal Functions =====
       function openAboutModal() {
         document.getElementById('aboutModal').style.display = 'block';
       }
@@ -572,22 +620,15 @@
         document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
       }
 
-      // Navigation click handlers
       document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', function(e) {
           const href = this.getAttribute('href');
-          if (href && !href.startsWith('#')) {
-            return;
-          }
+          if (href && !href.startsWith('#')) return;
           e.preventDefault();
-          const id = this.id;
-          if (id === 'navAbout') {
-            openAboutModal();
-          }
+          if (this.id === 'navAbout') openAboutModal();
         });
       });
 
-      // Modal close handlers
       document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', closeModals);
       });
@@ -601,17 +642,85 @@
       // ===== Watch Page Logic =====
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
-      const title = document.getElementById('watchTitle');
-      const meta = document.getElementById('watchMeta');
+
+      const titleEl = document.getElementById('watchTitle');
+      const descEl = document.getElementById('watchDescription');
       const video = document.getElementById('watchVideo');
       const source = document.getElementById('watchSource');
+      const playBtn = document.getElementById('playBtn');
 
-      if (!id) {
-        title.textContent = 'Hakuna filamu iliyochaguliwa';
-        return;
-      }
+      // Movie database (expanded)
+      const movieDatabase = {
+        1: {
+          title: 'Safari ya Mtaa',
+          category: 'Action',
+          lang: 'Kiswahili',
+          year: '2024',
+          genre: 'Action',
+          runtime: '2h 10m',
+          description: 'Hadithi ya kusisimua ya mitaa ya Dar es Salaam. Mwanamume mmoja anapigania haki yake na familia yake katika mji wenye changamoto nyingi.',
+          video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+          poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Safari ya Mtaa</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Action • 2024</text></svg>'
+        },
+        2: {
+          title: 'The Silent Shore',
+          category: 'Drama',
+          lang: 'English',
+          year: '2023',
+          genre: 'Drama',
+          runtime: '2h 20m',
+          description: 'A powerful story of love and loss on the coast. When a fisherman\'s wife disappears, he embarks on a journey that will change everything.',
+          video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+          poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">The Silent Shore</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Drama • 2023</text></svg>'
+        },
+        3: {
+          title: 'Mapenzi ya Mwanga',
+          category: 'Love story',
+          lang: 'Kiswahili',
+          year: '2024',
+          genre: 'Romance',
+          runtime: '1h 55m',
+          description: 'Romance in the city. Two strangers from different worlds meet in Dar es Salaam and discover a love that transcends all boundaries.',
+          video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+          poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Mapenzi ya Mwanga</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Romance • 2024</text></svg>'
+        },
+        4: {
+          title: 'Bollywood Dreams',
+          category: 'Mix',
+          lang: 'Hindi',
+          year: '2024',
+          genre: 'Musical',
+          runtime: '2h 35m',
+          description: 'Indian cinema experience. A young dancer from Tanzania travels to Mumbai to pursue her dreams of Bollywood stardom.',
+          video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+          poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Bollywood Dreams</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Musical • 2024</text></svg>'
+        },
+        5: {
+          title: 'Filipino Fiesta',
+          category: 'Kifilipino',
+          lang: 'Filipino',
+          year: '2023',
+          genre: 'Comedy',
+          runtime: '1h 48m',
+          description: 'A hilarious comedy about a Filipino family living in Tanzania and their adventures in a new culture.',
+          video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+          poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Filipino Fiesta</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Comedy • 2023</text></svg>'
+        },
+        6: {
+          title: 'Arab Nights',
+          category: 'Kiarabu',
+          lang: 'Arabic',
+          year: '2024',
+          genre: 'Thriller',
+          runtime: '2h 00m',
+          description: 'A gripping thriller set in the Arabian desert, where a group of strangers must survive a night of terror.',
+          video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+          poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Arab Nights</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Thriller • 2024</text></svg>'
+        }
+      };
 
-      const movieData = {
+      // Default movie
+      const defaultMovie = {
         title: 'Filamu ya Kuvutia',
         category: 'Action',
         lang: 'Kiswahili',
@@ -623,60 +732,59 @@
         poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">TanzaFlix</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Premium Cinema</text></svg>'
       };
 
-      title.textContent = movieData.title || 'Filamu';
-      meta.textContent = `Kategoria: ${movieData.category || 'Asili'} | Lugha: ${movieData.lang || 'Unknown'}`;
+      let movie = defaultMovie;
 
-      document.getElementById('watchYear').textContent = movieData.year || '2024';
-      document.getElementById('watchGenre').textContent = movieData.genre || 'Action';
-      document.getElementById('watchRuntime').textContent = movieData.runtime || '2h 10m';
+      if (id && movieDatabase[id]) {
+        movie = movieDatabase[id];
+      }
 
-      source.src = movieData.video_url || '';
-      video.poster = movieData.poster_url || '';
+      // Populate UI
+      titleEl.textContent = movie.title || 'Filamu';
+      descEl.textContent = movie.description || 'Mchezo wa kuvutia wenye hadithi kali.';
+      document.getElementById('watchYear').textContent = movie.year || '2024';
+      document.getElementById('watchGenre').textContent = movie.genre || 'Action';
+      document.getElementById('watchRuntime').textContent = movie.runtime || '2h 10m';
+      document.getElementById('watchLang').textContent = movie.lang || 'Kiswahili';
+
+      // Set video source
+      source.src = movie.video_url || '';
+      video.poster = movie.poster_url || '';
       video.load();
 
-      document.getElementById('watchPosterTitle').textContent = movieData.title || 'Filamu';
-      document.getElementById('watchPosterCopy').textContent = movieData.description || 'Streaming experience with cinematic visuals and premium style.';
-      
-      const banner = document.getElementById('watchPosterBanner');
-      if (movieData.poster_url) {
-        banner.style.backgroundImage = `url('${movieData.poster_url}')`;
-      }
+      // Play button handler
+      playBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (video.paused) {
+          video.play();
+        } else {
+          video.pause();
+        }
+      });
 
-      const descriptionBox = document.createElement('div');
-      descriptionBox.className = 'watch-description';
-      descriptionBox.innerHTML = `
-        <h3>About this movie</h3>
-        <p>${movieData.description || 'Mchezo wa kuvutia wenye hadithi kali, picha zenye nguvu, na burudani ya hali ya juu.'}</p>
-      `;
+      // Toggle play button text based on video state
+      video.addEventListener('play', function() {
+        playBtn.textContent = '⏸ Pause';
+      });
 
-      const card = document.querySelector('.watch-card');
-      if (card) {
-        card.appendChild(descriptionBox);
-      }
+      video.addEventListener('pause', function() {
+        playBtn.textContent = '▶ Play';
+      });
 
-      const recommendations = document.createElement('div');
-      recommendations.className = 'recommendations';
-      recommendations.innerHTML = `
-        <h3>More like this</h3>
-        <div class="recommendation-row">
-          <div class="recommendation-card">
-            <span>Drama</span>
-            <strong>Love in the Sky</strong>
-          </div>
-          <div class="recommendation-card">
-            <span>Action</span>
-            <strong>Midnight Rush</strong>
-          </div>
-          <div class="recommendation-card">
-            <span>Romance</span>
-            <strong>Golden Horizon</strong>
-          </div>
-        </div>
-      `;
+      video.addEventListener('ended', function() {
+        playBtn.textContent = '▶ Replay';
+      });
 
-      if (card) {
-        card.appendChild(recommendations);
-      }
+      // Recommendation card click - navigate to watch
+      document.querySelectorAll('.rec-card').forEach((card, index) => {
+        card.addEventListener('click', function() {
+          const recIds = [1, 2, 3, 4]; // Map to movie IDs
+          const recId = recIds[index] || 1;
+          window.location.href = `watch.html?id=${recId}`;
+        });
+      });
+
+      console.log('🎬 TanzaFlix Watch page loaded');
+      console.log(`📺 Playing: ${movie.title}`);
     })();
   </script>
 </body>

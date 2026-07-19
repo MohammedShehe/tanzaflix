@@ -134,7 +134,20 @@
               <p>Kiasi: <strong id="selectedPlanPrice">-</strong></p>
             </div>
 
-            <button type="submit" class="submit-btn">Maliza Usajili</button>
+            <!-- Payment Processing State -->
+            <div id="paymentProcessing" class="payment-processing" style="display:none;">
+              <div class="spinner"></div>
+              <p>Inachakata malipo yako... Tafadhali subiri</p>
+            </div>
+
+            <!-- Payment Success State -->
+            <div id="paymentSuccess" class="payment-success" style="display:none;">
+              <div class="check-icon">✅</div>
+              <h3>Malipo Yamekamilika!</h3>
+              <p>Usajili wako umeamilishwa. Unaelekezwa kwenye dashibodi...</p>
+            </div>
+
+            <button type="submit" class="submit-btn" id="payNowBtn">Maliza Usajili</button>
             <button type="button" class="btn-cancel-plan" id="cancelPlanBtn">← Rudi kwenye chaguo za mpango</button>
           </form>
         </div>

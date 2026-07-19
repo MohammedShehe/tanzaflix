@@ -6,13 +6,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelBtn = document.getElementById('cancelPlanBtn');
     const selectedPlanName = document.getElementById('selectedPlanName');
     const selectedPlanPrice = document.getElementById('selectedPlanPrice');
+    const payNowBtn = document.getElementById('payNowBtn');
+    const paymentProcessing = document.getElementById('paymentProcessing');
+    const paymentSuccess = document.getElementById('paymentSuccess');
 
     // ===== Plan Data =====
     const plans = {
-        daily: { name: 'Kila Siku', price: 'TSh 5,000' },
-        weekly: { name: 'Kila Wiki', price: 'TSh 8,000' },
-        monthly: { name: 'Kila Mwezi', price: 'TSh 15,000' },
-        yearly: { name: 'Kila Mwaka', price: 'TSh 80,000' }
+        daily: { name: 'Kila Siku', price: 'TSh 5,000', amount: 5000 },
+        weekly: { name: 'Kila Wiki', price: 'TSh 8,000', amount: 8000 },
+        monthly: { name: 'Kila Mwezi', price: 'TSh 15,000', amount: 15000 },
+        yearly: { name: 'Kila Mwaka', price: 'TSh 80,000', amount: 80000 }
     };
 
     let selectedPlan = null;
@@ -27,8 +30,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedPlan = plan;
                 selectedPlanName.textContent = plans[plan].name;
                 selectedPlanPrice.textContent = plans[plan].price;
+                
+                // Reset payment states
+                paymentProcessing.style.display = 'none';
+                paymentSuccess.style.display = 'none';
+                payNowBtn.style.display = 'block';
+                payNowBtn.disabled = false;
+                payNowBtn.textContent = 'Maliza Usajili';
+                
                 paymentSection.classList.remove('hidden');
                 paymentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
                 // Highlight selected plan
                 planCards.forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
@@ -41,10 +53,16 @@ document.addEventListener('DOMContentLoaded', function() {
         paymentSection.classList.add('hidden');
         planCards.forEach(c => c.classList.remove('selected'));
         selectedPlan = null;
+        // Reset payment states
+        paymentProcessing.style.display = 'none';
+        paymentSuccess.style.display = 'none';
+        payNowBtn.style.display = 'block';
+        payNowBtn.disabled = false;
+        payNowBtn.textContent = 'Maliza Usajili';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // ===== Payment Form Submission =====
+    // ===== Real Payment Flow Simulation =====
     paymentForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -54,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const idNumber = document.getElementById('idNumber').value.trim();
         const email = document.getElementById('emailAddress').value.trim();
 
+        // Validation
         if (!selectedPlan) {
             alert('Tafadhali chagua mpango wa usajili kwanza.');
             return;
@@ -74,27 +93,44 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Simulate payment processing
-        const submitBtn = this.querySelector('.submit-btn');
-        const originalText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Inachakata...';
+        // Show processing state
+        paymentProcessing.style.display = 'block';
+        payNowBtn.style.display = 'none';
+        payNowBtn.disabled = true;
 
+        // ===== SIMULATE PAYMENT PROCESSING =====
+        // In a real app, this would be an API call to a payment gateway
+        // like M-Pesa API, Airtel Money API, or a payment processor
         setTimeout(() => {
-            // Successful subscription
-            const userData = {
+            // Hide processing
+            paymentProcessing.style.display = 'none';
+
+            // Show success
+            paymentSuccess.style.display = 'block';
+            
+            // Save subscription data
+            const planData = plans[selectedPlan];
+            const subscriptionData = {
                 name: name,
                 email: email || name.toLowerCase().replace(/\s/g, '.') + '@tanzaflix.com',
                 phone: phone,
                 plan: selectedPlan,
-                planName: plans[selectedPlan].name,
-                planPrice: plans[selectedPlan].price,
+                planName: planData.name,
+                planPrice: planData.price,
+                planAmount: planData.amount,
+                paymentMethod: method,
+                idNumber: idNumber || 'N/A',
                 subscriptionDate: new Date().toISOString(),
-                isSubscribed: true
+                expiryDate: new Date(Date.now() + (selectedPlan === 'daily' ? 86400000 : 
+                                                    selectedPlan === 'weekly' ? 604800000 :
+                                                    selectedPlan === 'monthly' ? 2592000000 :
+                                                    31536000000)).toISOString(),
+                isSubscribed: true,
+                paymentStatus: 'confirmed'
             };
             
             // Store subscription data
-            localStorage.setItem('tanzaflix_subscription', JSON.stringify(userData));
+            localStorage.setItem('tanzaflix_subscription', JSON.stringify(subscriptionData));
             
             // Update user data
             try {
@@ -103,19 +139,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     const user = JSON.parse(existingUser);
                     user.isSubscribed = true;
                     user.plan = selectedPlan;
-                    user.planName = plans[selectedPlan].name;
+                    user.planName = planData.name;
+                    user.subscriptionDate = subscriptionData.subscriptionDate;
+                    user.expiryDate = subscriptionData.expiryDate;
                     localStorage.setItem('tanzaflix_user', JSON.stringify(user));
+                } else {
+                    // Create user if doesn't exist
+                    const newUser = {
+                        name: name,
+                        email: subscriptionData.email,
+                        phone: phone,
+                        isSubscribed: true,
+                        plan: selectedPlan,
+                        planName: planData.name,
+                        subscriptionDate: subscriptionData.subscriptionDate,
+                        expiryDate: subscriptionData.expiryDate
+                    };
+                    localStorage.setItem('tanzaflix_user', JSON.stringify(newUser));
                 }
-            } catch (err) {}
+            } catch (err) {
+                console.warn('Error saving user data:', err);
+            }
 
-            submitBtn.textContent = '✅ Imefanikiwa!';
-            submitBtn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            // Update button
+            payNowBtn.textContent = '✅ Imefanikiwa!';
+            payNowBtn.style.display = 'block';
+            payNowBtn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
 
+            // Redirect after delay
             setTimeout(() => {
                 window.location.href = 'dashboard.html?subscription=success';
-            }, 1500);
+            }, 2500);
 
-        }, 2500);
+        }, 2500); // Simulate 2.5 second processing time
     });
 
     // ===== Auto-select plan from URL =====
@@ -129,5 +185,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    console.log('💰 Subscription page loaded');
+    console.log('💰 TanzaFlix Subscription page loaded');
+    console.log('💳 Real payment flow ready');
 });
