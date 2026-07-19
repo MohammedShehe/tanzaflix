@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TanzaFlix | Usajili</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/subscription.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <div class="hero-panel subscription-panel">
+      <div class="login-card subscription-card">
+        <div class="brand-box" style="justify-content: center; margin-bottom: 1.5rem;">
+          <span class="brand-mark">TF</span>
+          <div>
+            <p class="brand-name" style="text-align: center;">TanzaFlix</p>
+            <p class="brand-tag" style="text-align: center;">Jisajili na uanze safari yako</p>
+          </div>
+        </div>
+
+        <div class="subscription-intro">
+          <h1>Chagua Mpango wa Usajili</h1>
+          <p>Anza kufurahia burudani isiyo na mwisho. Ghairi wakati wowote.</p>
+        </div>
+
+        <div class="plans-grid">
+          <!-- Daily Plan -->
+          <div class="plan-card" data-plan="daily">
+            <div class="plan-header">
+              <h3>Kila Siku</h3>
+              <p class="plan-price">TSh 5,000<span>/siku</span></p>
+            </div>
+            <ul class="plan-features">
+              <li>✓ Ufikiaji wa filamu zote</li>
+              <li>✓ Ubora wa HD</li>
+              <li>✓ Onyesha kwenye kifaa 1</li>
+              <li>✓ Ghairi wakati wowote</li>
+            </ul>
+            <button class="plan-select-btn" data-plan="daily">Chagua</button>
+          </div>
+
+          <!-- Weekly Plan -->
+          <div class="plan-card popular" data-plan="weekly">
+            <div class="plan-badge">Inapendwa</div>
+            <div class="plan-header">
+              <h3>Kila Wiki</h3>
+              <p class="plan-price">TSh 8,000<span>/wiki</span></p>
+            </div>
+            <ul class="plan-features">
+              <li>✓ Ufikiaji wa filamu zote</li>
+              <li>✓ Ubora wa HD</li>
+              <li>✓ Onyesha kwenye kifaa 2</li>
+              <li>✓ Ghairi wakati wowote</li>
+              <li>✓ Hakuna matangazo</li>
+            </ul>
+            <button class="plan-select-btn" data-plan="weekly">Chagua</button>
+          </div>
+
+          <!-- Monthly Plan -->
+          <div class="plan-card" data-plan="monthly">
+            <div class="plan-header">
+              <h3>Kila Mwezi</h3>
+              <p class="plan-price">TSh 15,000<span>/mwezi</span></p>
+            </div>
+            <ul class="plan-features">
+              <li>✓ Ufikiaji wa filamu zote</li>
+              <li>✓ Ubora wa Full HD</li>
+              <li>✓ Onyesha kwenye kifaa 4</li>
+              <li>✓ Ghairi wakati wowote</li>
+              <li>✓ Hakuna matangazo</li>
+              <li>✓ Pakua ili utazame nje ya mtandao</li>
+            </ul>
+            <button class="plan-select-btn" data-plan="monthly">Chagua</button>
+          </div>
+
+          <!-- Yearly Plan -->
+          <div class="plan-card" data-plan="yearly">
+            <div class="plan-header">
+              <h3>Kila Mwaka</h3>
+              <p class="plan-price">TSh 80,000<span>/mwaka</span></p>
+            </div>
+            <ul class="plan-features">
+              <li>✓ Ufikiaji wa filamu zote</li>
+              <li>✓ Ubora wa 4K + HDR</li>
+              <li>✓ Onyesha kwenye kifaa 6</li>
+              <li>✓ Ghairi wakati wowote</li>
+              <li>✓ Hakuna matangazo</li>
+              <li>✓ Pakua ili utazame nje ya mtandao</li>
+              <li>✓ ★ Ufikiaji wa mapema wa filamu mpya</li>
+            </ul>
+            <button class="plan-select-btn" data-plan="yearly">Chagua</button>
+          </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div id="paymentSection" class="payment-section hidden">
+          <h2>Malipo ya Usajili</h2>
+          <form id="paymentForm" novalidate>
+            <div class="form-group">
+              <label for="paymentMethod">Njia ya Malipo</label>
+              <select id="paymentMethod" required>
+                <option value="">Chagua njia</option>
+                <option value="M-Pesa">M-Pesa</option>
+                <option value="Airtel Money">Airtel Money</option>
+                <option value="Tigo Pesa">Tigo Pesa</option>
+                <option value="Card">Kadi ya Benki</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="phoneNumber">Namba ya Simu</label>
+              <input type="tel" id="phoneNumber" placeholder="07XX XXX XXX" required />
+            </div>
+
+            <div class="form-group">
+              <label for="fullName">Jina Kamili kwenye Akaunti</label>
+              <input type="text" id="fullName" placeholder="Jina lako kamili" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="idNumber">Namba ya Kitambulisho</label>
+                <input type="text" id="idNumber" placeholder="NIDA / Pasipoti" />
+              </div>
+              <div class="form-group">
+                <label for="emailAddress">Barua pepe</label>
+                <input type="email" id="emailAddress" placeholder="jina@mfano.com" />
+              </div>
+            </div>
+
+            <div id="planSummary" class="plan-summary">
+              <p>Una malipo ya: <strong id="selectedPlanName">-</strong></p>
+              <p>Kiasi: <strong id="selectedPlanPrice">-</strong></p>
+            </div>
+
+            <button type="submit" class="submit-btn">Maliza Usajili</button>
+            <button type="button" class="btn-cancel-plan" id="cancelPlanBtn">← Rudi kwenye chaguo za mpango</button>
+          </form>
+        </div>
+
+        <div class="login-notes" style="margin-top: 2rem; text-align: center;">
+          <p style="margin: 0; font-size: 0.85rem;">
+            <strong>Usalama:</strong> Taarifa zako za malipo zinalindwa kwa kiwango cha juu.
+            Usajili wako utaanza mara baada ya malipo kukamilika.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/subscription.js"></script>
+</body>
+</html>

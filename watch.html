@@ -466,53 +466,6 @@
       color: #fff;
     }
 
-    .payment-options {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin: 20px 0;
-    }
-
-    .payment-btn {
-      padding: 14px 20px;
-      border: none;
-      border-radius: var(--radius-md);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      color: #fff;
-    }
-
-    .payment-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    }
-
-    .payment-btn.mpesa { background: linear-gradient(135deg, #4CAF50, #2E7D32); }
-    .payment-btn.airtel { background: linear-gradient(135deg, #FF6B00, #E65100); }
-    .payment-btn.tigo { background: linear-gradient(135deg, #E91E63, #AD1457); }
-    .payment-btn.card { background: linear-gradient(135deg, #3F51B5, #1A237E); }
-
-    #paymentStatus {
-      padding: 12px;
-      border-radius: var(--radius-md);
-      text-align: center;
-      font-weight: 600;
-    }
-
-    #paymentStatus.success {
-      background: rgba(34, 197, 94, 0.15);
-      border: 1px solid rgba(34, 197, 94, 0.2);
-      color: #4ade80;
-    }
-
-    #paymentStatus.error {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      color: #f87171;
-    }
-
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -544,26 +497,10 @@
       <nav class="dash-nav">
         <a href="dashboard.html" class="nav-link">Nyumbani</a>
         <a href="movies.html?translated=0" class="nav-link">Filamu</a>
-        <a href="#" class="nav-link" id="navPayment">Malipo ya Akaunti</a>
+        <a href="subscription.html" class="nav-link" id="navPayment">Malipo ya Akaunti</a>
         <a href="#" class="nav-link" id="navAbout">Kuhusu Sisi</a>
       </nav>
     </header>
-
-    <!-- Payment Modal -->
-    <div id="paymentModal" class="modal" style="display:none;">
-      <div class="modal-content">
-        <span class="modal-close">&times;</span>
-        <h2>Malipo ya Akaunti</h2>
-        <p>Chagua njia yako ya malipo:</p>
-        <div class="payment-options">
-          <button class="payment-btn mpesa" onclick="handlePayment('M-Pesa')">💳 M-Pesa</button>
-          <button class="payment-btn airtel" onclick="handlePayment('Airtel Money')">📱 Airtel Money</button>
-          <button class="payment-btn tigo" onclick="handlePayment('Tigo Pesa')">📲 Tigo Pesa</button>
-          <button class="payment-btn card" onclick="handlePayment('Kadi ya Benki')">💳 Kadi ya Benki</button>
-        </div>
-        <div id="paymentStatus" style="margin-top: 1rem; display: none;"></div>
-      </div>
-    </div>
 
     <!-- About Modal -->
     <div id="aboutModal" class="modal" style="display:none;">
@@ -627,11 +564,6 @@
   <script>
     (function() {
       // ===== Navigation Functions =====
-      function openPaymentModal() {
-        document.getElementById('paymentModal').style.display = 'block';
-        document.getElementById('paymentStatus').style.display = 'none';
-      }
-
       function openAboutModal() {
         document.getElementById('aboutModal').style.display = 'block';
       }
@@ -639,17 +571,6 @@
       function closeModals() {
         document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
       }
-
-      // Handle payment
-      window.handlePayment = function(method) {
-        const status = document.getElementById('paymentStatus');
-        status.style.display = 'block';
-        status.className = 'success';
-        status.textContent = `✅ Umefanikiwa kuchagua ${method}. Taarifa za malipo zimetumwa kwa simu yako.`;
-        setTimeout(() => {
-          closeModals();
-        }, 3000);
-      };
 
       // Navigation click handlers
       document.querySelectorAll('.nav-link').forEach(link => {
@@ -660,9 +581,7 @@
           }
           e.preventDefault();
           const id = this.id;
-          if (id === 'navPayment') {
-            openPaymentModal();
-          } else if (id === 'navAbout') {
+          if (id === 'navAbout') {
             openAboutModal();
           }
         });

@@ -69,17 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
   `).join('');
 });
 
-// ===== Navigation and Modal Functions =====
-
-function openPaymentModal() {
-  const modal = document.getElementById('paymentModal');
-  if (modal) {
-    modal.style.display = 'block';
-    const status = document.getElementById('paymentStatus');
-    if (status) status.style.display = 'none';
-  }
-}
-
+// ===== About Modal Functions =====
 function openAboutModal() {
   const modal = document.getElementById('aboutModal');
   if (modal) modal.style.display = 'block';
@@ -91,19 +81,6 @@ function closeModals() {
   });
 }
 
-// Handle payment
-window.handlePayment = function(method) {
-  const status = document.getElementById('paymentStatus');
-  if (status) {
-    status.style.display = 'block';
-    status.className = 'success';
-    status.textContent = `✅ Umefanikiwa kuchagua ${method}. Taarifa za malipo zimetumwa kwa simu yako.`;
-    setTimeout(() => {
-      closeModals();
-    }, 3000);
-  }
-};
-
 // Navigation click handlers
 document.querySelectorAll('.nav-link').forEach(link => {
   link.addEventListener('click', function(e) {
@@ -113,9 +90,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
     }
     e.preventDefault();
     const id = this.id;
-    if (id === 'navPayment') {
-      openPaymentModal();
-    } else if (id === 'navAbout') {
+    if (id === 'navAbout') {
       openAboutModal();
     }
   });

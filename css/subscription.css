@@ -1,0 +1,273 @@
+/* ==========================================================================
+   Subscription Page Styles
+   ========================================================================== */
+
+.subscription-panel {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1rem 0;
+}
+
+.subscription-card {
+  max-width: 1000px;
+  width: 100%;
+  padding: 2.5rem 2rem !important;
+}
+
+.subscription-intro {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.subscription-intro h1 {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, #6c63ff, #ff4eb0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subscription-intro p {
+  color: var(--ink-3);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+/* Plans Grid */
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.plan-card {
+  background: var(--surface-1);
+  border: 1px solid var(--line-mid);
+  border-radius: var(--radius-lg);
+  padding: 1.8rem 1.5rem;
+  text-align: center;
+  transition: all var(--dur-med) var(--ease-out);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(108, 99, 255, 0.3);
+  box-shadow: var(--shadow-card);
+}
+
+.plan-card.selected {
+  border-color: var(--brand-violet);
+  box-shadow: 0 0 0 2px var(--brand-violet), var(--shadow-card);
+}
+
+.plan-card.popular {
+  border-color: rgba(255, 78, 176, 0.3);
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0.08), rgba(255, 78, 176, 0.08));
+}
+
+.plan-badge {
+  position: absolute;
+  top: -12px;
+  right: 50%;
+  transform: translateX(50%);
+  background: linear-gradient(135deg, var(--brand-violet), var(--brand-pink));
+  color: #fff;
+  padding: 0.3rem 1.2rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.plan-header h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  color: var(--ink-1);
+}
+
+.plan-price {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--ink-1);
+}
+
+.plan-price span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-5);
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 1.8rem;
+  text-align: left;
+  flex: 1;
+}
+
+.plan-features li {
+  padding: 0.35rem 0;
+  color: var(--ink-3);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.plan-features li::before {
+  content: '✓';
+  color: var(--success);
+  font-weight: 700;
+}
+
+.plan-select-btn {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--surface-3);
+  color: var(--ink-1);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--dur-fast) ease;
+  font-family: inherit;
+}
+
+.plan-select-btn:hover {
+  background: linear-gradient(135deg, var(--brand-violet), var(--brand-pink));
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-brand);
+}
+
+.plan-card.selected .plan-select-btn {
+  background: linear-gradient(135deg, var(--brand-violet), var(--brand-pink));
+  color: #fff;
+}
+
+/* Payment Section */
+.payment-section {
+  margin-top: 2rem;
+  padding: 2rem;
+  border-top: 1px solid var(--line-mid);
+  animation: fadeSlideIn 0.4s ease;
+}
+
+.payment-section.hidden {
+  display: none;
+}
+
+.payment-section h2 {
+  margin: 0 0 1.5rem;
+  font-size: 1.4rem;
+  text-align: center;
+  color: var(--ink-1);
+}
+
+.payment-section .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.payment-section .form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-4);
+  margin-bottom: 0.4rem;
+}
+
+.payment-section .form-group input,
+.payment-section .form-group select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: var(--surface-1);
+  border: 1px solid var(--line-mid);
+  border-radius: var(--radius-md);
+  color: var(--ink-1);
+  font-size: 0.95rem;
+  transition: border-color var(--dur-fast) ease;
+}
+
+.payment-section .form-group input:focus,
+.payment-section .form-group select:focus {
+  border-color: var(--brand-violet);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+}
+
+.payment-section .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.plan-summary {
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  border: 1px solid var(--line-soft);
+  text-align: center;
+}
+
+.plan-summary p {
+  margin: 0.3rem 0;
+  color: var(--ink-3);
+}
+
+.plan-summary strong {
+  color: var(--ink-1);
+}
+
+.btn-cancel-plan {
+  display: block;
+  margin: 1rem auto 0;
+  background: transparent;
+  border: none;
+  color: var(--ink-5);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color var(--dur-fast) ease;
+  font-family: inherit;
+  padding: 0.5rem;
+}
+
+.btn-cancel-plan:hover {
+  color: var(--ink-1);
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .plans-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .payment-section .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .subscription-card {
+    padding: 1.5rem 1rem !important;
+  }
+
+  .payment-section {
+    padding: 1.5rem 0.5rem;
+  }
+}

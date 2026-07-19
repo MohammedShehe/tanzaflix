@@ -17,26 +17,10 @@
       <nav class="dash-nav">
         <a href="dashboard.html" class="nav-link active">Nyumbani</a>
         <a href="movies.html?translated=0" class="nav-link">Filamu</a>
-        <a href="#" class="nav-link" id="navPayment">Malipo ya Akaunti</a>
+        <a href="subscription.html" class="nav-link" id="navPayment">Malipo ya Akaunti</a>
         <a href="#" class="nav-link" id="navAbout">Kuhusu Sisi</a>
       </nav>
     </header>
-
-    <!-- Payment Modal -->
-    <div id="paymentModal" class="modal" style="display:none;">
-      <div class="modal-content">
-        <span class="modal-close">&times;</span>
-        <h2>Malipo ya Akaunti</h2>
-        <p>Chagua njia yako ya malipo:</p>
-        <div class="payment-options">
-          <button class="payment-btn mpesa" onclick="handlePayment('M-Pesa')">💳 M-Pesa</button>
-          <button class="payment-btn airtel" onclick="handlePayment('Airtel Money')">📱 Airtel Money</button>
-          <button class="payment-btn tigo" onclick="handlePayment('Tigo Pesa')">📲 Tigo Pesa</button>
-          <button class="payment-btn card" onclick="handlePayment('Kadi ya Benki')">💳 Kadi ya Benki</button>
-        </div>
-        <div id="paymentStatus" style="margin-top: 1rem; display: none;"></div>
-      </div>
-    </div>
 
     <!-- About Modal -->
     <div id="aboutModal" class="modal" style="display:none;">
