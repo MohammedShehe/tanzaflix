@@ -481,57 +481,69 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== Modal Helpers =====
     function openModal(id) {
         document.getElementById(id).classList.add('active');
-        document.body.style.overflow = 'hidden';
     }
 
     function closeModal(id) {
         document.getElementById(id).classList.remove('active');
-        document.body.style.overflow = '';
     }
 
     document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            if (modal) closeModal(modal.id);
+            this.closest('.modal').classList.remove('active');
         });
     });
 
     document.querySelectorAll('.btn-cancel').forEach(btn => {
         btn.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            if (modal) closeModal(modal.id);
+            this.closest('.modal').classList.remove('active');
         });
     });
 
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', function(e) {
             if (e.target === this) {
-                closeModal(this.id);
+                this.classList.remove('active');
             }
         });
     });
 
     // ===== Toast Notification =====
     function showToast(message) {
-        // Create container if not exists
-        let container = document.querySelector('.toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'toast-container';
-            document.body.appendChild(container);
-        }
-
         const toast = document.createElement('div');
-        toast.className = 'toast';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: rgba(12, 17, 37, 0.95);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-weight: 600;
+            backdrop-filter: blur(18px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            animation: fadeSlideUp 0.3s ease;
+            max-width: 90%;
+        `;
         toast.textContent = message;
-        container.appendChild(toast);
-
-        // Auto remove after 3 seconds
+        document.body.appendChild(toast);
         setTimeout(() => {
-            toast.classList.add('removing');
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
+
+    // Add toast animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
 
     // ===== Initialize =====
     renderAll();

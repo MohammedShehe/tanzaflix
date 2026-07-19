@@ -68,3 +68,74 @@ document.addEventListener('DOMContentLoaded', function() {
     </article>
   `).join('');
 });
+
+// ===== Navigation and Modal Functions =====
+
+function openPaymentModal() {
+  const modal = document.getElementById('paymentModal');
+  if (modal) {
+    modal.style.display = 'block';
+    const status = document.getElementById('paymentStatus');
+    if (status) status.style.display = 'none';
+  }
+}
+
+function openAboutModal() {
+  const modal = document.getElementById('aboutModal');
+  if (modal) modal.style.display = 'block';
+}
+
+function closeModals() {
+  document.querySelectorAll('.modal').forEach(m => {
+    m.style.display = 'none';
+  });
+}
+
+// Handle payment
+window.handlePayment = function(method) {
+  const status = document.getElementById('paymentStatus');
+  if (status) {
+    status.style.display = 'block';
+    status.className = 'success';
+    status.textContent = `✅ Umefanikiwa kuchagua ${method}. Taarifa za malipo zimetumwa kwa simu yako.`;
+    setTimeout(() => {
+      closeModals();
+    }, 3000);
+  }
+};
+
+// Navigation click handlers
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (href && !href.startsWith('#')) {
+      return;
+    }
+    e.preventDefault();
+    const id = this.id;
+    if (id === 'navPayment') {
+      openPaymentModal();
+    } else if (id === 'navAbout') {
+      openAboutModal();
+    }
+  });
+});
+
+// Modal close handlers
+document.querySelectorAll('.modal-close').forEach(btn => {
+  btn.addEventListener('click', closeModals);
+});
+
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) closeModals();
+  });
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeModals();
+  }
+});
+
+console.log('✅ TanzaFlix movies page navigation initialized');

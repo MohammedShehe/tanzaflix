@@ -6,6 +6,7 @@
   <title>TanzaFlix | Watch</title>
   <link rel="stylesheet" href="css/styles.css" />
   <style>
+    /* Watch page specific styles */
     :root {
       --netflix-bg: #060816;
       --netflix-panel: #11152d;
@@ -339,15 +340,251 @@
       background-color: rgba(0,0,0,0.88);
     }
 
+    /* Navigation styles for watch page */
+    .dash-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+    }
+
+    .dash-nav a {
+      color: #fff;
+      text-decoration: none;
+      padding: 0.85rem 1.3rem;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(168, 85, 247, 0.18), rgba(16, 185, 129, 0.16));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.92rem;
+      box-shadow: 0 10px 24px rgba(56, 189, 248, 0.14);
+      transition: transform var(--dur-med) var(--ease-out), box-shadow var(--dur-med) var(--ease-out);
+    }
+
+    .dash-nav a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 30px rgba(59, 130, 246, 0.18);
+    }
+
+    .dash-nav a.active {
+      background: linear-gradient(135deg, var(--brand-violet), var(--brand-pink));
+      border-color: transparent;
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-7);
+      padding: var(--space-8);
+      margin-bottom: var(--space-7);
+      border-radius: var(--radius-2xl);
+      background: var(--surface-2);
+      border: 1px solid var(--line-soft);
+      backdrop-filter: blur(18px);
+    }
+
+    .eyebrow {
+      margin: 0 0 var(--space-4);
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+    }
+
+    .dash-header h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+    }
+
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #11152d, #1a1f3a);
+      margin: 10% auto;
+      padding: 30px;
+      width: 90%;
+      max-width: 550px;
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+      animation: slideUp 0.3s ease;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 {
+      color: #fff;
+      margin-top: 0;
+      font-family: var(--font-display);
+    }
+
+    .modal-content h3 {
+      color: #c7d2fe;
+      margin-top: 1.2rem;
+      font-family: var(--font-display);
+    }
+
+    .modal-content p {
+      color: #cbd5e1;
+      line-height: 1.7;
+    }
+
+    .modal-content ul {
+      color: #cbd5e1;
+      line-height: 2;
+      padding-left: 1.2rem;
+    }
+
+    .modal-close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .modal-close:hover {
+      color: #fff;
+    }
+
+    .payment-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .payment-btn {
+      padding: 14px 20px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      color: #fff;
+    }
+
+    .payment-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .payment-btn.mpesa { background: linear-gradient(135deg, #4CAF50, #2E7D32); }
+    .payment-btn.airtel { background: linear-gradient(135deg, #FF6B00, #E65100); }
+    .payment-btn.tigo { background: linear-gradient(135deg, #E91E63, #AD1457); }
+    .payment-btn.card { background: linear-gradient(135deg, #3F51B5, #1A237E); }
+
+    #paymentStatus {
+      padding: 12px;
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-weight: 600;
+    }
+
+    #paymentStatus.success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+    }
+
+    #paymentStatus.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
     @media (max-width: 700px) {
       .watch-shell { padding: 16px 12px 28px; }
       .watch-card { padding: 14px; }
       .watch-badge { margin-top: 6px; }
+      .dash-header { flex-direction: column; align-items: stretch; }
+      .dash-nav { justify-content: flex-start; flex-wrap: wrap; }
+      .modal-content { margin: 20% auto; padding: 20px; }
     }
   </style>
 </head>
 <body>
   <div class="watch-shell">
+    <!-- Navigation Header -->
+    <header class="dash-header">
+      <div>
+        <p class="eyebrow">TanzaFlix</p>
+        <h1>Muonekano wa Filamu</h1>
+      </div>
+      <nav class="dash-nav">
+        <a href="dashboard.html" class="nav-link">Nyumbani</a>
+        <a href="movies.html?translated=0" class="nav-link">Filamu</a>
+        <a href="#" class="nav-link" id="navPayment">Malipo ya Akaunti</a>
+        <a href="#" class="nav-link" id="navAbout">Kuhusu Sisi</a>
+      </nav>
+    </header>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <h2>Malipo ya Akaunti</h2>
+        <p>Chagua njia yako ya malipo:</p>
+        <div class="payment-options">
+          <button class="payment-btn mpesa" onclick="handlePayment('M-Pesa')">💳 M-Pesa</button>
+          <button class="payment-btn airtel" onclick="handlePayment('Airtel Money')">📱 Airtel Money</button>
+          <button class="payment-btn tigo" onclick="handlePayment('Tigo Pesa')">📲 Tigo Pesa</button>
+          <button class="payment-btn card" onclick="handlePayment('Kadi ya Benki')">💳 Kadi ya Benki</button>
+        </div>
+        <div id="paymentStatus" style="margin-top: 1rem; display: none;"></div>
+      </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <h2>Kuhusu TanzaFlix</h2>
+        <p><strong>TanzaFlix</strong> ni jukwaa la kisasa la burudani ya mtandaoni linaloleta sinema, tamthilia, na mfululizo wa filamu kutoka Tanzania, Afrika Mashariki, na duniani kote.</p>
+        <p>Lengo letu ni kuwaweka Watanzania na wapenzi wa Kiswahili karibu na burudani bora kwa lugha yao ya mama.</p>
+        <h3>Vipengele vyetu</h3>
+        <ul>
+          <li>🎬 Filamu za Bongo, Kihindi, Kiingereza, na nyinginezo</li>
+          <li>🌍 Tafsiri ya Kiswahili kwa filamu za kimataifa</li>
+          <li>📱 Inapatikana kwenye simu, kompyuta, na TV</li>
+          <li>🔒 Usalama wa hali ya juu kwa taarifa zako</li>
+        </ul>
+        <p><strong>Anwani:</strong> Dar es Salaam, Tanzania</p>
+        <p><strong>Barua pepe:</strong> info@tanzaflix.com</p>
+        <p><strong>Simu:</strong> +255 700 000 000</p>
+      </div>
+    </div>
+
     <a href="movies.html" class="back-link">← Rudi kwenye Movies</a>
     <div class="watch-card">
       <div class="watch-hero">
@@ -389,6 +626,60 @@
 
   <script>
     (function() {
+      // ===== Navigation Functions =====
+      function openPaymentModal() {
+        document.getElementById('paymentModal').style.display = 'block';
+        document.getElementById('paymentStatus').style.display = 'none';
+      }
+
+      function openAboutModal() {
+        document.getElementById('aboutModal').style.display = 'block';
+      }
+
+      function closeModals() {
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+      }
+
+      // Handle payment
+      window.handlePayment = function(method) {
+        const status = document.getElementById('paymentStatus');
+        status.style.display = 'block';
+        status.className = 'success';
+        status.textContent = `✅ Umefanikiwa kuchagua ${method}. Taarifa za malipo zimetumwa kwa simu yako.`;
+        setTimeout(() => {
+          closeModals();
+        }, 3000);
+      };
+
+      // Navigation click handlers
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          if (href && !href.startsWith('#')) {
+            return;
+          }
+          e.preventDefault();
+          const id = this.id;
+          if (id === 'navPayment') {
+            openPaymentModal();
+          } else if (id === 'navAbout') {
+            openAboutModal();
+          }
+        });
+      });
+
+      // Modal close handlers
+      document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', closeModals);
+      });
+
+      document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+          if (e.target === this) closeModals();
+        });
+      });
+
+      // ===== Watch Page Logic =====
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
       const title = document.getElementById('watchTitle');

@@ -208,11 +208,13 @@
       </div>
       <form id="movieForm">
         <input type="hidden" id="movieId" />
+
+        <div class="form-group">
+          <label>Jina la Movie</label>
+          <input type="text" id="movieTitle" placeholder="Jina la movie" required />
+        </div>
+
         <div class="form-row">
-          <div class="form-group">
-            <label>Jina la Movie</label>
-            <input type="text" id="movieTitle" placeholder="Jina la movie" required />
-          </div>
           <div class="form-group">
             <label>Aina ya Movie</label>
             <select id="movieType" required>
@@ -221,8 +223,6 @@
               <option value="Haijatafsiriwa">Haijatafsiriwa</option>
             </select>
           </div>
-        </div>
-        <div class="form-row">
           <div class="form-group">
             <label>Nchi</label>
             <select id="movieCountry" required>
@@ -235,12 +235,13 @@
               <option value="Kikorea">Kikorea</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-row">
           <div class="form-group">
             <label>Lugha</label>
             <input type="text" id="movieLang" placeholder="Lugha ya movie" required />
           </div>
-        </div>
-        <div class="form-row">
           <div class="form-group">
             <label>Kategoria</label>
             <select id="movieCategory" required>
@@ -251,6 +252,9 @@
               <option value="Mix">Mix</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-row">
           <div class="form-group">
             <label>Mwaka</label>
             <input type="number" id="movieYear" placeholder="2024" required />
@@ -260,10 +264,12 @@
             <input type="number" id="moviePrice" placeholder="15000" required />
           </div>
         </div>
+
         <div class="form-group">
           <label>Maelezo</label>
           <textarea id="movieDescription" rows="3" placeholder="Maelezo ya movie"></textarea>
         </div>
+
         <div class="form-group">
           <label>More Like This (hiari)</label>
           <select id="movieMoreLike" multiple>
@@ -271,10 +277,12 @@
           </select>
           <small>Shikilia Ctrl (Cmd) ili kuchagua zaidi ya moja</small>
         </div>
+
         <div class="form-group">
           <label>Weka Movie (Video/File)</label>
           <input type="file" id="movieFile" accept="video/*,.mp4,.mkv,.avi" />
         </div>
+
         <div class="modal-actions">
           <button type="button" class="btn-cancel">Ghairi</button>
           <button type="submit" class="btn-submit">Hifadhi</button>
@@ -292,6 +300,7 @@
       </div>
       <form id="userForm">
         <input type="hidden" id="userId" />
+
         <div class="form-row">
           <div class="form-group">
             <label>Jina Kamili</label>
@@ -302,6 +311,7 @@
             <input type="tel" id="userPhone" placeholder="07XX XXX XXX" required />
           </div>
         </div>
+
         <div class="form-row">
           <div class="form-group">
             <label>Nchi</label>
@@ -321,11 +331,13 @@
               <option value="Zanzibar">Zanzibar</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Barua pepe</label>
-            <input type="email" id="userEmail" placeholder="jina@mfano.com" required />
-          </div>
         </div>
+
+        <div class="form-group">
+          <label>Barua pepe</label>
+          <input type="email" id="userEmail" placeholder="jina@mfano.com" required />
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label>Nenosiri</label>
@@ -336,10 +348,12 @@
             <input type="password" id="userPasswordConfirm" placeholder="Rudia nenosiri" required />
           </div>
         </div>
+
         <div class="form-group">
           <label>Picha ya Wasifu</label>
           <input type="file" id="userPhoto" accept="image/*" />
         </div>
+
         <div class="modal-actions">
           <button type="button" class="btn-cancel">Ghairi</button>
           <button type="submit" class="btn-submit">Hifadhi</button>
