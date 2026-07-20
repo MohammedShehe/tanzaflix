@@ -13,13 +13,102 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentTab = 'movies';
     let deleteTarget = null;
     let deleteType = null;
+    let seasonCounter = 0;
 
     // ===== Sample Data =====
     let movies = [
-        { id: 1, title: 'Safari ya Mtaa', type: 'Haijatafsiriwa', country: 'Bongo', lang: 'Kiswahili', category: 'Action', year: 2024, price: 15000, description: 'Hadithi ya kusisimua ya mitaa ya Dar', moreLike: [2, 3] },
-        { id: 2, title: 'The Silent Shore', type: 'Imetafsiriwa', country: 'Kihindi', lang: 'Hindi', category: 'Drama', year: 2023, price: 20000, description: 'Love story along the coast', moreLike: [1, 4] },
-        { id: 3, title: 'Mapenzi ya Mwanga', type: 'Haijatafsiriwa', country: 'Bongo', lang: 'Kiswahili', category: 'Love story', year: 2024, price: 12000, description: 'Romance in the city', moreLike: [] },
-        { id: 4, title: 'Bollywood Dreams', type: 'Imetafsiriwa', country: 'Kihindi', lang: 'Hindi', category: 'Mix', year: 2024, price: 25000, description: 'Indian cinema experience', moreLike: [2] },
+        { 
+            id: 1, 
+            title: 'Safari ya Mtaa', 
+            type: 'Haijatafsiriwa', 
+            country: 'Bongo', 
+            lang: 'Kiswahili', 
+            category: 'Action', 
+            year: 2024, 
+            price: 15000, 
+            description: 'Hadithi ya kusisimua ya mitaa ya Dar', 
+            moreLike: [2, 3],
+            contentType: 'single',
+            duration: '2h 10m',
+            videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+        },
+        { 
+            id: 2, 
+            title: 'The Silent Shore', 
+            type: 'Imetafsiriwa', 
+            country: 'Kihindi', 
+            lang: 'Hindi', 
+            category: 'Drama', 
+            year: 2023, 
+            price: 20000, 
+            description: 'Love story along the coast', 
+            moreLike: [1, 4],
+            contentType: 'single',
+            duration: '2h 20m',
+            videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+        },
+        { 
+            id: 3, 
+            title: 'Mapenzi ya Mwanga', 
+            type: 'Haijatafsiriwa', 
+            country: 'Bongo', 
+            lang: 'Kiswahili', 
+            category: 'Love story', 
+            year: 2024, 
+            price: 12000, 
+            description: 'Romance in the city', 
+            moreLike: [],
+            contentType: 'single',
+            duration: '1h 55m',
+            videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+        },
+        { 
+            id: 4, 
+            title: 'Bollywood Dreams', 
+            type: 'Imetafsiriwa', 
+            country: 'Kihindi', 
+            lang: 'Hindi', 
+            category: 'Mix', 
+            year: 2024, 
+            price: 25000, 
+            description: 'Indian cinema experience', 
+            moreLike: [2],
+            contentType: 'single',
+            duration: '2h 35m',
+            videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+        },
+        // Series Example
+        {
+            id: 7,
+            title: 'Mafia: The Untold Story',
+            type: 'Imetafsiriwa',
+            country: 'Bongo',
+            lang: 'Kiswahili',
+            category: 'Action',
+            year: 2024,
+            price: 35000,
+            description: 'A gripping crime series set in the underworld of Dar es Salaam.',
+            moreLike: [],
+            contentType: 'series',
+            duration: '45m per episode',
+            seasons: {
+                1: {
+                    label: 'S01',
+                    episodes: [
+                        { num: 'E01', title: 'The Beginning', duration: '45m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                        { num: 'E02', title: 'The Awakening', duration: '42m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                        { num: 'E03', title: 'Rising Power', duration: '48m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+                    ]
+                },
+                2: {
+                    label: 'S02',
+                    episodes: [
+                        { num: 'E01', title: 'New Era', duration: '46m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                        { num: 'E02', title: 'Rivalry', duration: '43m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+                    ]
+                }
+            }
+        }
     ];
 
     let users = [
@@ -41,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
         { userId: 3, userName: 'Ali Hassan', status: 'active', role: 'subscriber', login: '2024-01-17 14:00', logout: '2024-01-17 16:20', purchased: ['The Silent Shore'] },
     ];
 
-    let nextMovieId = 5;
+    let nextMovieId = 8;
     let nextUserId = 4;
     let nextTransactionId = 5;
 
@@ -113,9 +202,13 @@ document.addEventListener('DOMContentLoaded', function() {
             tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Hakuna movies zilizosajiliwa</td></tr>`;
             return;
         }
-        tbody.innerHTML = movies.map(m => `
+        tbody.innerHTML = movies.map(m => {
+            const contentTypeBadge = m.contentType === 'series' 
+                ? '<span class="badge-series">📺 Series</span>' 
+                : '<span class="badge-single">🎬 Single</span>';
+            return `
             <tr>
-                <td><strong>${m.title}</strong></td>
+                <td><strong>${m.title}</strong> ${contentTypeBadge}</td>
                 <td><span class="status-badge ${m.type === 'Imetafsiriwa' ? 'status-confirmed' : 'status-processing'}">${m.type}</span></td>
                 <td>${m.country}</td>
                 <td>${m.lang}</td>
@@ -128,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="action-btn action-btn-delete" onclick="deleteMovie(${m.id})"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
-        `).join('');
+        `}).join('');
     }
 
     function renderUsers() {
@@ -216,11 +309,207 @@ document.addEventListener('DOMContentLoaded', function() {
         renderActivities();
     }
 
+    // ===== Series Functions =====
+    function addSeason(seasonData = null) {
+        seasonCounter++;
+        const seasonNum = seasonCounter;
+        const container = document.getElementById('seasonsContainer');
+        
+        const seasonDiv = document.createElement('div');
+        seasonDiv.className = 'season-group';
+        seasonDiv.dataset.season = seasonNum;
+        seasonDiv.innerHTML = `
+            <div class="season-header">
+                <h4><span class="season-number">S${String(seasonNum).padStart(2, '0')}</span></h4>
+                <button type="button" class="remove-season" onclick="removeSeason(this)">Ondoa Season</button>
+            </div>
+            <div class="episodes-container" data-season="${seasonNum}">
+                <!-- Episodes will be added here -->
+            </div>
+            <button type="button" class="add-episode-btn" onclick="addEpisode(this, ${seasonNum})">
+                <i class="fas fa-plus"></i> Ongeza Episode
+            </button>
+        `;
+        container.appendChild(seasonDiv);
+
+        // If we have existing season data, populate it
+        if (seasonData && seasonData.episodes) {
+            const episodesContainer = seasonDiv.querySelector('.episodes-container');
+            seasonData.episodes.forEach(ep => {
+                addEpisodeToContainer(episodesContainer, seasonNum, ep);
+            });
+        }
+    }
+
+    window.addSeason = addSeason;
+
+    function removeSeason(button) {
+        if (confirm('Je, una uhakika unataka kuondoa season hii?')) {
+            const seasonGroup = button.closest('.season-group');
+            seasonGroup.remove();
+            // Re-number seasons
+            renumberSeasons();
+        }
+    }
+
+    window.removeSeason = removeSeason;
+
+    function renumberSeasons() {
+        const seasonGroups = document.querySelectorAll('.season-group');
+        seasonGroups.forEach((group, index) => {
+            const num = index + 1;
+            const seasonNumberSpan = group.querySelector('.season-number');
+            if (seasonNumberSpan) {
+                seasonNumberSpan.textContent = `S${String(num).padStart(2, '0')}`;
+            }
+            group.dataset.season = num;
+            const episodesContainer = group.querySelector('.episodes-container');
+            if (episodesContainer) {
+                episodesContainer.dataset.season = num;
+            }
+        });
+        seasonCounter = seasonGroups.length;
+    }
+
+    function addEpisode(button, seasonNum) {
+        const seasonGroup = button.closest('.season-group');
+        const episodesContainer = seasonGroup.querySelector('.episodes-container');
+        addEpisodeToContainer(episodesContainer, seasonNum);
+    }
+
+    window.addEpisode = addEpisode;
+
+    function addEpisodeToContainer(container, seasonNum, episodeData = null) {
+        const episodeCount = container.querySelectorAll('.episode-item').length + 1;
+        
+        const episodeDiv = document.createElement('div');
+        episodeDiv.className = 'episode-item';
+        episodeDiv.innerHTML = `
+            <div class="form-group">
+                <label>Jina la Episode</label>
+                <input type="text" class="episode-title" placeholder="Jina la episode" value="${episodeData ? episodeData.title : ''}" />
+            </div>
+            <div class="form-group">
+                <label>Muda</label>
+                <input type="text" class="episode-duration" placeholder="45m" value="${episodeData ? episodeData.duration : ''}" />
+            </div>
+            <div class="form-group">
+                <label>Video</label>
+                <input type="file" class="episode-video" accept="video/*,.mp4,.mkv,.avi" />
+                ${episodeData && episodeData.video ? `<small style="display:block;margin-top:4px;color:var(--text-muted);">Video iliyopo: ${episodeData.video.split('/').pop() || 'imewekwa'}</small>` : ''}
+                ${episodeData && episodeData.video ? `<input type="hidden" class="episode-video-url" value="${episodeData.video}" />` : ''}
+            </div>
+            <button type="button" class="remove-episode" onclick="removeEpisode(this)"><i class="fas fa-times"></i></button>
+        `;
+        container.appendChild(episodeDiv);
+    }
+
+    function removeEpisode(button) {
+        if (confirm('Je, una uhakika unataka kuondoa episode hii?')) {
+            const episodeItem = button.closest('.episode-item');
+            episodeItem.remove();
+        }
+    }
+
+    window.removeEpisode = removeEpisode;
+
+    // ===== Collect Series Data =====
+    function collectSeriesData() {
+        const seasons = {};
+        const seasonGroups = document.querySelectorAll('.season-group');
+        
+        seasonGroups.forEach((group, index) => {
+            const seasonNum = index + 1;
+            const episodesContainer = group.querySelector('.episodes-container');
+            const episodeItems = episodesContainer.querySelectorAll('.episode-item');
+            const episodes = [];
+            
+            episodeItems.forEach((ep, epIndex) => {
+                const title = ep.querySelector('.episode-title').value.trim() || `Episode ${epIndex + 1}`;
+                const duration = ep.querySelector('.episode-duration').value.trim() || '45m';
+                const videoFile = ep.querySelector('.episode-video');
+                const videoUrlInput = ep.querySelector('.episode-video-url');
+                
+                let video = '';
+                if (videoUrlInput) {
+                    video = videoUrlInput.value;
+                } else if (videoFile && videoFile.files.length > 0) {
+                    video = URL.createObjectURL(videoFile.files[0]);
+                }
+                
+                episodes.push({
+                    num: `E${String(epIndex + 1).padStart(2, '0')}`,
+                    title: title,
+                    duration: duration,
+                    video: video || 'https://www.w3schools.com/html/mov_bbb.mp4'
+                });
+            });
+            
+            if (episodes.length > 0) {
+                seasons[seasonNum] = {
+                    label: `S${String(seasonNum).padStart(2, '0')}`,
+                    episodes: episodes
+                };
+            }
+        });
+        
+        return seasons;
+    }
+
+    // ===== Content Type Toggle =====
+    function setupContentTypeToggle() {
+        const radios = document.querySelectorAll('input[name="contentType"]');
+        const singleFields = document.getElementById('singleMovieFields');
+        const seriesFields = document.getElementById('seriesFields');
+        const labels = document.querySelectorAll('.content-type-selector label');
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Update label styles
+                labels.forEach(label => label.classList.remove('selected'));
+                this.closest('label').classList.add('selected');
+
+                if (this.value === 'single') {
+                    singleFields.style.display = 'block';
+                    seriesFields.classList.remove('visible');
+                    // Clear seasons when switching to single
+                    document.getElementById('seasonsContainer').innerHTML = '';
+                    seasonCounter = 0;
+                } else {
+                    singleFields.style.display = 'none';
+                    seriesFields.classList.add('visible');
+                    // If no seasons exist, add one
+                    if (document.querySelectorAll('.season-group').length === 0) {
+                        addSeason();
+                    }
+                }
+            });
+        });
+    }
+
     // ===== Global Functions =====
     window.viewMovie = function(id) {
         const movie = movies.find(m => m.id === id);
         if (movie) {
-            alert(`📽️ Jina: ${movie.title}\nAina: ${movie.type}\nNchi: ${movie.country}\nLugha: ${movie.lang}\nKategoria: ${movie.category}\nMwaka: ${movie.year}\nBei: TSh ${movie.price.toLocaleString()}\nMaelezo: ${movie.description || '-'}`);
+            let info = `📽️ Jina: ${movie.title}\n`;
+            info += `Aina: ${movie.type}\n`;
+            info += `Nchi: ${movie.country}\n`;
+            info += `Lugha: ${movie.lang}\n`;
+            info += `Kategoria: ${movie.category}\n`;
+            info += `Mwaka: ${movie.year}\n`;
+            info += `Bei: TSh ${movie.price.toLocaleString()}\n`;
+            info += `Muda: ${movie.duration || '-'}\n`;
+            info += `Aina ya Maudhui: ${movie.contentType === 'series' ? 'Series' : 'Single Movie'}\n`;
+            info += `Maelezo: ${movie.description || '-'}\n`;
+            
+            if (movie.contentType === 'series' && movie.seasons) {
+                info += `\n📺 Seasons: ${Object.keys(movie.seasons).length}\n`;
+                Object.keys(movie.seasons).forEach(key => {
+                    const season = movie.seasons[key];
+                    info += `  ${season.label}: ${season.episodes.length} episodes\n`;
+                });
+            }
+            alert(info);
         }
     };
 
@@ -288,6 +577,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('movieModal');
         const form = document.getElementById('movieForm');
         const title = document.getElementById('movieModalTitle');
+        const seasonsContainer = document.getElementById('seasonsContainer');
+
+        // Clear previous seasons
+        seasonsContainer.innerHTML = '';
+        seasonCounter = 0;
 
         if (movie) {
             title.textContent = 'Hariri Movie';
@@ -300,6 +594,35 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('movieYear').value = movie.year;
             document.getElementById('moviePrice').value = movie.price;
             document.getElementById('movieDescription').value = movie.description || '';
+            document.getElementById('movieDuration').value = movie.duration || '';
+            
+            // Set content type
+            const contentType = movie.contentType || 'single';
+            document.querySelector(`input[name="contentType"][value="${contentType}"]`).checked = true;
+            const labels = document.querySelectorAll('.content-type-selector label');
+            labels.forEach(label => label.classList.remove('selected'));
+            document.querySelector(`input[name="contentType"][value="${contentType}"]`).closest('label').classList.add('selected');
+
+            // Toggle fields
+            const singleFields = document.getElementById('singleMovieFields');
+            const seriesFields = document.getElementById('seriesFields');
+            if (contentType === 'series') {
+                singleFields.style.display = 'none';
+                seriesFields.classList.add('visible');
+                // Populate seasons
+                if (movie.seasons) {
+                    Object.keys(movie.seasons).forEach(key => {
+                        const season = movie.seasons[key];
+                        addSeason(season);
+                    });
+                }
+                if (document.querySelectorAll('.season-group').length === 0) {
+                    addSeason();
+                }
+            } else {
+                singleFields.style.display = 'block';
+                seriesFields.classList.remove('visible');
+            }
             
             const moreLikeSelect = document.getElementById('movieMoreLike');
             moreLikeSelect.innerHTML = '';
@@ -318,6 +641,15 @@ document.addEventListener('DOMContentLoaded', function() {
             title.textContent = 'Ongeza Movie';
             form.reset();
             document.getElementById('movieId').value = '';
+            document.getElementById('singleMovieFields').style.display = 'block';
+            document.getElementById('seriesFields').classList.remove('visible');
+            
+            // Set default radio
+            document.querySelector('input[name="contentType"][value="single"]').checked = true;
+            const labels = document.querySelectorAll('.content-type-selector label');
+            labels.forEach(label => label.classList.remove('selected'));
+            document.querySelector('input[name="contentType"][value="single"]').closest('label').classList.add('selected');
+
             const moreLikeSelect = document.getElementById('movieMoreLike');
             moreLikeSelect.innerHTML = '';
             movies.forEach(m => {
@@ -335,9 +667,16 @@ document.addEventListener('DOMContentLoaded', function() {
         openMovieModal(null);
     });
 
+    // Fix: Add event listener for the Add Season button
+    document.getElementById('addSeasonBtn').addEventListener('click', function() {
+        addSeason();
+    });
+
     document.getElementById('movieForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const id = document.getElementById('movieId').value;
+        const contentType = document.querySelector('input[name="contentType"]:checked').value;
+        
         const data = {
             title: document.getElementById('movieTitle').value.trim(),
             type: document.getElementById('movieType').value,
@@ -348,7 +687,31 @@ document.addEventListener('DOMContentLoaded', function() {
             price: parseInt(document.getElementById('moviePrice').value),
             description: document.getElementById('movieDescription').value.trim(),
             moreLike: Array.from(document.getElementById('movieMoreLike').selectedOptions).map(o => parseInt(o.value)),
+            contentType: contentType,
+            duration: document.getElementById('movieDuration').value.trim() || 'N/A'
         };
+
+        if (contentType === 'single') {
+            const videoFile = document.getElementById('movieFile');
+            if (videoFile && videoFile.files.length > 0) {
+                data.videoUrl = URL.createObjectURL(videoFile.files[0]);
+            } else if (id) {
+                // Keep existing video URL if editing
+                const existing = movies.find(m => m.id === parseInt(id));
+                if (existing) data.videoUrl = existing.videoUrl;
+            } else {
+                data.videoUrl = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            }
+        } else {
+            // Series - collect seasons data
+            const seasons = collectSeriesData();
+            if (Object.keys(seasons).length === 0) {
+                alert('Tafadhali ongeza angalau season moja na episode.');
+                return;
+            }
+            data.seasons = seasons;
+            data.videoUrl = ''; // Series don't have a single video URL
+        }
 
         if (id) {
             const index = movies.findIndex(m => m.id === parseInt(id));
@@ -546,6 +909,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(style);
 
     // ===== Initialize =====
+    setupContentTypeToggle();
     renderAll();
 
     // Set admin email from localStorage

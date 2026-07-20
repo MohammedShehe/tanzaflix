@@ -6,6 +6,203 @@
   <title>TanzaFlix | Admin Panel</title>
   <link rel="stylesheet" href="css/admin.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* Series specific styles */
+    .series-fields {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .series-fields.visible {
+      display: block;
+    }
+
+    .season-group {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .season-group .season-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .season-group .season-header h4 {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    .season-group .remove-season {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all var(--transition);
+    }
+
+    .season-group .remove-season:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    .episode-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: end;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .episode-item .form-group {
+      margin-bottom: 0;
+    }
+
+    .episode-item .form-group label {
+      font-size: 0.7rem;
+    }
+
+    .episode-item .remove-episode {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border: none;
+      padding: 0.4rem 0.6rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.7rem;
+      transition: all var(--transition);
+      margin-bottom: 0.2rem;
+    }
+
+    .episode-item .remove-episode:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .add-season-btn, .add-episode-btn {
+      background: rgba(108, 99, 255, 0.15);
+      color: #8b8bff;
+      border: 1px solid rgba(108, 99, 255, 0.2);
+      padding: 0.4rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all var(--transition);
+      font-family: inherit;
+      margin-top: 0.5rem;
+    }
+
+    .add-season-btn:hover, .add-episode-btn:hover {
+      background: rgba(108, 99, 255, 0.25);
+    }
+
+    .add-episode-btn {
+      margin-top: 0.25rem;
+      width: 100%;
+    }
+
+    .episodes-container {
+      margin-top: 0.5rem;
+    }
+
+    .badge-single {
+      background: rgba(34, 211, 238, 0.12);
+      color: #22d3ee;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      border: 1px solid rgba(34, 211, 238, 0.15);
+    }
+
+    .badge-series {
+      background: rgba(251, 146, 60, 0.12);
+      color: #fb923c;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      border: 1px solid rgba(251, 146, 60, 0.15);
+    }
+
+    .content-type-selector {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .content-type-selector label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .content-type-selector label:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .content-type-selector input[type="radio"] {
+      accent-color: #6c63ff;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .content-type-selector label.selected {
+      background: rgba(108, 99, 255, 0.12);
+      border: 1px solid rgba(108, 99, 255, 0.2);
+    }
+
+    .season-number {
+      display: inline-block;
+      background: rgba(108, 99, 255, 0.15);
+      padding: 0.2rem 0.7rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #8b8bff;
+    }
+
+    @media (max-width: 768px) {
+      .episode-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+      .episode-item .remove-episode {
+        justify-self: end;
+      }
+      .content-type-selector {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="admin-wrapper">
@@ -201,7 +398,7 @@
 
   <!-- Movie Modal -->
   <div class="modal" id="movieModal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 800px;">
       <div class="modal-header">
         <h3 id="movieModalTitle">Ongeza Movie</h3>
         <button class="modal-close">&times;</button>
@@ -212,6 +409,21 @@
         <div class="form-group">
           <label>Jina la Movie</label>
           <input type="text" id="movieTitle" placeholder="Jina la movie" required />
+        </div>
+
+        <!-- Content Type Selector -->
+        <div class="form-group">
+          <label>Aina ya Maudhui</label>
+          <div class="content-type-selector" id="contentTypeSelector">
+            <label class="selected">
+              <input type="radio" name="contentType" value="single" checked />
+              <span>🎬 Single Movie</span>
+            </label>
+            <label>
+              <input type="radio" name="contentType" value="series" />
+              <span>📺 Series</span>
+            </label>
+          </div>
         </div>
 
         <div class="form-row">
@@ -278,9 +490,27 @@
           <small>Shikilia Ctrl (Cmd) ili kuchagua zaidi ya moja</small>
         </div>
 
-        <div class="form-group">
-          <label>Weka Movie (Video/File)</label>
-          <input type="file" id="movieFile" accept="video/*,.mp4,.mkv,.avi" />
+        <!-- Single Movie Fields -->
+        <div id="singleMovieFields">
+          <div class="form-group">
+            <label>Muda wa Movie</label>
+            <input type="text" id="movieDuration" placeholder="45m, 1h 30m, 2h 15m" />
+          </div>
+          <div class="form-group">
+            <label>Weka Movie (Video/File)</label>
+            <input type="file" id="movieFile" accept="video/*,.mp4,.mkv,.avi" />
+          </div>
+        </div>
+
+        <!-- Series Fields -->
+        <div id="seriesFields" class="series-fields">
+          <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">Mipangilio ya Series</h4>
+          <div id="seasonsContainer">
+            <!-- Seasons will be dynamically added here -->
+          </div>
+          <button type="button" class="add-season-btn" id="addSeasonBtn">
+            <i class="fas fa-plus"></i> Ongeza Season
+          </button>
         </div>
 
         <div class="modal-actions">
