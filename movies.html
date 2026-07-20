@@ -179,7 +179,6 @@
       transform: translateY(0);
     }
 
-    /* Active filter state */
     .category-filter-link.active {
       background: linear-gradient(135deg, rgba(108, 99, 255, 0.25), rgba(255, 78, 176, 0.15));
       border-color: rgba(108, 99, 255, 0.3);
@@ -229,7 +228,6 @@
       opacity: 1;
     }
 
-    /* Movie Poster Image */
     .movie-poster {
       width: 100%;
       aspect-ratio: 16/9;
@@ -340,6 +338,32 @@
       border: 1px solid rgba(255, 78, 176, 0.08);
     }
 
+    /* Type badge - Single Movie or Series */
+    .movie-card .type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.7rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .type-badge.single {
+      background: rgba(34, 211, 238, 0.12);
+      color: #22d3ee;
+      border-color: rgba(34, 211, 238, 0.15);
+    }
+
+    .type-badge.series {
+      background: rgba(251, 146, 60, 0.12);
+      color: #fb923c;
+      border-color: rgba(251, 146, 60, 0.15);
+    }
+
     .movie-card .watch-btn {
       display: inline-flex;
       align-items: center;
@@ -374,7 +398,6 @@
       transform: translateX(4px);
     }
 
-    /* Empty state */
     .movies-grid .empty-state {
       grid-column: 1 / -1;
       text-align: center;

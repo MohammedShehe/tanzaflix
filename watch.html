@@ -125,12 +125,11 @@
       box-shadow: var(--watch-shadow);
     }
 
-    /* Video player - full width, dark background */
     .video-wrapper {
       background: #000;
       position: relative;
       width: 100%;
-      padding-top: 56.25%; /* 16:9 aspect ratio */
+      padding-top: 56.25%;
       overflow: hidden;
     }
 
@@ -145,7 +144,6 @@
       display: block;
     }
 
-    /* Custom video controls overlay hint */
     .video-wrapper::after {
       content: '';
       position: absolute;
@@ -219,6 +217,114 @@
       white-space: nowrap;
     }
 
+    /* ===== Series / Season / Episode Navigation ===== */
+    .series-nav {
+      margin-top: 16px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .series-nav-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .series-nav-header .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--watch-muted);
+      font-weight: 600;
+    }
+
+    .season-selector {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .season-btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--watch-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .season-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .season-btn.active {
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.3), rgba(255, 78, 176, 0.2));
+      border-color: rgba(108, 99, 255, 0.3);
+      color: #fff;
+    }
+
+    .episode-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .episode-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--watch-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .episode-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    .episode-btn.active {
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 78, 176, 0.15));
+      border-color: rgba(108, 99, 255, 0.25);
+      color: #fff;
+    }
+
+    .episode-btn .ep-num {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .episode-btn .ep-title {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    .episode-btn .ep-duration {
+      font-size: 0.65rem;
+      opacity: 0.5;
+      margin-top: 2px;
+    }
+
+    /* ===== Actions ===== */
     .movie-actions {
       display: flex;
       flex-wrap: wrap;
@@ -465,15 +571,17 @@
       .movie-info-top { flex-direction: column; }
       .recommendation-row { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
       .modal-content { margin: 20% auto; padding: 20px; }
+      .episode-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
     }
 
     @media (max-width: 480px) {
       .watch-btn { padding: 8px 14px; font-size: 0.8rem; }
       .movie-actions { gap: 6px; }
       .recommendation-row { grid-template-columns: 1fr 1fr; }
+      .episode-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+      .episode-btn { padding: 8px 10px; font-size: 0.7rem; }
     }
 
-    /* Video controls customization */
     video::-webkit-media-controls-panel {
       background: linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.9));
       padding: 0 16px;
@@ -489,6 +597,38 @@
     video::-webkit-media-controls-time-remaining-display {
       color: #fff;
       font-weight: 500;
+    }
+
+    /* Type badge on watch page */
+    .type-badge-watch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .type-badge-watch.single {
+      background: rgba(34, 211, 238, 0.12);
+      color: #22d3ee;
+      border-color: rgba(34, 211, 238, 0.15);
+    }
+
+    .type-badge-watch.series {
+      background: rgba(251, 146, 60, 0.12);
+      color: #fb923c;
+      border-color: rgba(251, 146, 60, 0.15);
+    }
+
+    .episode-current-label {
+      font-size: 0.75rem;
+      color: var(--watch-muted);
+      margin-top: 4px;
     }
   </style>
 </head>
@@ -543,7 +683,10 @@
       <div class="movie-info">
         <div class="movie-info-top">
           <div>
-            <h1 id="watchTitle" class="movie-title">Inapakia...</h1>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px;">
+              <h1 id="watchTitle" class="movie-title">Inapakia...</h1>
+              <span id="watchTypeBadge" class="type-badge-watch single">Single Movie</span>
+            </div>
             <div class="movie-meta">
               <span id="watchYear">2024</span>
               <span class="dot">•</span>
@@ -555,6 +698,20 @@
             </div>
           </div>
           <div class="movie-badge">▶ Premium Streaming</div>
+        </div>
+
+        <!-- Series Navigation (hidden by default) -->
+        <div id="seriesNav" class="series-nav" style="display: none;">
+          <div class="series-nav-header">
+            <span class="label">📺 Mfululizo / Season</span>
+            <div class="season-selector" id="seasonSelector">
+              <!-- Dynamic season buttons -->
+            </div>
+          </div>
+          <div class="episode-grid" id="episodeGrid">
+            <!-- Dynamic episode buttons -->
+          </div>
+          <div id="episodeCurrentLabel" class="episode-current-label"></div>
         </div>
 
         <!-- Rating -->
@@ -648,8 +805,13 @@
       const video = document.getElementById('watchVideo');
       const source = document.getElementById('watchSource');
       const playBtn = document.getElementById('playBtn');
+      const seriesNav = document.getElementById('seriesNav');
+      const seasonSelector = document.getElementById('seasonSelector');
+      const episodeGrid = document.getElementById('episodeGrid');
+      const episodeCurrentLabel = document.getElementById('episodeCurrentLabel');
+      const typeBadge = document.getElementById('watchTypeBadge');
 
-      // Movie database (expanded)
+      // ===== Movie Database with Series Support =====
       const movieDatabase = {
         1: {
           title: 'Safari ya Mtaa',
@@ -659,6 +821,7 @@
           genre: 'Action',
           runtime: '2h 10m',
           description: 'Hadithi ya kusisimua ya mitaa ya Dar es Salaam. Mwanamume mmoja anapigania haki yake na familia yake katika mji wenye changamoto nyingi.',
+          type: 'single',
           video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
           poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Safari ya Mtaa</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Action • 2024</text></svg>'
         },
@@ -670,6 +833,7 @@
           genre: 'Drama',
           runtime: '2h 20m',
           description: 'A powerful story of love and loss on the coast. When a fisherman\'s wife disappears, he embarks on a journey that will change everything.',
+          type: 'single',
           video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
           poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">The Silent Shore</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Drama • 2023</text></svg>'
         },
@@ -681,6 +845,7 @@
           genre: 'Romance',
           runtime: '1h 55m',
           description: 'Romance in the city. Two strangers from different worlds meet in Dar es Salaam and discover a love that transcends all boundaries.',
+          type: 'single',
           video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
           poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Mapenzi ya Mwanga</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Romance • 2024</text></svg>'
         },
@@ -692,6 +857,7 @@
           genre: 'Musical',
           runtime: '2h 35m',
           description: 'Indian cinema experience. A young dancer from Tanzania travels to Mumbai to pursue her dreams of Bollywood stardom.',
+          type: 'single',
           video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
           poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Bollywood Dreams</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Musical • 2024</text></svg>'
         },
@@ -703,6 +869,7 @@
           genre: 'Comedy',
           runtime: '1h 48m',
           description: 'A hilarious comedy about a Filipino family living in Tanzania and their adventures in a new culture.',
+          type: 'single',
           video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
           poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Filipino Fiesta</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Comedy • 2023</text></svg>'
         },
@@ -714,8 +881,93 @@
           genre: 'Thriller',
           runtime: '2h 00m',
           description: 'A gripping thriller set in the Arabian desert, where a group of strangers must survive a night of terror.',
+          type: 'single',
           video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
           poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">Arab Nights</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Thriller • 2024</text></svg>'
+        },
+        // ===== SERIES EXAMPLES =====
+        7: {
+          title: 'Mafia: The Untold Story',
+          category: 'Crime',
+          lang: 'Kiswahili',
+          year: '2024',
+          genre: 'Crime Drama',
+          runtime: '45m per episode',
+          description: 'A gripping crime series set in the underworld of Dar es Salaam. Follow the rise and fall of a powerful mafia family.',
+          type: 'series',
+          seasons: {
+            1: {
+              label: 'S01',
+              episodes: [
+                { num: 'E01', title: 'The Beginning', duration: '45m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E02', title: 'The Awakening', duration: '42m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E03', title: 'Rising Power', duration: '48m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E04', title: 'The Betrayal', duration: '44m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E05', title: 'The Reckoning', duration: '50m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E06', title: 'The Finale', duration: '52m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+              ]
+            },
+            2: {
+              label: 'S02',
+              episodes: [
+                { num: 'E01', title: 'New Era', duration: '46m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E02', title: 'Rivalry', duration: '43m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E03', title: 'Alliances', duration: '47m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E04', title: 'The Storm', duration: '45m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E05', title: 'Redemption', duration: '49m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E06', title: 'Legacy', duration: '51m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+              ]
+            },
+            3: {
+              label: 'S03',
+              episodes: [
+                { num: 'E01', title: 'The New Boss', duration: '44m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E02', title: 'Family Ties', duration: '42m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E03', title: 'The Challenge', duration: '46m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E04', title: 'Secrets', duration: '43m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E05', title: 'The Fall', duration: '48m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E06', title: 'The Rise', duration: '50m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E07', title: 'The Final Stand', duration: '52m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E08', title: 'Legacy', duration: '55m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+              ]
+            }
+          },
+          poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23fb923c">Mafia: The Untold Story</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Series • 2024</text></svg>'
+        },
+        8: {
+          title: 'Tanzania Love Stories',
+          category: 'Romance',
+          lang: 'Kiswahili',
+          year: '2024',
+          genre: 'Romantic Drama',
+          runtime: '40m per episode',
+          description: 'Beautiful love stories from across Tanzania. Each episode tells a unique tale of love, loss, and hope.',
+          type: 'series',
+          seasons: {
+            1: {
+              label: 'S01',
+              episodes: [
+                { num: 'E01', title: 'First Love', duration: '38m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E02', title: 'Long Distance', duration: '42m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E03', title: 'The Promise', duration: '40m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E04', title: 'Family Matters', duration: '41m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E05', title: 'The Choice', duration: '39m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E06', title: 'Forever', duration: '44m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+              ]
+            },
+            2: {
+              label: 'S02',
+              episodes: [
+                { num: 'E01', title: 'New Beginnings', duration: '40m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E02', title: 'The Distance', duration: '38m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E03', title: 'The Secret', duration: '42m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E04', title: 'The Truth', duration: '39m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E05', title: 'The Wedding', duration: '45m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
+                { num: 'E06', title: 'Happily Ever After', duration: '43m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+              ]
+            }
+          },
+          poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23ec4899">Tanzania Love Stories</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Series • 2024</text></svg>'
         }
       };
 
@@ -728,17 +980,124 @@
         genre: 'Action',
         runtime: '2h 10m',
         description: 'Mchezo wa kuvutia wenye hadithi kali, picha zenye nguvu, na burudani ya hali ya juu.',
+        type: 'single',
         video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
         poster_url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200"><rect width="400" height="200" fill="%2311152d"/><text x="20" y="120" font-family="Arial" font-size="24" fill="%23c7d2fe">TanzaFlix</text><text x="20" y="150" font-family="Arial" font-size="14" fill="%2394a3b8">Premium Cinema</text></svg>'
       };
 
       let movie = defaultMovie;
+      let currentSeason = 1;
+      let currentEpisode = 0;
 
       if (id && movieDatabase[id]) {
         movie = movieDatabase[id];
       }
 
-      // Populate UI
+      // ===== Render Series UI =====
+      function renderSeriesNav() {
+        if (movie.type !== 'series' || !movie.seasons) {
+          seriesNav.style.display = 'none';
+          return;
+        }
+
+        seriesNav.style.display = 'block';
+        const seasonKeys = Object.keys(movie.seasons);
+
+        // Render season buttons
+        seasonSelector.innerHTML = seasonKeys.map((key, index) => {
+          const seasonNum = parseInt(key);
+          const isActive = seasonNum === currentSeason;
+          return `<button class="season-btn ${isActive ? 'active' : ''}" data-season="${seasonNum}">S${String(seasonNum).padStart(2, '0')}</button>`;
+        }).join('');
+
+        // Render episodes for current season
+        renderEpisodes(currentSeason);
+
+        // Season button click handlers
+        document.querySelectorAll('.season-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const season = parseInt(this.dataset.season);
+            currentSeason = season;
+            currentEpisode = 0;
+            renderSeriesNav();
+            // Auto-play first episode of new season
+            const seasonData = movie.seasons[season];
+            if (seasonData && seasonData.episodes.length > 0) {
+              loadEpisode(season, 0);
+            }
+          });
+        });
+      }
+
+      function renderEpisodes(season) {
+        const seasonData = movie.seasons[season];
+        if (!seasonData) {
+          episodeGrid.innerHTML = '<p style="color: var(--watch-muted);">No episodes available.</p>';
+          return;
+        }
+
+        episodeGrid.innerHTML = seasonData.episodes.map((ep, index) => {
+          const isActive = index === currentEpisode;
+          return `
+            <button class="episode-btn ${isActive ? 'active' : ''}" data-season="${season}" data-episode="${index}">
+              <span class="ep-num">${ep.num}</span>
+              <span class="ep-title">${ep.title}</span>
+              <span class="ep-duration">${ep.duration}</span>
+            </button>
+          `;
+        }).join('');
+
+        // Episode button click handlers
+        document.querySelectorAll('.episode-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const season = parseInt(this.dataset.season);
+            const episode = parseInt(this.dataset.episode);
+            currentSeason = season;
+            currentEpisode = episode;
+            renderSeriesNav();
+            loadEpisode(season, episode);
+          });
+        });
+
+        // Update current label
+        const ep = seasonData.episodes[currentEpisode] || seasonData.episodes[0];
+        if (ep) {
+          episodeCurrentLabel.textContent = `S${String(season).padStart(2, '0')} ${ep.num} - ${ep.title}`;
+        }
+      }
+
+      function loadEpisode(season, episode) {
+        const seasonData = movie.seasons[season];
+        if (!seasonData) return;
+        const ep = seasonData.episodes[episode];
+        if (!ep) return;
+
+        // Update video source
+        source.src = ep.video;
+        video.load();
+
+        // Update title to show current episode
+        titleEl.textContent = `${movie.title} - ${ep.num}`;
+        episodeCurrentLabel.textContent = `S${String(season).padStart(2, '0')} ${ep.num} - ${ep.title}`;
+
+        // Update meta info
+        document.getElementById('watchRuntime').textContent = ep.duration;
+        document.getElementById('watchDescription').textContent = `${movie.description} Episode ${ep.num}: ${ep.title}`;
+
+        // Highlight active episode
+        document.querySelectorAll('.episode-btn').forEach(btn => {
+          btn.classList.toggle('active', 
+            parseInt(btn.dataset.season) === season && 
+            parseInt(btn.dataset.episode) === episode
+          );
+        });
+
+        // Auto-play
+        video.play().catch(() => {});
+        playBtn.textContent = '⏸ Pause';
+      }
+
+      // ===== Populate UI =====
       titleEl.textContent = movie.title || 'Filamu';
       descEl.textContent = movie.description || 'Mchezo wa kuvutia wenye hadithi kali.';
       document.getElementById('watchYear').textContent = movie.year || '2024';
@@ -746,12 +1105,37 @@
       document.getElementById('watchRuntime').textContent = movie.runtime || '2h 10m';
       document.getElementById('watchLang').textContent = movie.lang || 'Kiswahili';
 
-      // Set video source
-      source.src = movie.video_url || '';
-      video.poster = movie.poster_url || '';
-      video.load();
+      // Set type badge
+      if (movie.type === 'series') {
+        typeBadge.textContent = '📺 Series';
+        typeBadge.className = 'type-badge-watch series';
+      } else {
+        typeBadge.textContent = '🎬 Single Movie';
+        typeBadge.className = 'type-badge-watch single';
+      }
 
-      // Play button handler
+      // Set video source
+      if (movie.type === 'single' || !movie.seasons) {
+        source.src = movie.video_url || '';
+        video.poster = movie.poster_url || '';
+        video.load();
+        seriesNav.style.display = 'none';
+      } else {
+        // Series - render navigation and load first episode
+        renderSeriesNav();
+        const firstSeason = Object.keys(movie.seasons)[0];
+        if (firstSeason) {
+          currentSeason = parseInt(firstSeason);
+          const seasonData = movie.seasons[currentSeason];
+          if (seasonData && seasonData.episodes.length > 0) {
+            currentEpisode = 0;
+            loadEpisode(currentSeason, 0);
+          }
+        }
+        video.poster = movie.poster_url || '';
+      }
+
+      // ===== Play button handler =====
       playBtn.addEventListener('click', function(e) {
         e.preventDefault();
         if (video.paused) {
@@ -761,7 +1145,7 @@
         }
       });
 
-      // Toggle play button text based on video state
+      // ===== Video state handlers =====
       video.addEventListener('play', function() {
         playBtn.textContent = '⏸ Pause';
       });
@@ -772,19 +1156,31 @@
 
       video.addEventListener('ended', function() {
         playBtn.textContent = '▶ Replay';
+        // If series, advance to next episode
+        if (movie.type === 'series' && movie.seasons) {
+          const seasonData = movie.seasons[currentSeason];
+          if (seasonData && currentEpisode < seasonData.episodes.length - 1) {
+            // Auto-play next episode after 3 seconds
+            setTimeout(() => {
+              currentEpisode++;
+              renderSeriesNav();
+              loadEpisode(currentSeason, currentEpisode);
+            }, 3000);
+          }
+        }
       });
 
-      // Recommendation card click - navigate to watch
+      // ===== Recommendation card click =====
       document.querySelectorAll('.rec-card').forEach((card, index) => {
         card.addEventListener('click', function() {
-          const recIds = [1, 2, 3, 4]; // Map to movie IDs
+          const recIds = [1, 2, 7, 8];
           const recId = recIds[index] || 1;
           window.location.href = `watch.html?id=${recId}`;
         });
       });
 
       console.log('🎬 TanzaFlix Watch page loaded');
-      console.log(`📺 Playing: ${movie.title}`);
+      console.log(`📺 Playing: ${movie.title} (${movie.type})`);
     })();
   </script>
 </body>
