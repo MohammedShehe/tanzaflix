@@ -1,0 +1,508 @@
+<!-- admin-activities.html -->
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TanzaFlix | Activities Dashboard</title>
+    <link rel="stylesheet" href="css/admin-activities.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-left">
+                <div class="brand">
+                    <span class="brand-mark">TF</span>
+                    <span class="brand-name">TanzaFlix Admin</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="realtime-clock" id="realtimeClock">
+                    <span class="time" id="clockTime">00:00:00</span>
+                    <span class="date" id="clockDate">Jumatano, 1 Januari 2024</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="admin-profile" id="adminProfile">
+                    <span class="admin-email" id="adminEmail">admin@tanzaflix.com</span>
+                    <div class="admin-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <button class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Ondoka</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="admin-nav">
+            <button class="nav-item" data-tab="movies">
+                <i class="fas fa-film"></i>
+                <span>Movies</span>
+            </button>
+            <button class="nav-item" data-tab="users">
+                <i class="fas fa-users"></i>
+                <span>Watumizi</span>
+            </button>
+            <button class="nav-item" data-tab="transactions">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Manunuzi</span>
+            </button>
+            <button class="nav-item active" data-tab="activities">
+                <i class="fas fa-chart-line"></i>
+                <span>Shughuli</span>
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <div class="tab-content active" id="activitiesTab">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <div class="header-left-section">
+                        <h2><i class="fas fa-chart-line"></i> Shughuli Dashboard</h2>
+                        <div class="date-range-filter">
+                            <input type="date" id="dateFrom" />
+                            <span>hadi</span>
+                            <input type="date" id="dateTo" />
+                        </div>
+                    </div>
+                    <div class="header-right-section">
+                        <button class="refresh-btn" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Overview Stats Cards -->
+                <div class="stats-grid" id="overviewStats">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Jumla ya Watumizi</p>
+                            <p class="stat-value" id="statTotalUsers">0</p>
+                            <span class="stat-change positive" id="statTotalUsersChange">▲ +0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Watumizi Wanatumia</p>
+                            <p class="stat-value" id="statActiveUsers">0</p>
+                            <span class="stat-change positive" id="statActiveUsersChange">▲ +0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Wapya (Siku 30)</p>
+                            <p class="stat-value" id="statNewUsers">0</p>
+                            <span class="stat-change positive" id="statNewUsersChange">▲ +0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-crown"></i></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Usajili Unaotumika</p>
+                            <p class="stat-value" id="statActiveSubscriptions">0</p>
+                            <span class="stat-change positive" id="statActiveSubscriptionsChange">▲ +0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Mapato (Siku 30)</p>
+                            <p class="stat-value" id="statRevenue">TSh 0</p>
+                            <span class="stat-change positive" id="statRevenueChange">▲ +0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Wastani wa Kutazama</p>
+                            <p class="stat-value" id="statAvgWatchTime">0m</p>
+                            <span class="stat-change neutral" id="statAvgWatchTimeChange">◆ 0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Kiwango cha Kukamilisha</p>
+                            <p class="stat-value" id="statCompletionRate">0%</p>
+                            <span class="stat-change positive" id="statCompletionRateChange">▲ +0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-eye"></i></div>
+                        <div class="stat-info">
+                            <p class="stat-label">Jumla ya Kutazama</p>
+                            <p class="stat-value" id="statTotalViews">0</p>
+                            <span class="stat-change positive" id="statTotalViewsChange">▲ +0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Feed -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-bolt"></i> Shughuli za Hivi Karibuni</h3>
+                        <div class="section-controls">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="activitySearch" placeholder="Tafuta mtumiaji..." />
+                            </div>
+                            <select id="activityTypeFilter" class="filter-select">
+                                <option value="all">Aina Zote</option>
+                                <option value="free_trial">Free Trial</option>
+                                <option value="subscription">Subscription</option>
+                                <option value="purchase">Single Purchase</option>
+                                <option value="denied">Denied</option>
+                            </select>
+                            <span class="activity-count" id="activityCount">0 shughuli</span>
+                        </div>
+                    </div>
+                    <div class="activity-feed" id="activityFeed">
+                        <!-- Activities will be rendered here -->
+                    </div>
+                    <div class="pagination-controls" id="activityPagination">
+                        <button class="pagination-btn" data-page="prev"><i class="fas fa-chevron-left"></i></button>
+                        <span class="page-info" id="activityPageInfo">Ukurasa 1 wa 1</span>
+                        <button class="pagination-btn" data-page="next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- User Engagement -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-users"></i> Ushirikishwaji wa Watumizi</h3>
+                    </div>
+                    <div class="engagement-grid">
+                        <!-- Conversion Metrics -->
+                        <div class="engagement-section">
+                            <h4>Vipimo vya Ubadilishaji</h4>
+                            <div class="conversion-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Watazamaji wa Kwanza</span>
+                                    <span class="metric-value" id="metricFirstTimeWatchers">0</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Free Trial Imekamilika</span>
+                                    <span class="metric-value" id="metricCompletedTrials">0</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Waliobadilishwa Kuwa Wanachama</span>
+                                    <span class="metric-value" id="metricConvertedToSub">0</span>
+                                </div>
+                                <div class="metric-item highlight">
+                                    <span class="metric-label">Kiwango cha Ubadilishaji</span>
+                                    <span class="metric-value" id="metricConversionRate">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Segments -->
+                        <div class="engagement-section">
+                            <h4>Makundi ya Watumizi</h4>
+                            <div class="user-segments" id="userSegments">
+                                <div class="segment-item" data-segment="active">
+                                    <span class="segment-label">Watumizi Wanatumia</span>
+                                    <span class="segment-value" id="segmentActive">0</span>
+                                </div>
+                                <div class="segment-item" data-segment="at-risk">
+                                    <span class="segment-label">Watumizi Walio Hatarini</span>
+                                    <span class="segment-value" id="segmentAtRisk">0</span>
+                                </div>
+                                <div class="segment-item" data-segment="high-value">
+                                    <span class="segment-label">Watumizi wa Thamani</span>
+                                    <span class="segment-value" id="segmentHighValue">0</span>
+                                </div>
+                                <div class="segment-item" data-segment="never-watched">
+                                    <span class="segment-label">Hawajawahi Kutazama</span>
+                                    <span class="segment-value" id="segmentNeverWatched">0</span>
+                                </div>
+                                <div class="segment-item" data-segment="trial-not-converted">
+                                    <span class="segment-label">Free Trial (Hajabadilika)</span>
+                                    <span class="segment-value" id="segmentTrialNotConverted">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+                        <div class="chart-box">
+                            <h4>Saa za Kutazama</h4>
+                            <canvas id="peakHoursChart"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Mwenendo wa Shughuli (Siku 30)</h4>
+                            <canvas id="activityTimelineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Activity Details -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-list"></i> Maelezo ya Shughuli za Watumizi</h3>
+                        <div class="section-controls">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="detailSearch" placeholder="Tafuta mtumiaji..." />
+                            </div>
+                            <select id="detailTypeFilter" class="filter-select">
+                                <option value="all">Aina Zote</option>
+                                <option value="free_trial">Free Trial</option>
+                                <option value="subscription">Subscription</option>
+                                <option value="purchase">Single Purchase</option>
+                                <option value="denied">Denied</option>
+                            </select>
+                            <button class="view-details-btn" id="viewUserDetailsBtn">
+                                <i class="fas fa-user"></i>
+                                Tazama Profaili
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="admin-table" id="activityDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th>Mtumiaji</th>
+                                    <th>Barua pepe</th>
+                                    <th>Movie/Episode</th>
+                                    <th>Aina</th>
+                                    <th>Njia</th>
+                                    <th>Muda</th>
+                                    <th>Hali</th>
+                                    <th>Tarehe</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityDetailsBody">
+                                <!-- Rows will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-controls" id="detailPagination">
+                        <button class="pagination-btn" data-page="prev"><i class="fas fa-chevron-left"></i></button>
+                        <span class="page-info" id="detailPageInfo">Ukurasa 1 wa 1</span>
+                        <button class="pagination-btn" data-page="next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Content Performance -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-fire"></i> Utendaji wa Maudhui</h3>
+                        <div class="section-controls">
+                            <select id="contentSortFilter" class="filter-select">
+                                <option value="views">Inayotazamwa Zaidi</option>
+                                <option value="completion">Kiwango cha Kukamilisha</option>
+                                <option value="unique">Watazamaji Pekee</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="content-performance-grid">
+                        <div class="top-content-list" id="topContentList">
+                            <!-- Top content items rendered here -->
+                        </div>
+                        <div class="performance-charts">
+                            <div class="chart-box">
+                                <h4>Utendaji kwa Kategoria</h4>
+                                <canvas id="categoryPerformanceChart"></canvas>
+                            </div>
+                            <div class="chart-box">
+                                <h4>Utendaji kwa Nchi</h4>
+                                <canvas id="countryPerformanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="series-performance" id="seriesPerformance">
+                        <h4>Utendaji wa Series</h4>
+                        <div class="series-list" id="seriesList">
+                            <!-- Series items rendered here -->
+                        </div>
+                    </div>
+                    <div class="dropoff-analysis">
+                        <h4>Uchambuzi wa Kuacha Kutazama</h4>
+                        <div class="dropoff-list" id="dropoffList">
+                            <!-- Drop-off items rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Analytics -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-coins"></i> Uchambuzi wa Mapato</h3>
+                    </div>
+                    <div class="revenue-metrics-grid">
+                        <div class="revenue-metric">
+                            <span class="metric-label">Mapato Jumla (Siku 30)</span>
+                            <span class="metric-value" id="revTotalRevenue">TSh 0</span>
+                        </div>
+                        <div class="revenue-metric">
+                            <span class="metric-label">Watumizi Wanaolipa</span>
+                            <span class="metric-value" id="revPayingUsers">0</span>
+                        </div>
+                        <div class="revenue-metric">
+                            <span class="metric-label">ARPU</span>
+                            <span class="metric-value" id="revArpu">TSh 0</span>
+                        </div>
+                        <div class="revenue-metric">
+                            <span class="metric-label">Jumla ya Manunuzi</span>
+                            <span class="metric-value" id="revTotalTransactions">0</span>
+                        </div>
+                        <div class="revenue-metric">
+                            <span class="metric-label">Malipo Yaliyoshindwa</span>
+                            <span class="metric-value" id="revFailedPayments">0</span>
+                        </div>
+                    </div>
+                    <div class="revenue-charts-row">
+                        <div class="chart-box full-width">
+                            <h4>Mapato ya Kila Siku</h4>
+                            <canvas id="dailyRevenueChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="revenue-breakdown-row">
+                        <div class="chart-box">
+                            <h4>Mgawanyiko wa Mapato</h4>
+                            <canvas id="revenueBreakdownChart"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Mwenendo wa Mwezi</h4>
+                            <canvas id="monthlyTrendsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="subscription-renewal">
+                        <h4>Kiwango cha Kurejesha Usajili</h4>
+                        <div class="renewal-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Usajili Uliokwisha</span>
+                                <span class="metric-value" id="renewalExpired">0</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Ulirejeshwa</span>
+                                <span class="metric-value" id="renewalRenewed">0</span>
+                            </div>
+                            <div class="metric-item highlight">
+                                <span class="metric-label">Kiwango cha Kurejesha</span>
+                                <span class="metric-value" id="renewalRate">0%</span>
+                            </div>
+                        </div>
+                        <div class="failed-payments">
+                            <h5>Malipo Yaliyoshindwa</h5>
+                            <div id="failedPaymentsList">
+                                <!-- Failed payments rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Statistics -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-chart-bar"></i> Takwimu za Shughuli</h3>
+                    </div>
+                    <div class="activity-stats-grid">
+                        <div class="chart-box">
+                            <h4>Shughuli za Kila Siku</h4>
+                            <canvas id="dailyActivityChart"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Shughuli kwa Saa</h4>
+                            <canvas id="hourlyActivityChart"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Shughuli kwa Aina</h4>
+                            <canvas id="activityTypeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="top-active-users">
+                        <h4>Watumizi Wenye Shughuli Nyingi</h4>
+                        <div class="top-users-list" id="topActiveUsersList">
+                            <!-- Top users rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drop-off Analysis -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Uchambuzi wa Kuacha</h3>
+                    </div>
+                    <div class="dropoff-grid">
+                        <div class="dropoff-section">
+                            <h4>Watumizi Walio Hatarini</h4>
+                            <div id="atRiskUsersList">
+                                <!-- At-risk users rendered here -->
+                            </div>
+                        </div>
+                        <div class="dropoff-section">
+                            <h4>Movie Zenye Kuacha Zaidi</h4>
+                            <div id="highDropoffMovies">
+                                <!-- Movies with high drop-off rendered here -->
+                            </div>
+                        </div>
+                        <div class="dropoff-section full-width">
+                            <h4>Usambazaji wa Muda wa Kutazama</h4>
+                            <canvas id="watchTimeDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div class="modal" id="userProfileModal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="profileModalTitle">Profaili ya Mtumiaji</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="profile-content">
+                <div class="profile-tabs">
+                    <button class="profile-tab active" data-tab="basic">Taarifa za Msingi</button>
+                    <button class="profile-tab" data-tab="watch-summary">Muhtasari wa Kutazama</button>
+                    <button class="profile-tab" data-tab="watch-history">Historia ya Kutazama</button>
+                    <button class="profile-tab" data-tab="subscriptions">Usajili</button>
+                    <button class="profile-tab" data-tab="purchases">Manunuzi</button>
+                    <button class="profile-tab" data-tab="payments">Malipo</button>
+                    <button class="profile-tab" data-tab="access-attempts">Majaribio ya Kuingia</button>
+                </div>
+                <div class="profile-tab-content" id="profileBasic">
+                    <!-- Basic info rendered here -->
+                </div>
+                <div class="profile-tab-content" id="profileWatchSummary" style="display:none;">
+                    <!-- Watch summary rendered here -->
+                </div>
+                <div class="profile-tab-content" id="profileWatchHistory" style="display:none;">
+                    <!-- Watch history rendered here -->
+                </div>
+                <div class="profile-tab-content" id="profileSubscriptions" style="display:none;">
+                    <!-- Subscription history rendered here -->
+                </div>
+                <div class="profile-tab-content" id="profilePurchases" style="display:none;">
+                    <!-- Purchase history rendered here -->
+                </div>
+                <div class="profile-tab-content" id="profilePayments" style="display:none;">
+                    <!-- Payment history rendered here -->
+                </div>
+                <div class="profile-tab-content" id="profileAccessAttempts" style="display:none;">
+                    <!-- Access attempts rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin-activities.js"></script>
+</body>
+</html>
