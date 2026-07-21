@@ -123,6 +123,7 @@
       padding: 0;
       overflow: hidden;
       box-shadow: var(--watch-shadow);
+      position: relative;
     }
 
     .video-wrapper {
@@ -159,6 +160,55 @@
 
     .video-wrapper:hover::after {
       opacity: 1;
+    }
+
+    /* ===== Paywall Overlay (Subscribe / Buy gate) ===== */
+    .paywall-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(5, 8, 20, 0.94);
+      backdrop-filter: blur(10px);
+      text-align: center;
+    }
+
+    .paywall-box {
+      max-width: 420px;
+      width: 100%;
+      padding: 32px 28px;
+      border-radius: 20px;
+      background: rgba(12, 17, 37, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+    }
+
+    .paywall-icon {
+      font-size: 2.4rem;
+      margin-bottom: 12px;
+    }
+
+    .paywall-box h2 {
+      margin: 0 0 12px;
+      font-size: 1.25rem;
+      color: #fff;
+    }
+
+    .paywall-box p {
+      margin: 0 0 20px;
+      color: var(--watch-muted);
+      line-height: 1.7;
+      font-size: 0.92rem;
+    }
+
+    .paywall-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
     }
 
     /* ===== Movie Info Panel ===== */
@@ -580,6 +630,7 @@
       .recommendation-row { grid-template-columns: 1fr 1fr; }
       .episode-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
       .episode-btn { padding: 8px 10px; font-size: 0.7rem; }
+      .paywall-box { padding: 24px 20px; }
     }
 
     video::-webkit-media-controls-panel {
@@ -677,6 +728,19 @@
           <source id="watchSource" src="" type="video/mp4" />
           Kivinjari chako hakiwezi kucheza video hii.
         </video>
+      </div>
+
+      <!-- Paywall Overlay: shown when user has no active subscription, hasn't bought this title, and has already used their one free watch -->
+      <div id="paywallOverlay" class="paywall-overlay" style="display:none;">
+        <div class="paywall-box">
+          <div class="paywall-icon">🔒</div>
+          <h2>Muda wako wa kutazama bure umeisha</h2>
+          <p>Umeshatazama filamu/kipindi kimoja bure. Nunua filamu hii au jisajili ili uendelee kutazama filamu na mfululizo bila kikomo.</p>
+          <div class="paywall-actions">
+            <button id="buyMovieBtn" class="watch-btn watch-btn-play">💳 Nunua - TSh 2,000</button>
+            <a href="subscription.html" class="watch-btn watch-btn-secondary">⭐ Jisajili</a>
+          </div>
+        </div>
       </div>
 
       <!-- Movie Info -->
@@ -810,6 +874,71 @@
       const episodeGrid = document.getElementById('episodeGrid');
       const episodeCurrentLabel = document.getElementById('episodeCurrentLabel');
       const typeBadge = document.getElementById('watchTypeBadge');
+      const paywallOverlay = document.getElementById('paywallOverlay');
+      const buyMovieBtn = document.getElementById('buyMovieBtn');
+
+      // =========================================================
+      // ===== Access Control: Subscription / Free Trial / Buy =====
+      // =========================================================
+      // Reads/writes the same "tanzaflix_subscription" record that
+      // subscription.js already saves, plus a small watch-state record
+      // that tracks the one-time free watch and any per-movie purchases.
+
+      function getSubscriptionRecord() {
+        try {
+          const raw = localStorage.getItem('tanzaflix_subscription');
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function isSubscriptionActive() {
+        const sub = getSubscriptionRecord();
+        if (!sub || !sub.isSubscribed || !sub.expiryDate) return false;
+        return new Date(sub.expiryDate).getTime() > Date.now();
+      }
+
+      function getWatchState() {
+        try {
+          const raw = localStorage.getItem('tanzaflix_watch_state');
+          const parsed = raw ? JSON.parse(raw) : null;
+          return {
+            hasUsedFreeTrial: !!(parsed && parsed.hasUsedFreeTrial),
+            purchasedMovies: (parsed && Array.isArray(parsed.purchasedMovies)) ? parsed.purchasedMovies : []
+          };
+        } catch (e) {
+          return { hasUsedFreeTrial: false, purchasedMovies: [] };
+        }
+      }
+
+      function saveWatchState(state) {
+        localStorage.setItem('tanzaflix_watch_state', JSON.stringify(state));
+      }
+
+      function hasPurchasedMovie(movieId) {
+        const state = getWatchState();
+        return state.purchasedMovies.indexOf(String(movieId)) !== -1;
+      }
+
+      function markFreeTrialUsed() {
+        const state = getWatchState();
+        state.hasUsedFreeTrial = true;
+        saveWatchState(state);
+      }
+
+      function purchaseMovie(movieId) {
+        const state = getWatchState();
+        if (state.purchasedMovies.indexOf(String(movieId)) === -1) {
+          state.purchasedMovies.push(String(movieId));
+        }
+        saveWatchState(state);
+      }
+
+      function showPaywall() {
+        paywallOverlay.style.display = 'flex';
+        video.pause();
+      }
 
       // ===== Movie Database with Series Support =====
       const movieDatabase = {
@@ -993,6 +1122,25 @@
         movie = movieDatabase[id];
       }
 
+      // Unique id used for purchase/free-trial tracking (falls back to
+      // 'default' when no ?id= param is present, matching movie lookup above)
+      const movieKey = id || 'default';
+
+      // ===== Determine access for THIS movie, right now =====
+      const subscriptionActive = isSubscriptionActive();
+      const moviePurchased = hasPurchasedMovie(movieKey);
+      const watchStateAtLoad = getWatchState();
+
+      let accessGranted = subscriptionActive || moviePurchased;
+      let isFreeTrialPlay = false;
+
+      if (!accessGranted && !watchStateAtLoad.hasUsedFreeTrial) {
+        // First time ever watching anything on the site: allow exactly
+        // one single movie / one episode, then lock everything else.
+        accessGranted = true;
+        isFreeTrialPlay = true;
+      }
+
       // ===== Render Series UI =====
       function renderSeriesNav() {
         if (movie.type !== 'series' || !movie.seasons) {
@@ -1027,6 +1175,16 @@
             }
           });
         });
+
+        // During a free-trial play, only the single starting episode may be
+        // watched — lock season/episode switching so the "one episode only"
+        // rule can't be bypassed by jumping around the series.
+        if (isFreeTrialPlay) {
+          seasonSelector.style.pointerEvents = 'none';
+          seasonSelector.style.opacity = '0.5';
+          episodeGrid.style.pointerEvents = 'none';
+          episodeGrid.style.opacity = '0.5';
+        }
       }
 
       function renderEpisodes(season) {
@@ -1114,26 +1272,44 @@
         typeBadge.className = 'type-badge-watch single';
       }
 
-      // Set video source
-      if (movie.type === 'single' || !movie.seasons) {
-        source.src = movie.video_url || '';
-        video.poster = movie.poster_url || '';
-        video.load();
+      if (!accessGranted) {
+        // ===== BLOCKED: no subscription, not purchased, free trial already used =====
+        // Do not load any video source and keep the series navigation hidden;
+        // the paywall overlay covers the whole watch card so nothing behind
+        // it (play button, episodes, etc.) can be interacted with.
         seriesNav.style.display = 'none';
+        showPaywall();
       } else {
-        // Series - render navigation and load first episode
-        renderSeriesNav();
-        const firstSeason = Object.keys(movie.seasons)[0];
-        if (firstSeason) {
-          currentSeason = parseInt(firstSeason);
-          const seasonData = movie.seasons[currentSeason];
-          if (seasonData && seasonData.episodes.length > 0) {
-            currentEpisode = 0;
-            loadEpisode(currentSeason, 0);
+        // ===== ALLOWED: active subscription, this title was bought, or a
+        // one-time free watch is available right now =====
+        if (movie.type === 'single' || !movie.seasons) {
+          source.src = movie.video_url || '';
+          video.poster = movie.poster_url || '';
+          video.load();
+          seriesNav.style.display = 'none';
+        } else {
+          // Series - render navigation and load first episode
+          renderSeriesNav();
+          const firstSeason = Object.keys(movie.seasons)[0];
+          if (firstSeason) {
+            currentSeason = parseInt(firstSeason);
+            const seasonData = movie.seasons[currentSeason];
+            if (seasonData && seasonData.episodes.length > 0) {
+              currentEpisode = 0;
+              loadEpisode(currentSeason, 0);
+            }
           }
+          video.poster = movie.poster_url || '';
         }
-        video.poster = movie.poster_url || '';
       }
+
+      // ===== Buy this movie/series (frontend-only simulation) =====
+      buyMovieBtn.addEventListener('click', function() {
+        purchaseMovie(movieKey);
+        paywallOverlay.style.display = 'none';
+        // Reload so the page re-evaluates access with the purchase in place
+        window.location.reload();
+      });
 
       // ===== Play button handler =====
       playBtn.addEventListener('click', function(e) {
@@ -1156,7 +1332,16 @@
 
       video.addEventListener('ended', function() {
         playBtn.textContent = '▶ Replay';
-        // If series, advance to next episode
+
+        if (isFreeTrialPlay) {
+          // The one free watch has just been used up: lock the site down
+          // until the user buys this title or subscribes.
+          markFreeTrialUsed();
+          showPaywall();
+          return;
+        }
+
+        // If series (and the user has real access), advance to next episode
         if (movie.type === 'series' && movie.seasons) {
           const seasonData = movie.seasons[currentSeason];
           if (seasonData && currentEpisode < seasonData.episodes.length - 1) {
@@ -1181,6 +1366,7 @@
 
       console.log('🎬 TanzaFlix Watch page loaded');
       console.log(`📺 Playing: ${movie.title} (${movie.type})`);
+      console.log(`🔐 Access -> subscriptionActive: ${subscriptionActive}, moviePurchased: ${moviePurchased}, isFreeTrialPlay: ${isFreeTrialPlay}, accessGranted: ${accessGranted}`);
     })();
   </script>
 </body>

@@ -189,6 +189,309 @@
       color: #8b8bff;
     }
 
+    /* Movies Stats Grid */
+    .movies-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .movies-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.3rem;
+      background: rgba(255, 255, 255, 0.035);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      transition: border-color var(--transition), background var(--transition);
+    }
+
+    .movies-stat-card:hover {
+      border-color: var(--border-color-strong);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .movies-stat-icon {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(108, 99, 255, 0.15);
+      border-radius: var(--radius-md);
+      font-size: 1.1rem;
+      color: #8b8bff;
+    }
+
+    .movies-stat-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .movies-stat-label {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin: 0 0 0.15rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .movies-stat-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .movies-stat-sub {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin: 0.1rem 0 0;
+    }
+
+    /* Stats Toggle Button */
+    .stats-toggle-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      font-family: inherit;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stats-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    .stats-toggle-btn i {
+      font-size: 0.9rem;
+    }
+
+    /* Users Stats Styles */
+    .users-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .users-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.3rem;
+      background: rgba(255, 255, 255, 0.035);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      transition: border-color var(--transition), background var(--transition);
+    }
+
+    .users-stat-card:hover {
+      border-color: var(--border-color-strong);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .users-stat-icon {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(108, 99, 255, 0.15);
+      border-radius: var(--radius-md);
+      font-size: 1.1rem;
+      color: #8b8bff;
+    }
+
+    .users-stat-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .users-stat-label {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin: 0 0 0.15rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .users-stat-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .users-stat-sub {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin: 0.1rem 0 0;
+    }
+
+    .users-stats-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .users-stats-section h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 0 0 0.75rem 0;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .users-stats-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .users-stat-mini {
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.025);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .users-stat-mini-label {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .users-stat-mini-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .users-stat-mini .text-success {
+      color: #4ade80;
+    }
+    
+    .users-stat-mini .text-warning {
+      color: #fbbf24;
+    }
+    
+    .users-stat-mini .text-danger {
+      color: #f87171;
+    }
+    
+    .users-stat-mini .text-info {
+      color: #60a5fa;
+    }
+
+    .users-stat-mini .text-purple {
+      color: #a78bfa;
+    }
+
+    .country-tag {
+      display: inline-block;
+      background: rgba(108, 99, 255, 0.12);
+      color: #8b8bff;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      margin: 0.1rem 0.2rem;
+    }
+
+    .country-tag .count {
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .newest-users-list {
+      display: grid;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .newest-user-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.8rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .newest-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      display: grid;
+      place-items: center;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .newest-user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .newest-user-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+    }
+
+    .newest-user-email {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+
+    .newest-user-date {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    .users-stats-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .users-stats-col {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      padding: 1rem;
+    }
+
+    .users-stats-col h4 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 0 0 0.75rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
     @media (max-width: 768px) {
       .episode-item {
         grid-template-columns: 1fr;
@@ -200,6 +503,56 @@
       .content-type-selector {
         flex-direction: column;
         gap: 0.5rem;
+      }
+      .movies-stats-grid,
+      .users-stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+      }
+      .movies-stat-card,
+      .users-stat-card {
+        padding: 0.9rem 1rem;
+      }
+      .movies-stat-value,
+      .users-stat-value {
+        font-size: 1rem;
+      }
+      .users-stats-wrapper {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .users-stats-mini-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .movies-stats-grid,
+      .users-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+      }
+      .movies-stat-card,
+      .users-stat-card {
+        padding: 0.7rem 0.8rem;
+        gap: 0.6rem;
+      }
+      .movies-stat-icon,
+      .users-stat-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+      }
+      .movies-stat-value,
+      .users-stat-value {
+        font-size: 0.95rem;
+      }
+      .movies-stat-label,
+      .users-stat-label {
+        font-size: 0.6rem;
+      }
+      .users-stats-mini-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -259,11 +612,68 @@
       <section id="moviesTab" class="tab-content active">
         <div class="tab-header">
           <h2><i class="fas fa-film"></i> Orodha ya Movies</h2>
-          <button class="add-btn" id="addMovieBtn">
-            <i class="fas fa-plus"></i>
-            <span>Ongeza Movie</span>
-          </button>
+          <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+            <button class="stats-toggle-btn" id="toggleStatsBtn">
+              <i class="fas fa-chart-bar"></i>
+              <span id="statsToggleLabel">Ficha Takwimu</span>
+            </button>
+            <button class="add-btn" id="addMovieBtn">
+              <i class="fas fa-plus"></i>
+              <span>Ongeza Movie</span>
+            </button>
+          </div>
         </div>
+
+        <!-- Movies Stats Section -->
+        <div id="moviesStatsContainer">
+          <div class="movies-stats-grid" id="moviesStatsGrid">
+            <div class="movies-stat-card">
+              <div class="movies-stat-icon"><i class="fas fa-video"></i></div>
+              <div class="movies-stat-info">
+                <p class="movies-stat-label">Jumla ya Movies</p>
+                <p class="movies-stat-value" id="statTotalMovies">0</p>
+              </div>
+            </div>
+            <div class="movies-stat-card">
+              <div class="movies-stat-icon"><i class="fas fa-tag"></i></div>
+              <div class="movies-stat-info">
+                <p class="movies-stat-label">Single Movies</p>
+                <p class="movies-stat-value" id="statSingleMovies">0</p>
+              </div>
+            </div>
+            <div class="movies-stat-card">
+              <div class="movies-stat-icon"><i class="fas fa-layer-group"></i></div>
+              <div class="movies-stat-info">
+                <p class="movies-stat-label">Series</p>
+                <p class="movies-stat-value" id="statSeriesMovies">0</p>
+              </div>
+            </div>
+            <div class="movies-stat-card">
+              <div class="movies-stat-icon"><i class="fas fa-clock"></i></div>
+              <div class="movies-stat-info">
+                <p class="movies-stat-label">Imeongezwa Mwezi</p>
+                <p class="movies-stat-value" id="statRecentMovies">0</p>
+              </div>
+            </div>
+            <div class="movies-stat-card">
+              <div class="movies-stat-icon"><i class="fas fa-tv"></i></div>
+              <div class="movies-stat-info">
+                <p class="movies-stat-label">Jumla ya Seasons</p>
+                <p class="movies-stat-value" id="statTotalSeasons">0</p>
+                <p class="movies-stat-sub"><span id="statTotalEpisodes">0</span> Episodes</p>
+              </div>
+            </div>
+            <div class="movies-stat-card">
+              <div class="movies-stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+              <div class="movies-stat-info">
+                <p class="movies-stat-label">Wastani wa Bei</p>
+                <p class="movies-stat-value" id="statAvgPrice">TSh 0</p>
+                <p class="movies-stat-sub"><span id="statPaidMovies">0</span> zilizolipwa</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="table-container" id="moviesTableContainer">
           <table class="admin-table" id="moviesTable">
             <thead>
@@ -289,12 +699,94 @@
       <section id="usersTab" class="tab-content">
         <div class="tab-header">
           <h2><i class="fas fa-users"></i> Watumizi Waliosajiliwa</h2>
-          <button class="add-btn" id="addUserBtn">
-            <i class="fas fa-plus"></i>
-            <span>Ongeza Mtumiaji</span>
-          </button>
+          <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+            <button class="stats-toggle-btn" id="toggleUsersStatsBtn">
+              <i class="fas fa-chart-bar"></i>
+              <span id="usersStatsToggleLabel">Ficha Takwimu</span>
+            </button>
+            <button class="add-btn" id="addUserBtn">
+              <i class="fas fa-plus"></i>
+              <span>Ongeza Mtumiaji</span>
+            </button>
+          </div>
         </div>
-        <div class="table-container">
+
+        <!-- Users Stats Section -->
+        <div id="usersStatsContainer">
+          <div class="users-stats-grid" id="usersStatsGrid">
+            <div class="users-stat-card">
+              <div class="users-stat-icon"><i class="fas fa-users"></i></div>
+              <div class="users-stat-info">
+                <p class="users-stat-label">Jumla ya Watumizi</p>
+                <p class="users-stat-value" id="statTotalUsers">0</p>
+              </div>
+            </div>
+            <div class="users-stat-card">
+              <div class="users-stat-icon"><i class="fas fa-eye"></i></div>
+              <div class="users-stat-info">
+                <p class="users-stat-label">Wameangalia</p>
+                <p class="users-stat-value" id="statHasWatched">0</p>
+                <p class="users-stat-sub"><span id="statNeverWatched">0</span> hawajaangalia</p>
+              </div>
+            </div>
+            <div class="users-stat-card">
+              <div class="users-stat-icon"><i class="fas fa-shopping-bag"></i></div>
+              <div class="users-stat-info">
+                <p class="users-stat-label">Wamenunua</p>
+                <p class="users-stat-value" id="statUsersWithPurchases">0</p>
+                <p class="users-stat-sub"><span id="statTotalPurchases">0</span> manunuzi</p>
+              </div>
+            </div>
+            <div class="users-stat-card">
+              <div class="users-stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+              <div class="users-stat-info">
+                <p class="users-stat-label">Mapato</p>
+                <p class="users-stat-value" id="statUserRevenue">TSh 0</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="users-stats-wrapper">
+            <div class="users-stats-col">
+              <h4><i class="fas fa-globe-africa"></i> Nchi & Mikoa</h4>
+              <div id="usersCountryStats"></div>
+              <div style="margin-top:0.75rem;" id="usersRegionStats"></div>
+            </div>
+            <div class="users-stats-col">
+              <h4><i class="fas fa-user-plus"></i> Watumizi Wapya</h4>
+              <div id="usersNewestList"></div>
+            </div>
+          </div>
+
+          <div class="users-stats-section" style="margin-top:1.5rem;">
+            <h3><i class="fas fa-chart-line"></i> Muhtasari wa Shughuli</h3>
+            <div class="users-stats-mini-grid">
+              <div class="users-stat-mini">
+                <span class="users-stat-mini-label">Kiwango cha Kutazama</span>
+                <span class="users-stat-mini-value text-info" id="statWatchRate">0%</span>
+              </div>
+              <div class="users-stat-mini">
+                <span class="users-stat-mini-label">Kiwango cha Ununuzi</span>
+                <span class="users-stat-mini-value text-success" id="statPurchaseRate">0%</span>
+              </div>
+              <div class="users-stat-mini">
+                <span class="users-stat-mini-label">Wateja Wanaorudia</span>
+                <span class="users-stat-mini-value text-warning" id="statRepeatCustomers">0</span>
+              </div>
+              <div class="users-stat-mini">
+                <span class="users-stat-mini-label">Wastani wa Matumizi</span>
+                <span class="users-stat-mini-value text-purple" id="statAvgSpend">TSh 0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="users-stats-section" style="margin-top:1rem;">
+            <h3><i class="fas fa-calendar-alt"></i> Usajili wa Wiki Iliyopita</h3>
+            <div id="usersRegistrationChart" style="display:flex;gap:0.5rem;flex-wrap:wrap;padding:0.5rem 0;"></div>
+          </div>
+        </div>
+
+        <div class="table-container" style="margin-top:1.5rem;">
           <table class="admin-table" id="usersTable">
             <thead>
               <tr>
