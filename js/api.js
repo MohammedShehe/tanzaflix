@@ -209,7 +209,6 @@ class ApiService {
             phoneNumber: phoneNumber || ''
         };
         
-        // Add card details if provided
         if (cardData) {
             payload.accountName = cardData.accountName;
             payload.cardNumber = cardData.cardNumber;
@@ -238,7 +237,6 @@ class ApiService {
             phoneNumber: phoneNumber || ''
         };
         
-        // Add card details if provided
         if (cardData) {
             payload.accountName = cardData.accountName;
             payload.cardNumber = cardData.cardNumber;
@@ -265,26 +263,7 @@ class ApiService {
         return this.request(`/movies/${id}`);
     }
 
-    async adminCreateMovie(movieData) {
-        const formData = new FormData();
-        Object.keys(movieData).forEach(key => {
-            if (movieData[key] !== undefined && movieData[key] !== null) {
-                if (key === 'seasons') {
-                    formData.append(key, JSON.stringify(movieData[key]));
-                } else if (Array.isArray(movieData[key])) {
-                    movieData[key].forEach(item => {
-                        if (item instanceof File) {
-                            formData.append(key, item);
-                        }
-                    });
-                } else if (movieData[key] instanceof File) {
-                    formData.append(key, movieData[key]);
-                } else {
-                    formData.append(key, String(movieData[key]));
-                }
-            }
-        });
-        
+    async adminCreateMovie(formData) {
         return fetch(`${this.baseUrl}/movies`, {
             method: 'POST',
             headers: {
@@ -294,26 +273,7 @@ class ApiService {
         }).then(res => res.json());
     }
 
-    async adminUpdateMovie(id, movieData) {
-        const formData = new FormData();
-        Object.keys(movieData).forEach(key => {
-            if (movieData[key] !== undefined && movieData[key] !== null) {
-                if (key === 'seasons') {
-                    formData.append(key, JSON.stringify(movieData[key]));
-                } else if (Array.isArray(movieData[key])) {
-                    movieData[key].forEach(item => {
-                        if (item instanceof File) {
-                            formData.append(key, item);
-                        }
-                    });
-                } else if (movieData[key] instanceof File) {
-                    formData.append(key, movieData[key]);
-                } else {
-                    formData.append(key, String(movieData[key]));
-                }
-            }
-        });
-        
+    async adminUpdateMovie(id, formData) {
         return fetch(`${this.baseUrl}/movies/${id}`, {
             method: 'PUT',
             headers: {

@@ -60,7 +60,7 @@
 
     .episode-item {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr auto;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto;
       gap: 0.75rem;
       align-items: end;
       background: rgba(255, 255, 255, 0.02);
@@ -92,6 +92,48 @@
 
     .episode-item .remove-episode:hover {
       background: rgba(239, 68, 68, 0.2);
+    }
+
+    .episode-item .file-input-wrapper {
+      position: relative;
+    }
+
+    .episode-item .file-input-wrapper input[type="file"] {
+      padding: 0.4rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-style: dashed;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .episode-item .file-input-wrapper input[type="file"]::file-selector-button {
+      padding: 0.3rem 0.6rem;
+      margin-right: 0.5rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--primary-gradient);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.7rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity var(--transition);
+    }
+
+    .episode-item .file-input-wrapper input[type="file"]::file-selector-button:hover {
+      opacity: 0.9;
+    }
+
+    .episode-item .file-status {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+      display: block;
+    }
+
+    .episode-item .file-status.uploaded {
+      color: var(--accent-green);
     }
 
     .add-season-btn, .add-episode-btn {
@@ -141,6 +183,26 @@
       border: 1px solid rgba(251, 146, 60, 0.15);
     }
 
+    .badge-translated {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      border: 1px solid rgba(34, 197, 94, 0.15);
+    }
+
+    .badge-not-translated {
+      background: rgba(251, 191, 36, 0.12);
+      color: #fbbf24;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      border: 1px solid rgba(251, 191, 36, 0.15);
+    }
+
     .content-type-selector {
       display: flex;
       gap: 1rem;
@@ -187,6 +249,29 @@
       font-size: 0.8rem;
       font-weight: 600;
       color: #8b8bff;
+    }
+
+    /* Loading Spinner for buttons */
+    .btn-loading {
+      position: relative;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .btn-loading .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     /* Movies Stats Grid */
@@ -578,6 +663,17 @@
       margin: 0 0 0.75rem 0;
     }
 
+    @media (max-width: 992px) {
+      .episode-item {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+      .episode-item .remove-episode {
+        justify-self: end;
+        grid-column: 2;
+      }
+    }
+
     @media (max-width: 768px) {
       .episode-item {
         grid-template-columns: 1fr;
@@ -646,6 +742,9 @@
         font-size: 0.6rem;
       }
       .users-stats-mini-grid {
+        grid-template-columns: 1fr;
+      }
+      .episode-item {
         grid-template-columns: 1fr;
       }
     }
@@ -780,6 +879,7 @@
                 <th>Lugha</th>
                 <th>Nchi</th>
                 <th>Kategoria</th>
+                <th>Imetafsiriwa</th>
                 <th>Mwaka</th>
                 <th>Bei</th>
                 <th>Rating</th>
@@ -1051,7 +1151,7 @@
           <h4><i class="fas fa-trophy"></i> Watumizi Wanaokadiria Zaidi</h4>
           <div id="ratingTopRaters">
             <!-- Dynamic content -->
-          </div>
+            </div>
         </div>
       </section>
     </main>
@@ -1059,12 +1159,12 @@
 
   <!-- Movie Modal -->
   <div class="modal" id="movieModal">
-    <div class="modal-content" style="max-width: 800px;">
+    <div class="modal-content" style="max-width: 900px;">
       <div class="modal-header">
         <h3 id="movieModalTitle">Ongeza Movie</h3>
-        <button class="modal-close">&times;</button>
+        <button class="modal-close" onclick="closeModal('movieModal')">&times;</button>
       </div>
-      <form id="movieForm">
+      <form id="movieForm" enctype="multipart/form-data">
         <input type="hidden" id="movieId" />
 
         <div class="form-group">
@@ -1089,41 +1189,41 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>Aina ya Movie</label>
-            <select id="movieType" required>
-              <option value="">Chagua aina</option>
-              <option value="Imetafsiriwa">Imetafsiriwa</option>
-              <option value="Haijatafsiriwa">Haijatafsiriwa</option>
-            </select>
-          </div>
-          <div class="form-group">
             <label>Nchi</label>
             <select id="movieCountry" required>
               <option value="">Chagua nchi</option>
-              <option value="Bongo">Bongo Movies</option>
-              <option value="Kiarabu">Kiarabu</option>
-              <option value="Kifilipino">Kifilipino</option>
-              <option value="Kihindi">Kihindi</option>
-              <option value="Kiitaliano">Kiitaliano</option>
-              <option value="Kikorea">Kikorea</option>
+              <option value="Bongo Movie">Bongo Movie</option>
+              <option value="Movie ya Kiarabu">Movie ya Kiarabu</option>
+              <option value="Movie ya Kifilipino">Movie ya Kifilipino</option>
+              <option value="Movie ya Kihindi">Movie ya Kihindi</option>
+              <option value="Movie ya Kitaliano">Movie ya Kitaliano</option>
+              <option value="Movie ya Kikorea">Movie ya Kikorea</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label>Lugha</label>
+            <input type="text" id="movieLang" placeholder="Lugha ya movie" required />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Lugha</label>
-            <input type="text" id="movieLang" placeholder="Lugha ya movie" required />
-          </div>
-          <div class="form-group">
             <label>Kategoria</label>
             <select id="movieCategory" required>
               <option value="">Chagua kategoria</option>
               <option value="Action">Action</option>
-              <option value="Love story">Love story</option>
+              <option value="Love Story">Love Story</option>
               <option value="Drama">Drama</option>
               <option value="Mix">Mix</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label>Imetafsiriwa</label>
+            <select id="movieTranslated" required>
+              <option value="0">Haijatafsiriwa</option>
+              <option value="1">Imetafsiriwa</option>
+            </select>
+            <small>Je, movie hii imetafsiriwa kwa Kiswahili?</small>
           </div>
         </div>
 
@@ -1134,7 +1234,7 @@
           </div>
           <div class="form-group">
             <label>Bei (TSh)</label>
-            <input type="number" id="moviePrice" placeholder="15000" required />
+            <input type="number" id="moviePrice" placeholder="2000" required />
           </div>
         </div>
 
@@ -1144,11 +1244,9 @@
         </div>
 
         <div class="form-group">
-          <label>More Like This (hiari)</label>
-          <select id="movieMoreLike" multiple>
-            <option value="">Chagua movies zinazofanana</option>
-          </select>
-          <small>Shikilia Ctrl (Cmd) ili kuchagua zaidi ya moja</small>
+          <label>Poster</label>
+          <input type="file" id="moviePoster" accept="image/*" required />
+          <small>Picha ya jalada la movie (JPEG, PNG, WEBP)</small>
         </div>
 
         <!-- Single Movie Fields -->
@@ -1158,8 +1256,9 @@
             <input type="text" id="movieDuration" placeholder="45m, 1h 30m, 2h 15m" />
           </div>
           <div class="form-group">
-            <label>Weka Movie (Video/File)</label>
-            <input type="file" id="movieFile" accept="video/*,.mp4,.mkv,.avi" />
+            <label>Video ya Movie</label>
+            <input type="file" id="movieFile" accept="video/*,.mp4,.mkv,.avi" required />
+            <small>MP4, MKV, AVI (max 2GB)</small>
           </div>
         </div>
 
@@ -1174,9 +1273,17 @@
           </button>
         </div>
 
+        <div class="form-group">
+          <label>More Like This (hiari)</label>
+          <select id="movieMoreLike" multiple>
+            <option value="">Chagua movies zinazofanana</option>
+          </select>
+          <small>Shikilia Ctrl (Cmd) ili kuchagua zaidi ya moja</small>
+        </div>
+
         <div class="modal-actions">
-          <button type="button" class="btn-cancel">Ghairi</button>
-          <button type="submit" class="btn-submit">Hifadhi</button>
+          <button type="button" class="btn-cancel" onclick="closeModal('movieModal')">Ghairi</button>
+          <button type="submit" class="btn-submit" id="submitMovieBtn">Hifadhi</button>
         </div>
       </form>
     </div>
@@ -1187,7 +1294,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="userModalTitle">Ongeza Mtumiaji</h3>
-        <button class="modal-close">&times;</button>
+        <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
       </div>
       <form id="userForm">
         <input type="hidden" id="userId" />
@@ -1246,8 +1353,8 @@
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn-cancel">Ghairi</button>
-          <button type="submit" class="btn-submit">Hifadhi</button>
+          <button type="button" class="btn-cancel" onclick="closeModal('userModal')">Ghairi</button>
+          <button type="submit" class="btn-submit" id="submitUserBtn">Hifadhi</button>
         </div>
       </form>
     </div>
@@ -1258,11 +1365,11 @@
     <div class="modal-content confirm-modal">
       <div class="modal-header">
         <h3>Thibitisha Kufuta</h3>
-        <button class="modal-close">&times;</button>
+        <button class="modal-close" onclick="closeModal('confirmModal')">&times;</button>
       </div>
       <p id="confirmMessage">Je, una uhakika unataka kufuta hii?</p>
       <div class="modal-actions">
-        <button type="button" class="btn-cancel">Ghairi</button>
+        <button type="button" class="btn-cancel" onclick="closeModal('confirmModal')">Ghairi</button>
         <button type="button" class="btn-delete" id="confirmDeleteBtn">Futa</button>
       </div>
     </div>
