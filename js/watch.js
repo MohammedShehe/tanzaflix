@@ -513,54 +513,160 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // ===== Buy Movie Button =====
+    // ===== Buy Movie Button with Bank Card Support =====
     buyMovieBtn.addEventListener('click', async function() {
         try {
             this.textContent = '⏳ Inachakata...';
             this.disabled = true;
             
-            const method = prompt('Chagua njia ya malipo (M-Pesa, Airtel Money, Tigo Pesa):');
-            if (!method) {
-                this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                this.disabled = false;
-                return;
+            // Ask user if they want to pay with card or mobile money
+            const useCard = confirm('Je, unataka kulipa kwa Kadi ya Benki?\n\n"OK" = Kadi ya Benki\n"Cancel" = M-Pesa/Airtel/Tigo');
+            
+            let method, phone, cardData = null;
+            
+            if (useCard) {
+                // ===== BANK CARD PAYMENT =====
+                method = 'bank_card';
+                
+                const cardNumber = prompt('Ingiza namba ya kadi (tarakimu 16, e.g., 4111111111111111):');
+                if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) {
+                    alert('Namba ya kadi si sahihi. Tafadhali jaribu tena.');
+                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                    this.disabled = false;
+                    return;
+                }
+                
+                const cardHolder = prompt('Ingiza jina kamili kwenye kadi (e.g., MOHAMMED AMINU):');
+                if (!cardHolder || cardHolder.length < 3) {
+                    alert('Jina kwenye kadi si sahihi. Tafadhali jaribu tena.');
+                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                    this.disabled = false;
+                    return;
+                }
+                
+                const expiry = prompt('Ingiza tarehe ya kuisha (MM/YY, e.g., 12/26):');
+                if (!expiry || !expiry.match(/^\d{2}\/\d{2}$/)) {
+                    alert('Tarehe ya kuisha si sahihi. Tafadhali ingiza kwa muundo MM/YY.');
+                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                    this.disabled = false;
+                    return;
+                }
+                
+                const cvv = prompt('Ingiza CVV (tarakimu 3-4 kwenye nyuma ya kadi):');
+                if (!cvv || cvv.length < 3) {
+                    alert('CVV si sahihi. Tafadhali ingiza tarakimu 3-4.');
+                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                    this.disabled = false;
+                    return;
+                }
+                
+                cardData = {
+                    accountName: cardHolder,
+                    cardNumber: cardNumber.replace(/\s/g, ''),
+                    expiryDate: expiry.replace(/\s/g, ''),
+                    cvv: cvv
+                };
+                
+                phone = '';
+                
+            } else {
+                // ===== MOBILE MONEY PAYMENT =====
+                const methodOptions = ['M-Pesa', 'Airtel Money', 'Tigo Pesa'];
+                const methodChoice = prompt(`Chagua njia ya malipo:\n1. M-Pesa\n2. Airtel Money\n3. Tigo Pesa\n\nIngiza namba (1-3):`);
+                
+                if (!methodChoice) {
+                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                    this.disabled = false;
+                    return;
+                }
+                
+                const methodMap = {
+                    '1': 'mpesa',
+                    '2': 'airtel_money',
+                    '3': 'mix_by_yas'
+                };
+                
+                method = methodMap[methodChoice] || 'mpesa';
+                
+                phone = prompt('Ingiza namba yako ya simu (e.g., 0677532140):');
+                if (!phone || phone.length < 9) {
+                    alert('Namba ya simu si sahihi. Tafadhali ingiza tarakimu 9-10.');
+                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                    this.disabled = false;
+                    return;
+                }
             }
             
-            const phone = prompt('Ingiza namba yako ya simu:');
-            if (!phone) {
-                this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                this.disabled = false;
-                return;
-            }
-            
-            const response = await api.createMoviePurchase(movieId, method, phone);
+            // ===== SEND PURCHASE REQUEST =====
+            const response = await api.createMoviePurchase(movieId, method, phone, cardData);
             
             if (response.success) {
-                alert(`✅ Malipo yameanzishwa!\nReference: ${response.reference}\nKiasi: TSh ${response.amount}\nTafadhali subiri uthibitisho.`);
+                const msg = method === 'bank_card' 
+                    ? '✅ Malipo ya kadi yameanzishwa!\nTafadhali subiri uthibitisho wa malipo.'
+                    : `✅ Malipo yameanzishwa!\nReference: ${response.reference}\nKiasi: TSh ${response.amount}\nTafadhali subiri uthibitisho kwenye simu yako.`;
+                
+                alert(msg);
+                
+                // ===== POLL FOR PAYMENT STATUS =====
+                let attempts = 0;
+                const maxAttempts = 36; // 3 minutes
                 
                 const checkStatus = setInterval(async () => {
+                    attempts++;
+                    
                     try {
                         const statusRes = await api.verifyMoviePurchase(response.reference);
+                        
                         if (statusRes.success && statusRes.payment.status === 'paid') {
                             clearInterval(checkStatus);
                             alert('✅ Malipo yamekamilika! Unaweza kutazama sasa.');
                             window.location.reload();
+                            
+                        } else if (statusRes.success && statusRes.payment.status === 'failed') {
+                            clearInterval(checkStatus);
+                            alert('❌ Malipo yameshindwa. Tafadhali jaribu tena.');
+                            this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                            this.disabled = false;
+                            
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(checkStatus);
+                            alert('⏱️ Muda wa malipo umeisha. Hakuna kiasi kilichotolewa kutoka akaunti yako. Tafadhali jaribu tena.');
+                            this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                            this.disabled = false;
                         }
                     } catch (e) {
                         console.warn('Status check failed:', e);
+                        if (attempts >= maxAttempts) {
+                            clearInterval(checkStatus);
+                            alert('⏱️ Muda wa malipo umeisha. Tafadhali jaribu tena.');
+                            this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                            this.disabled = false;
+                        }
                     }
                 }, 5000);
                 
+                // Auto-cleanup
                 setTimeout(() => {
                     clearInterval(checkStatus);
-                }, 120000);
+                }, maxAttempts * 5000 + 5000);
+                
             } else {
-                alert('❌ Malipo yameshindwa. Tafadhali jaribu tena.');
+                alert(`❌ Malipo yameshindwa: ${response.message || 'Tafadhali jaribu tena.'}`);
+                this.textContent = `💳 Nunua - TSh ${movieData.price}`;
+                this.disabled = false;
             }
+            
         } catch (error) {
             console.error('Purchase error:', error);
-            alert(`❌ Error: ${error.message}`);
-        } finally {
+            
+            let errorMsg = 'Tumeshindwa kuanzisha malipo. Tafadhali jaribu tena.';
+            if (error.message.includes('bank_card') || error.message.includes('Card')) {
+                errorMsg = '💳 Tatizo la kadi ya benki. Hakikisha namba ya kadi, tarehe ya kuisha, na CVV ni sahihi.';
+            } else if (error.message.includes('phone')) {
+                errorMsg = '📱 Namba ya simu si sahihi. Hakikisha unaingiza namba sahihi.';
+            }
+            
+            alert(`❌ Error: ${errorMsg}`);
             this.textContent = `💳 Nunua - TSh ${movieData.price}`;
             this.disabled = false;
         }

@@ -309,16 +309,15 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
+        // Map frontend method names to backend values
+        let backendMethod;
         let phone = '';
-        if (method !== 'Card') {
-            phone = phoneInput.value.trim();
-            if (!phone || phone.length < 9) {
-                showError('⚠️ Tafadhali ingiza namba halali ya simu (angalau tarakimu 9).', 'error');
-                return;
-            }
-        }
+        let cardData = null;
 
+        // ===== CARD PAYMENT =====
         if (method === 'Card') {
+            backendMethod = 'bank_card';
+            
             const cardNumber = document.getElementById('cardNumber').value.trim();
             const cardHolderName = document.getElementById('cardHolderName').value.trim();
             const cardExpiry = document.getElementById('cardExpiry').value.trim();
@@ -344,7 +343,35 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return;
             }
 
-            phone = '0000000000';
+            // Prepare card data for backend
+            cardData = {
+                accountName: cardHolderName,
+                cardNumber: cardNumber.replace(/\s/g, ''),
+                expiryDate: cardExpiry.replace(/\s/g, ''),
+                cvv: cardCvv
+            };
+            
+            // No phone needed for card
+            phone = '';
+
+        // ===== MOBILE MONEY PAYMENT =====
+        } else {
+            // Map frontend mobile money names to backend
+            if (method === 'M-Pesa') {
+                backendMethod = 'mpesa';
+            } else if (method === 'Airtel Money') {
+                backendMethod = 'airtel_money';
+            } else if (method === 'Tigo Pesa') {
+                backendMethod = 'mix_by_yas';
+            } else {
+                backendMethod = method.toLowerCase();
+            }
+
+            phone = phoneInput.value.trim();
+            if (!phone || phone.length < 9) {
+                showError('⚠️ Tafadhali ingiza namba halali ya simu (angalau tarakimu 9).', 'error');
+                return;
+            }
         }
 
         // ===== 2. SHOW PROCESSING STATE =====
@@ -355,7 +382,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         try {
             // ===== 3. SEND PAYMENT REQUEST =====
-            const response = await api.createPayment(selectedPlanId, method, phone);
+            const response = await api.createPayment(
+                selectedPlanId, 
+                backendMethod, 
+                phone, 
+                cardData
+            );
             
             if (response.success) {
                 const reference = response.reference;
@@ -382,7 +414,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                             
                             // Save subscription data
                             const subscriptionData = {
-                                phone: phone,
+                                phone: phone || 'Card Payment',
                                 plan: selectedPlan,
                                 planId: selectedPlanId,
                                 planName: selectedPlan,
@@ -477,6 +509,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 showError('🌐 Tatizo la muunganisho wa mtandao. Hakikisha umeunganishwa kwenye intaneti na jaribu tena. Hakuna kiasi kilichotolewa.', 'error');
             } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
                 showError('⚠️ Tatizo la kiufundi kwenye server yetu. Tafadhali jaribu tena baada ya muda. Hakuna kiasi kilichotolewa.', 'error');
+            } else if (error.message.includes('bank card') || error.message.includes('Card')) {
+                showError(`💳 ${error.message}`, 'error');
             } else {
                 showError(`❌ ${error.message || 'Malipo yameshindwa. Tafadhali jaribu tena.'}`, 'error');
             }

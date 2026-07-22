@@ -172,7 +172,6 @@ class ApiService {
     }
 
     // ==================== RATING ENDPOINTS ====================
-    // Rate a movie (user)
     async rateMovie(movieId, rating, review_text = null) {
         return this.request(`/ratings/movie/${movieId}/rate`, {
             method: 'POST',
@@ -180,23 +179,19 @@ class ApiService {
         });
     }
 
-    // Get movie rating details (including user's rating)
     async getMovieRatingDetails(movieId) {
         return this.request(`/ratings/movie/${movieId}/ratings`);
     }
 
-    // Get user's rating for a movie
     async getUserRating(movieId) {
         return this.request(`/ratings/movie/${movieId}/my-rating`);
     }
 
-    // Get top rated movies
     async getTopRatedMovies(limit = 10, minRatings = 5) {
         return this.request(`/ratings/top-rated?limit=${limit}&min_ratings=${minRatings}`);
     }
 
     // ==================== ADMIN RATING ENDPOINTS ====================
-    // Get rating statistics (admin)
     async adminGetRatingStats() {
         return this.request('/ratings/admin/stats');
     }
@@ -207,10 +202,24 @@ class ApiService {
     }
 
     // ==================== PAYMENT ENDPOINTS ====================
-    async createPayment(planId, paymentMethod, phoneNumber) {
+    async createPayment(planId, paymentMethod, phoneNumber, cardData = null) {
+        const payload = {
+            planId: planId,
+            paymentMethod: paymentMethod,
+            phoneNumber: phoneNumber || ''
+        };
+        
+        // Add card details if provided
+        if (cardData) {
+            payload.accountName = cardData.accountName;
+            payload.cardNumber = cardData.cardNumber;
+            payload.expiryDate = cardData.expiryDate;
+            payload.cvv = cardData.cvv;
+        }
+        
         return this.request('/payments/create', {
             method: 'POST',
-            body: JSON.stringify({ planId, paymentMethod, phoneNumber }),
+            body: JSON.stringify(payload),
         });
     }
 
@@ -223,10 +232,23 @@ class ApiService {
     }
 
     // ==================== MOVIE PURCHASE ENDPOINTS ====================
-    async createMoviePurchase(movieId, paymentMethod, phoneNumber) {
+    async createMoviePurchase(movieId, paymentMethod, phoneNumber, cardData = null) {
+        const payload = {
+            paymentMethod: paymentMethod,
+            phoneNumber: phoneNumber || ''
+        };
+        
+        // Add card details if provided
+        if (cardData) {
+            payload.accountName = cardData.accountName;
+            payload.cardNumber = cardData.cardNumber;
+            payload.expiryDate = cardData.expiryDate;
+            payload.cvv = cardData.cvv;
+        }
+        
         return this.request(`/movie-purchases/create/${movieId}`, {
             method: 'POST',
-            body: JSON.stringify({ paymentMethod, phoneNumber }),
+            body: JSON.stringify(payload),
         });
     }
 
