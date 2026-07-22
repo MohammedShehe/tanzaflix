@@ -492,6 +492,92 @@
       letter-spacing: 0.04em;
     }
 
+    /* Ratings Tab Styles */
+    .ratings-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .ratings-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.3rem;
+      background: rgba(255, 255, 255, 0.035);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      transition: border-color var(--transition), background var(--transition);
+    }
+
+    .ratings-stat-card:hover {
+      border-color: var(--border-color-strong);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .ratings-stat-icon {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(251, 191, 36, 0.15);
+      border-radius: var(--radius-md);
+      font-size: 1.1rem;
+      color: #fbbf24;
+    }
+
+    .ratings-stat-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ratings-stat-label {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin: 0 0 0.15rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .ratings-stat-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .ratings-distribution {
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .ratings-distribution h4 {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin: 0 0 0.75rem 0;
+    }
+
+    .ratings-top-raters {
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .ratings-top-raters h4 {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin: 0 0 0.75rem 0;
+    }
+
     @media (max-width: 768px) {
       .episode-item {
         grid-template-columns: 1fr;
@@ -505,16 +591,19 @@
         gap: 0.5rem;
       }
       .movies-stats-grid,
-      .users-stats-grid {
+      .users-stats-grid,
+      .ratings-stats-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 0.75rem;
       }
       .movies-stat-card,
-      .users-stat-card {
+      .users-stat-card,
+      .ratings-stat-card {
         padding: 0.9rem 1rem;
       }
       .movies-stat-value,
-      .users-stat-value {
+      .users-stat-value,
+      .ratings-stat-value {
         font-size: 1rem;
       }
       .users-stats-wrapper {
@@ -528,27 +617,32 @@
 
     @media (max-width: 480px) {
       .movies-stats-grid,
-      .users-stats-grid {
+      .users-stats-grid,
+      .ratings-stats-grid {
         grid-template-columns: 1fr 1fr;
         gap: 0.6rem;
       }
       .movies-stat-card,
-      .users-stat-card {
+      .users-stat-card,
+      .ratings-stat-card {
         padding: 0.7rem 0.8rem;
         gap: 0.6rem;
       }
       .movies-stat-icon,
-      .users-stat-icon {
+      .users-stat-icon,
+      .ratings-stat-icon {
         width: 32px;
         height: 32px;
         font-size: 0.9rem;
       }
       .movies-stat-value,
-      .users-stat-value {
+      .users-stat-value,
+      .ratings-stat-value {
         font-size: 0.95rem;
       }
       .movies-stat-label,
-      .users-stat-label {
+      .users-stat-label,
+      .ratings-stat-label {
         font-size: 0.6rem;
       }
       .users-stats-mini-grid {
@@ -604,6 +698,10 @@
         <button class="nav-item" data-tab="activities" onclick="window.location.href='admin-activities.html'">
             <i class="fas fa-chart-line"></i>
             <span>Shughuli</span>
+        </button>
+        <button class="nav-item" data-tab="ratings">
+            <i class="fas fa-star"></i>
+            <span>Ratings</span>
         </button>
     </nav>
 
@@ -679,12 +777,12 @@
             <thead>
               <tr>
                 <th>Jina</th>
-                <th>Aina</th>
-                <th>Nchi</th>
                 <th>Lugha</th>
+                <th>Nchi</th>
                 <th>Kategoria</th>
                 <th>Mwaka</th>
                 <th>Bei</th>
+                <th>Rating</th>
                 <th>Vitendo</th>
               </tr>
             </thead>
@@ -883,6 +981,77 @@
               <!-- Activities will be rendered here -->
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- Ratings Tab -->
+      <section id="ratingsTab" class="tab-content">
+        <div class="tab-header">
+          <h2><i class="fas fa-star"></i> Takwimu za Ratings</h2>
+          <button class="refresh-btn" onclick="window.location.reload()">
+            <i class="fas fa-sync-alt"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+
+        <!-- Ratings Stats -->
+        <div class="ratings-stats-grid">
+          <div class="ratings-stat-card">
+            <div class="ratings-stat-icon"><i class="fas fa-star"></i></div>
+            <div class="ratings-stat-info">
+              <p class="ratings-stat-label">Jumla ya Ratings</p>
+              <p class="ratings-stat-value" id="ratingTotalRatings">0</p>
+            </div>
+          </div>
+          <div class="ratings-stat-card">
+            <div class="ratings-stat-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="ratings-stat-info">
+              <p class="ratings-stat-label">Wastani wa Jumla</p>
+              <p class="ratings-stat-value" id="ratingOverallAvg">0.0</p>
+            </div>
+          </div>
+          <div class="ratings-stat-card">
+            <div class="ratings-stat-icon"><i class="fas fa-film"></i></div>
+            <div class="ratings-stat-info">
+              <p class="ratings-stat-label">Movies Zilizokadiriwa</p>
+              <p class="ratings-stat-value" id="ratingMoviesWithRatings">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rating Distribution -->
+        <div class="ratings-distribution">
+          <h4><i class="fas fa-chart-bar"></i> Usambazaji wa Ratings</h4>
+          <div id="ratingDistribution">
+            <!-- Dynamic content -->
+          </div>
+        </div>
+
+        <!-- Ratings by Movie -->
+        <div class="table-container" style="margin-bottom:1.5rem;">
+          <table class="admin-table" id="ratingsMovieTable">
+            <thead>
+              <tr>
+                <th>Jina la Movie</th>
+                <th>Wastani wa Rating</th>
+                <th>Jumla ya Ratings</th>
+                <th>Bar</th>
+                <th>Kategoria</th>
+                <th>Vitendo</th>
+              </tr>
+            </thead>
+            <tbody id="ratingsMovieTableBody">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Top Raters -->
+        <div class="ratings-top-raters">
+          <h4><i class="fas fa-trophy"></i> Watumizi Wanaokadiria Zaidi</h4>
+          <div id="ratingTopRaters">
+            <!-- Dynamic content -->
+          </div>
         </div>
       </section>
     </main>
@@ -1099,6 +1268,6 @@
     </div>
   </div>
 
-  <script src="js/admin.js"></script>
+  <script type="module" src="js/admin.js"></script>
 </body>
 </html>

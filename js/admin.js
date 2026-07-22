@@ -1,13 +1,11 @@
+// js/admin.js - Admin Panel with Ratings Tab
+
+import api from './api.js';
+import auth from './auth.js';
+
 document.addEventListener('DOMContentLoaded', function() {
-    // ===== Check Admin Session =====
-    const adminSession = localStorage.getItem('tanzaflix_admin_session');
-    console.log('Admin session check:', adminSession);
-    
-    if (!adminSession) {
-        console.log('No admin session, redirecting to login...');
-        window.location.href = 'index.html';
-        return;
-    }
+    // Check admin session
+    if (!auth.checkAuth() || !auth.checkAdmin()) return;
 
     // ===== State =====
     let currentTab = 'movies';
@@ -16,130 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let seasonCounter = 0;
     let statsVisible = true;
     let usersStatsVisible = true;
-
-    // ===== Sample Data =====
-    let movies = [
-        { 
-            id: 1, 
-            title: 'Safari ya Mtaa', 
-            type: 'Haijatafsiriwa', 
-            country: 'Bongo', 
-            lang: 'Kiswahili', 
-            category: 'Action', 
-            year: 2024, 
-            price: 15000, 
-            description: 'Hadithi ya kusisimua ya mitaa ya Dar', 
-            moreLike: [2, 3],
-            contentType: 'single',
-            duration: '2h 10m',
-            videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-            createdAt: new Date('2024-12-15').toISOString()
-        },
-        { 
-            id: 2, 
-            title: 'The Silent Shore', 
-            type: 'Imetafsiriwa', 
-            country: 'Kihindi', 
-            lang: 'Hindi', 
-            category: 'Drama', 
-            year: 2023, 
-            price: 20000, 
-            description: 'Love story along the coast', 
-            moreLike: [1, 4],
-            contentType: 'single',
-            duration: '2h 20m',
-            videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-            createdAt: new Date('2024-11-20').toISOString()
-        },
-        { 
-            id: 3, 
-            title: 'Mapenzi ya Mwanga', 
-            type: 'Haijatafsiriwa', 
-            country: 'Bongo', 
-            lang: 'Kiswahili', 
-            category: 'Love story', 
-            year: 2024, 
-            price: 12000, 
-            description: 'Romance in the city', 
-            moreLike: [],
-            contentType: 'single',
-            duration: '1h 55m',
-            videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-            createdAt: new Date('2025-01-05').toISOString()
-        },
-        { 
-            id: 4, 
-            title: 'Bollywood Dreams', 
-            type: 'Imetafsiriwa', 
-            country: 'Kihindi', 
-            lang: 'Hindi', 
-            category: 'Mix', 
-            year: 2024, 
-            price: 25000, 
-            description: 'Indian cinema experience', 
-            moreLike: [2],
-            contentType: 'single',
-            duration: '2h 35m',
-            videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-            createdAt: new Date('2024-10-10').toISOString()
-        },
-        // Series Example
-        {
-            id: 7,
-            title: 'Mafia: The Untold Story',
-            type: 'Imetafsiriwa',
-            country: 'Bongo',
-            lang: 'Kiswahili',
-            category: 'Action',
-            year: 2024,
-            price: 35000,
-            description: 'A gripping crime series set in the underworld of Dar es Salaam.',
-            moreLike: [],
-            contentType: 'series',
-            duration: '45m per episode',
-            createdAt: new Date('2025-01-10').toISOString(),
-            seasons: {
-                1: {
-                    label: 'S01',
-                    episodes: [
-                        { num: 'E01', title: 'The Beginning', duration: '45m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-                        { num: 'E02', title: 'The Awakening', duration: '42m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-                        { num: 'E03', title: 'Rising Power', duration: '48m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' }
-                    ]
-                },
-                2: {
-                    label: 'S02',
-                    episodes: [
-                        { num: 'E01', title: 'New Era', duration: '46m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-                        { num: 'E02', title: 'Rivalry', duration: '43m', video: 'https://www.w3schools.com/html/mov_bbb.mp4' }
-                    ]
-                }
-            }
-        }
-    ];
-
-    let users = [
-        { id: 1, fullName: 'John Doe', email: 'john@example.com', phone: '0712345678', country: 'Tanzania', region: 'Dar es Salaam', password: 'hashed123', photo: 'https://ui-avatars.com/api/?name=John+Doe&background=6c63ff&color=fff&size=60', createdAt: new Date('2025-01-10').toISOString(), hasWatched: true, purchasedMovies: [1, 3] },
-        { id: 2, fullName: 'Jane Smith', email: 'jane@example.com', phone: '0723456789', country: 'Kenya', region: 'Nairobi', password: 'hashed456', photo: 'https://ui-avatars.com/api/?name=Jane+Smith&background=ff4eb0&color=fff&size=60', createdAt: new Date('2025-01-12').toISOString(), hasWatched: false, purchasedMovies: [2] },
-        { id: 3, fullName: 'Ali Hassan', email: 'ali@example.com', phone: '0734567890', country: 'Tanzania', region: 'Zanzibar', password: 'hashed789', photo: 'https://ui-avatars.com/api/?name=Ali+Hassan&background=22c55e&color=fff&size=60', createdAt: new Date('2025-01-08').toISOString(), hasWatched: true, purchasedMovies: [1, 2, 4] },
-    ];
-
-    let transactions = [
-        { id: 1, userId: 1, userName: 'John Doe', movieId: 1, movieTitle: 'Safari ya Mtaa', amount: 15000, status: 'confirmed', date: '2024-01-15 14:30' },
-        { id: 2, userId: 2, userName: 'Jane Smith', movieId: 3, movieTitle: 'Mapenzi ya Mwanga', amount: 12000, status: 'processing', date: '2024-01-16 09:15' },
-        { id: 3, userId: 3, userName: 'Ali Hassan', movieId: 2, movieTitle: 'The Silent Shore', amount: 20000, status: 'confirmed', date: '2024-01-16 18:45' },
-        { id: 4, userId: 1, userName: 'John Doe', movieId: 4, movieTitle: 'Bollywood Dreams', amount: 25000, status: 'processing', date: '2024-01-17 11:00' },
-    ];
-
-    let activities = [
-        { userId: 1, userName: 'John Doe', status: 'active', role: 'subscriber', login: '2024-01-17 10:30', logout: '2024-01-17 12:45', purchased: ['Safari ya Mtaa', 'Bollywood Dreams'] },
-        { userId: 2, userName: 'Jane Smith', status: 'inactive', role: 'guest', login: '2024-01-16 08:00', logout: '2024-01-16 09:30', purchased: ['Mapenzi ya Mwanga'] },
-        { userId: 3, userName: 'Ali Hassan', status: 'active', role: 'subscriber', login: '2024-01-17 14:00', logout: '2024-01-17 16:20', purchased: ['The Silent Shore'] },
-    ];
-
-    let nextMovieId = 8;
-    let nextUserId = 4;
-    let nextTransactionId = 5;
+    let moviesData = [];
+    let usersData = [];
+    let ratingsData = [];
 
     // ===== DOM Elements =====
     const tabs = document.querySelectorAll('.nav-item');
@@ -148,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
         users: document.getElementById('usersTab'),
         transactions: document.getElementById('transactionsTab'),
         activities: document.getElementById('activitiesTab'),
+        ratings: document.getElementById('ratingsTab'),
     };
 
     // ===== Real-time Clock =====
@@ -181,9 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== Logout =====
     document.getElementById('logoutBtn').addEventListener('click', function() {
         if (confirm('Je, una uhakika unataka kuondoka?')) {
-            localStorage.removeItem('tanzaflix_user');
-            localStorage.removeItem('tanzaflix_admin_session');
-            window.location.href = 'index.html';
+            auth.logout();
         }
     });
 
@@ -191,237 +67,317 @@ document.addEventListener('DOMContentLoaded', function() {
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             const tabName = this.dataset.tab;
+            if (tabName === 'activities') {
+                window.location.href = 'admin-activities.html';
+                return;
+            }
             tabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
             Object.keys(tabContents).forEach(key => {
-                tabContents[key].classList.remove('active');
+                if (tabContents[key]) {
+                    tabContents[key].classList.remove('active');
+                }
             });
-            tabContents[tabName].classList.add('active');
+            if (tabContents[tabName]) {
+                tabContents[tabName].classList.add('active');
+            }
             currentTab = tabName;
-            renderAll();
+            if (tabName === 'movies') loadMovies();
+            else if (tabName === 'users') loadUsers();
+            else if (tabName === 'transactions') loadTransactions();
+            else if (tabName === 'ratings') loadRatings();
         });
     });
 
-    // ===== Movies Stats Functions =====
-    function calculateMoviesStats() {
-        const totalMovies = movies.length;
-        const singleMovies = movies.filter(m => m.contentType === 'single').length;
-        const seriesMovies = movies.filter(m => m.contentType === 'series').length;
-        
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const recentMovies = movies.filter(m => new Date(m.createdAt) >= thirtyDaysAgo).length;
-        
-        let totalSeasons = 0;
-        let totalEpisodes = 0;
-        movies.forEach(m => {
-            if (m.contentType === 'series' && m.seasons) {
-                const seasonKeys = Object.keys(m.seasons);
-                totalSeasons += seasonKeys.length;
-                seasonKeys.forEach(key => {
-                    totalEpisodes += m.seasons[key].episodes.length;
-                });
+    // ===== Load Movies =====
+    async function loadMovies() {
+        try {
+            const response = await api.adminGetMovies();
+            if (response.success && response.movies) {
+                moviesData = response.movies;
+                renderMovies();
+                renderMoviesStats();
             }
-        });
-        
-        const paidMovies = movies.filter(m => m.price > 0);
-        const avgPrice = paidMovies.length > 0 
-            ? paidMovies.reduce((sum, m) => sum + m.price, 0) / paidMovies.length 
-            : 0;
-        
-        return {
-            totalMovies,
-            singleMovies,
-            seriesMovies,
-            recentMovies,
-            totalSeasons,
-            totalEpisodes,
-            paidMovies: paidMovies.length,
-            avgPrice
-        };
+        } catch (error) {
+            console.error('Error loading movies:', error);
+            document.getElementById('moviesTableBody').innerHTML = 
+                `<tr><td colspan="8" class="empty-state">Error loading movies: ${error.message}</td></tr>`;
+        }
     }
 
-    function renderMoviesStats() {
-        const stats = calculateMoviesStats();
-        
-        document.getElementById('statTotalMovies').textContent = stats.totalMovies;
-        document.getElementById('statSingleMovies').textContent = stats.singleMovies;
-        document.getElementById('statSeriesMovies').textContent = stats.seriesMovies;
-        document.getElementById('statRecentMovies').textContent = stats.recentMovies;
-        document.getElementById('statTotalSeasons').textContent = stats.totalSeasons;
-        document.getElementById('statTotalEpisodes').textContent = stats.totalEpisodes;
-        document.getElementById('statAvgPrice').textContent = `TSh ${Math.round(stats.avgPrice).toLocaleString()}`;
-        document.getElementById('statPaidMovies').textContent = stats.paidMovies;
-    }
-
-    // ===== Users Stats Functions =====
-    function calculateUsersStats() {
-        const totalUsers = users.length;
-        
-        // Watch activity
-        const hasWatched = users.filter(u => u.hasWatched).length;
-        const neverWatched = totalUsers - hasWatched;
-        
-        // Users by country
-        const countryMap = {};
-        const regionMap = {};
-        users.forEach(u => {
-            countryMap[u.country] = (countryMap[u.country] || 0) + 1;
-            if (u.region) {
-                regionMap[u.region] = (regionMap[u.region] || 0) + 1;
-            }
-        });
-        const usersByCountry = Object.entries(countryMap).map(([country, count]) => ({ country, count }));
-        const usersByRegion = Object.entries(regionMap).map(([region, count]) => ({ region, count }));
-        
-        // Purchases
-        const usersWithPurchases = users.filter(u => u.purchasedMovies && u.purchasedMovies.length > 0).length;
-        const totalPurchases = users.reduce((sum, u) => sum + (u.purchasedMovies ? u.purchasedMovies.length : 0), 0);
-        const totalRevenue = transactions.filter(t => t.status === 'confirmed').reduce((sum, t) => sum + t.amount, 0);
-        
-        // Newest users (sort by createdAt)
-        const newestUsers = [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
-        
-        // Registrations last 7 days
-        const last7Days = [];
-        const last30Days = [];
-        const now = new Date();
-        
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(now);
-            date.setDate(date.getDate() - i);
-            date.setHours(0, 0, 0, 0);
-            const dateStr = date.toISOString();
-            const count = users.filter(u => {
-                const created = new Date(u.createdAt);
-                created.setHours(0, 0, 0, 0);
-                return created.getTime() === date.getTime();
-            }).length;
-            last7Days.push({ date: dateStr, count });
+    function renderMovies() {
+        const tbody = document.getElementById('moviesTableBody');
+        if (!moviesData.length) {
+            tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Hakuna movies zilizosajiliwa</td></tr>`;
+            return;
         }
-        
-        for (let i = 29; i >= 0; i--) {
-            const date = new Date(now);
-            date.setDate(date.getDate() - i);
-            date.setHours(0, 0, 0, 0);
-            const dateStr = date.toISOString();
-            const count = users.filter(u => {
-                const created = new Date(u.createdAt);
-                created.setHours(0, 0, 0, 0);
-                return created.getTime() === date.getTime();
-            }).length;
-            last30Days.push({ date: dateStr, count });
-        }
-        
-        // Summary rates
-        const watchRate = totalUsers > 0 ? (hasWatched / totalUsers) * 100 : 0;
-        const purchaseRate = totalUsers > 0 ? (usersWithPurchases / totalUsers) * 100 : 0;
-        
-        // Repeat customers (users with more than 1 purchase)
-        const repeatCustomers = users.filter(u => u.purchasedMovies && u.purchasedMovies.length > 1).length;
-        
-        // Average spend
-        const avgSpend = usersWithPurchases > 0 ? totalRevenue / usersWithPurchases : 0;
-        
-        return {
-            totalUsers,
-            hasWatched,
-            neverWatched,
-            usersByCountry,
-            usersByRegion,
-            usersWithPurchases,
-            totalPurchases,
-            totalRevenue,
-            newestUsers,
-            last7Days,
-            last30Days,
-            watchRate,
-            purchaseRate,
-            repeatCustomers,
-            avgSpend
-        };
-    }
-
-    function renderUsersStats() {
-        const stats = calculateUsersStats();
-        
-        // Main stats cards
-        document.getElementById('statTotalUsers').textContent = stats.totalUsers;
-        document.getElementById('statHasWatched').textContent = stats.hasWatched;
-        document.getElementById('statNeverWatched').textContent = stats.neverWatched;
-        document.getElementById('statUsersWithPurchases').textContent = stats.usersWithPurchases;
-        document.getElementById('statTotalPurchases').textContent = stats.totalPurchases;
-        document.getElementById('statUserRevenue').textContent = `TSh ${stats.totalRevenue.toLocaleString()}`;
-        
-        // Country stats
-        const countryContainer = document.getElementById('usersCountryStats');
-        if (stats.usersByCountry.length > 0) {
-            countryContainer.innerHTML = stats.usersByCountry.map(c => 
-                `<span class="country-tag">${c.country} <span class="count">(${c.count})</span></span>`
-            ).join(' ');
-        } else {
-            countryContainer.innerHTML = '<span class="users-stat-mini-label">Hakuna data</span>';
-        }
-        
-        // Region stats
-        const regionContainer = document.getElementById('usersRegionStats');
-        if (stats.usersByRegion.length > 0) {
-            regionContainer.innerHTML = stats.usersByRegion.map(r => 
-                `<span class="country-tag">${r.region} <span class="count">(${r.count})</span></span>`
-            ).join(' ');
-        } else {
-            regionContainer.innerHTML = '<span class="users-stat-mini-label">Hakuna mikoa iliyorekodiwa</span>';
-        }
-        
-        // Newest users list
-        const newestContainer = document.getElementById('usersNewestList');
-        if (stats.newestUsers.length > 0) {
-            newestContainer.innerHTML = `
-                <div class="newest-users-list">
-                    ${stats.newestUsers.map(u => {
-                        const initial = u.fullName.charAt(0).toUpperCase();
-                        const createdDate = new Date(u.createdAt);
-                        const formattedDate = createdDate.toLocaleDateString('sw', { day: 'numeric', month: 'short', year: 'numeric' });
-                        return `
-                            <div class="newest-user-item">
-                                <div class="newest-user-avatar">${initial}</div>
-                                <div class="newest-user-info">
-                                    <div class="newest-user-name">${u.fullName}</div>
-                                    <div class="newest-user-email">${u.email}</div>
-                                </div>
-                                <div class="newest-user-date">${formattedDate}</div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        } else {
-            newestContainer.innerHTML = '<span class="users-stat-mini-label">Hakuna watumizi wapya</span>';
-        }
-        
-        // Summary rates
-        document.getElementById('statWatchRate').textContent = `${Math.round(stats.watchRate)}%`;
-        document.getElementById('statPurchaseRate').textContent = `${Math.round(stats.purchaseRate)}%`;
-        document.getElementById('statRepeatCustomers').textContent = stats.repeatCustomers;
-        document.getElementById('statAvgSpend').textContent = `TSh ${Math.round(stats.avgSpend).toLocaleString()}`;
-        
-        // Registration chart (last 7 days)
-        const chartContainer = document.getElementById('usersRegistrationChart');
-        const maxCount = Math.max(...stats.last7Days.map(d => d.count), 1);
-        chartContainer.innerHTML = stats.last7Days.map(d => {
-            const date = new Date(d.date);
-            const dayLabel = date.toLocaleDateString('sw', { weekday: 'short' });
-            const height = maxCount > 0 ? (d.count / maxCount) * 60 : 0;
+        tbody.innerHTML = moviesData.map(m => {
+            const contentTypeBadge = m.movie_type === 'series' 
+                ? '<span class="badge-series">📺 Series</span>' 
+                : '<span class="badge-single">🎬 Single</span>';
+            const ratingDisplay = m.total_ratings > 0 
+                ? `${m.avg_rating?.toFixed(1) || 0}/10 (${m.total_ratings})`
+                : 'Hakuna rating';
             return `
-                <div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;flex:1;">
-                    <div style="width:100%;height:60px;display:flex;align-items:flex-end;justify-content:center;">
-                        <div style="width:24px;height:${height}px;background:var(--primary-gradient);border-radius:4px 4px 0 0;opacity:${d.count > 0 ? 1 : 0.3};transition:height 0.3s;"></div>
+            <tr>
+                <td><strong>${m.title}</strong> ${contentTypeBadge}</td>
+                <td>${m.language || 'Unknown'}</td>
+                <td>${m.country || '-'}</td>
+                <td>${m.category || '-'}</td>
+                <td>${m.year || '-'}</td>
+                <td>TSh ${m.price ? m.price.toLocaleString() : '0'}</td>
+                <td>${ratingDisplay}</td>
+                <td>
+                    <button class="action-btn action-btn-view" onclick="window.viewMovie(${m.id})"><i class="fas fa-eye"></i></button>
+                    <button class="action-btn action-btn-edit" onclick="window.editMovie(${m.id})"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn action-btn-delete" onclick="window.deleteMovie(${m.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `}).join('');
+    }
+
+    // ===== Load Users =====
+    async function loadUsers() {
+        try {
+            const response = await api.adminGetUsers();
+            if (response.success && response.users) {
+                usersData = response.users;
+                renderUsers();
+                renderUsersStats();
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+            document.getElementById('usersTableBody').innerHTML = 
+                `<tr><td colspan="7" class="empty-state">Error loading users: ${error.message}</td></tr>`;
+        }
+    }
+
+    function renderUsers() {
+        const tbody = document.getElementById('usersTableBody');
+        if (!usersData.length) {
+            tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Hakuna watumizi waliosajiliwa</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = usersData.map(u => `
+            <tr>
+                <td>${u.full_name}</td>
+                <td>${u.email}</td>
+                <td>${u.phone || '-'}</td>
+                <td>${u.country || '-'}</td>
+                <td>${u.region || '-'}</td>
+                <td>
+                    ${u.profile_image ? 
+                        `<img src="${u.profile_image}" alt="${u.full_name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1);" />` : 
+                        `<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#ff4eb0);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:16px;">${u.full_name?.charAt(0) || '?'}</div>`
+                    }
+                </td>
+                <td>
+                    <button class="action-btn action-btn-view" onclick="window.viewUser(${u.id})"><i class="fas fa-eye"></i></button>
+                    <button class="action-btn action-btn-edit" onclick="window.editUser(${u.id})"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn action-btn-delete" onclick="window.deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // ===== Load Transactions =====
+    async function loadTransactions() {
+        try {
+            const response = await api.adminGetAllPayments();
+            if (response.success && response.payments) {
+                renderTransactions(response.payments);
+            }
+        } catch (error) {
+            console.error('Error loading transactions:', error);
+            document.getElementById('transactionsTableBody').innerHTML = 
+                `<tr><td colspan="7" class="empty-state">Error loading transactions: ${error.message}</td></tr>`;
+        }
+    }
+
+    function renderTransactions(payments) {
+        const tbody = document.getElementById('transactionsTableBody');
+        const totalIncome = payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+        const completed = payments.filter(p => p.status === 'paid').length;
+        const pending = payments.filter(p => p.status === 'pending' || p.status === 'processing').length;
+        const customers = new Set(payments.filter(p => p.status === 'paid').map(p => p.user_id)).size;
+
+        document.getElementById('totalIncome').textContent = `TSh ${totalIncome.toLocaleString()}`;
+        document.getElementById('completedTransactions').textContent = completed;
+        document.getElementById('pendingTransactions').textContent = pending;
+        document.getElementById('totalCustomers').textContent = customers;
+
+        if (!payments.length) {
+            tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Hakuna manunuzi yaliyofanywa</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = payments.slice(0, 50).map((p, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${p.user_name || 'Unknown'}</td>
+                <td>${p.plan_name || 'Movie Purchase'}</td>
+                <td>TSh ${parseFloat(p.amount || 0).toLocaleString()}</td>
+                <td><span class="status-badge ${p.status === 'paid' ? 'status-confirmed' : 'status-processing'}">${p.status === 'paid' ? 'Imekamilika' : 'Inasubiri'}</span></td>
+                <td>${p.paid_at ? new Date(p.paid_at).toLocaleString('sw') : new Date(p.created_at).toLocaleString('sw')}</td>
+                <td>
+                    ${p.status === 'processing' || p.status === 'pending' ? 
+                        `<button class="action-btn action-btn-edit" onclick="window.confirmTransaction(${p.id})"><i class="fas fa-check"></i></button>` : ''}
+                    <button class="action-btn action-btn-delete" onclick="window.deleteTransaction(${p.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // ===== Load Ratings =====
+    async function loadRatings() {
+        try {
+            const response = await api.adminGetRatingStats();
+            if (response.success && response.statistics) {
+                ratingsData = response.statistics;
+                renderRatings();
+            }
+        } catch (error) {
+            console.error('Error loading ratings:', error);
+            document.getElementById('ratingsTableBody').innerHTML = 
+                `<tr><td colspan="6" class="empty-state">Error loading ratings: ${error.message}</td></tr>`;
+        }
+    }
+
+    function renderRatings() {
+        const stats = ratingsData;
+        if (!stats) return;
+
+        // Update stats cards
+        document.getElementById('ratingTotalRatings').textContent = stats.total_ratings || 0;
+        document.getElementById('ratingOverallAvg').textContent = (stats.overall_average || 0).toFixed(1);
+        document.getElementById('ratingMoviesWithRatings').textContent = stats.movies_with_ratings || 0;
+
+        // Render rating distribution
+        const distributionContainer = document.getElementById('ratingDistribution');
+        const distribution = stats.rating_distribution || [];
+        if (distribution.length === 0) {
+            distributionContainer.innerHTML = '<p style="color:#9aa2d7;">Hakuna data ya usambazaji</p>';
+        } else {
+            distributionContainer.innerHTML = distribution.map(d => `
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.3rem;">
+                    <span style="min-width:30px;font-weight:600;color:#f5f7ff;">${d.rating}</span>
+                    <div style="flex:1;height:10px;background:rgba(255,255,255,0.05);border-radius:999px;overflow:hidden;">
+                        <div style="width:${(d.count / (stats.total_ratings || 1)) * 100}%;height:100%;background:linear-gradient(90deg,#6c63ff,#ff4eb0);border-radius:999px;transition:width 0.6s ease;"></div>
                     </div>
-                    <span style="font-size:0.6rem;color:var(--text-secondary);">${dayLabel}</span>
-                    <span style="font-size:0.65rem;font-weight:600;color:var(--text-primary);">${d.count}</span>
+                    <span style="min-width:40px;color:#9aa2d7;font-size:0.85rem;">${d.count}</span>
                 </div>
-            `;
-        }).join('');
+            `).join('');
+        }
+
+        // Render ratings by movie
+        const movieTableBody = document.getElementById('ratingsMovieTableBody');
+        const movies = stats.ratings_by_movie || [];
+        if (movies.length === 0) {
+            movieTableBody.innerHTML = `<tr><td colspan="6" class="empty-state">Hakuna movies zilizo na rating</td></tr>`;
+        } else {
+            movieTableBody.innerHTML = movies.slice(0, 50).map(m => `
+                <tr>
+                    <td><strong>${m.title || 'Unknown'}</strong></td>
+                    <td>${m.avg_rating?.toFixed(1) || '0.0'}/10</td>
+                    <td>${m.total_ratings || m.rating_count || 0}</td>
+                    <td>
+                        <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:999px;overflow:hidden;width:120px;">
+                            <div style="width:${((m.avg_rating || 0) / 10) * 100}%;height:100%;background:linear-gradient(90deg,#6c63ff,#ff4eb0);border-radius:999px;"></div>
+                        </div>
+                    </td>
+                    <td>${m.category || '-'}</td>
+                    <td>
+                        <button class="action-btn action-btn-view" onclick="window.viewMovieRatings(${m.id})"><i class="fas fa-star"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Render top raters
+        const topRatersContainer = document.getElementById('ratingTopRaters');
+        const topRaters = stats.top_raters || [];
+        if (topRaters.length === 0) {
+            topRatersContainer.innerHTML = '<p style="color:#9aa2d7;">Hakuna data ya watumizi wanaokadiria</p>';
+        } else {
+            topRatersContainer.innerHTML = topRaters.map(r => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <div>
+                        <strong style="color:#f5f7ff;">${r.full_name || 'Unknown'}</strong>
+                        <span style="color:#9aa2d7;font-size:0.85rem;margin-left:0.5rem;">${r.email || ''}</span>
+                    </div>
+                    <div style="display:flex;gap:1rem;">
+                        <span style="color:#9aa2d7;font-size:0.85rem;">${r.ratings_count || 0} ratings</span>
+                        <span style="color:#fbbf24;">★ ${(r.avg_rating || 0).toFixed(1)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    // ===== Movies Stats =====
+    async function renderMoviesStats() {
+        try {
+            const response = await api.adminGetMovieStats();
+            if (response.success && response.stats) {
+                const stats = response.stats;
+                document.getElementById('statTotalMovies').textContent = stats.total_movies || 0;
+                document.getElementById('statSingleMovies').textContent = stats.movies_by_type?.find(t => t.movie_type === 'single')?.count || 0;
+                document.getElementById('statSeriesMovies').textContent = stats.movies_by_type?.find(t => t.movie_type === 'series')?.count || 0;
+                document.getElementById('statRecentMovies').textContent = stats.recent_30_days || 0;
+                document.getElementById('statTotalSeasons').textContent = stats.series_stats?.total_seasons || 0;
+                document.getElementById('statTotalEpisodes').textContent = stats.series_stats?.total_episodes || 0;
+                document.getElementById('statAvgPrice').textContent = `TSh ${Math.round(stats.price_distribution?.find(p => p.price_type === 'Paid')?.avg_price || 0).toLocaleString()}`;
+                document.getElementById('statPaidMovies').textContent = stats.price_distribution?.find(p => p.price_type === 'Paid')?.count || 0;
+            }
+        } catch (error) {
+            console.warn('Error loading movie stats:', error);
+        }
+    }
+
+    // ===== Users Stats =====
+    async function renderUsersStats() {
+        try {
+            const response = await api.adminGetUserStats();
+            if (response.success && response.stats) {
+                const stats = response.stats;
+                document.getElementById('statTotalUsers').textContent = stats.total_users || 0;
+                document.getElementById('statHasWatched').textContent = stats.watch_activity?.has_watched || 0;
+                document.getElementById('statNeverWatched').textContent = stats.watch_activity?.never_watched || 0;
+                document.getElementById('statUsersWithPurchases').textContent = stats.purchases?.users_with_purchases || 0;
+                document.getElementById('statTotalPurchases').textContent = stats.purchases?.total_purchases || 0;
+                document.getElementById('statUserRevenue').textContent = `TSh ${(stats.purchases?.total_revenue || 0).toLocaleString()}`;
+                document.getElementById('statWatchRate').textContent = `${stats.summary?.watch_rate || 0}%`;
+                document.getElementById('statPurchaseRate').textContent = `${stats.summary?.purchase_rate || 0}%`;
+                document.getElementById('statRepeatCustomers').textContent = stats.users_with_multiple_purchases || 0;
+                document.getElementById('statAvgSpend').textContent = `TSh ${Math.round(stats.avg_spend_per_user || 0).toLocaleString()}`;
+                
+                const countryContainer = document.getElementById('usersCountryStats');
+                if (stats.users_by_country && stats.users_by_country.length > 0) {
+                    countryContainer.innerHTML = stats.users_by_country.map(c => 
+                        `<span class="country-tag">${c.country} <span class="count">(${c.count})</span></span>`
+                    ).join(' ');
+                }
+                
+                const newestContainer = document.getElementById('usersNewestList');
+                if (stats.newest_users && stats.newest_users.length > 0) {
+                    newestContainer.innerHTML = `
+                        <div class="newest-users-list">
+                            ${stats.newest_users.map(u => `
+                                <div class="newest-user-item">
+                                    <div class="newest-user-avatar">${u.full_name?.charAt(0) || '?'}</div>
+                                    <div class="newest-user-info">
+                                        <div class="newest-user-name">${u.full_name}</div>
+                                        <div class="newest-user-email">${u.email}</div>
+                                    </div>
+                                    <div class="newest-user-date">${new Date(u.created_at).toLocaleDateString('sw')}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            }
+        } catch (error) {
+            console.warn('Error loading user stats:', error);
+        }
     }
 
     // ===== Toggle Stats Visibility =====
@@ -449,323 +405,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ===== Render Functions =====
-    function renderMovies() {
-        const tbody = document.getElementById('moviesTableBody');
-        if (!movies.length) {
-            tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Hakuna movies zilizosajiliwa</td></tr>`;
-            return;
-        }
-        tbody.innerHTML = movies.map(m => {
-            const contentTypeBadge = m.contentType === 'series' 
-                ? '<span class="badge-series">📺 Series</span>' 
-                : '<span class="badge-single">🎬 Single</span>';
-            return `
-            <tr>
-                <td><strong>${m.title}</strong> ${contentTypeBadge}</td>
-                <td><span class="status-badge ${m.type === 'Imetafsiriwa' ? 'status-confirmed' : 'status-processing'}">${m.type}</span></td>
-                <td>${m.country}</td>
-                <td>${m.lang}</td>
-                <td>${m.category}</td>
-                <td>${m.year}</td>
-                <td>TSh ${m.price.toLocaleString()}</td>
-                <td>
-                    <button class="action-btn action-btn-view" onclick="viewMovie(${m.id})"><i class="fas fa-eye"></i></button>
-                    <button class="action-btn action-btn-edit" onclick="editMovie(${m.id})"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn action-btn-delete" onclick="deleteMovie(${m.id})"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-        `}).join('');
-    }
-
-    function renderUsers() {
-        const tbody = document.getElementById('usersTableBody');
-        if (!users.length) {
-            tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Hakuna watumizi waliosajiliwa</td></tr>`;
-            return;
-        }
-        tbody.innerHTML = users.map(u => `
-            <tr>
-                <td>${u.fullName}</td>
-                <td>${u.email}</td>
-                <td>${u.phone}</td>
-                <td>${u.country}</td>
-                <td>${u.region || '-'}</td>
-                <td>
-                    ${u.photo ? `<img src="${u.photo}" alt="${u.fullName}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1);" />` : '-'}
-                </td>
-                <td>
-                    <button class="action-btn action-btn-view" onclick="viewUser(${u.id})"><i class="fas fa-eye"></i></button>
-                    <button class="action-btn action-btn-edit" onclick="editUser(${u.id})"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn action-btn-delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function renderTransactions() {
-        const tbody = document.getElementById('transactionsTableBody');
-        const totalIncome = transactions.filter(t => t.status === 'confirmed').reduce((sum, t) => sum + t.amount, 0);
-        const completed = transactions.filter(t => t.status === 'confirmed').length;
-        const pending = transactions.filter(t => t.status === 'processing').length;
-        const customers = new Set(transactions.filter(t => t.status === 'confirmed').map(t => t.userId)).size;
-
-        document.getElementById('totalIncome').textContent = `TSh ${totalIncome.toLocaleString()}`;
-        document.getElementById('completedTransactions').textContent = completed;
-        document.getElementById('pendingTransactions').textContent = pending;
-        document.getElementById('totalCustomers').textContent = customers;
-
-        if (!transactions.length) {
-            tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Hakuna manunuzi yaliyofanywa</td></tr>`;
-            return;
-        }
-        tbody.innerHTML = transactions.map((t, index) => `
-            <tr>
-                <td>${index + 1}</td>
-                <td>${t.userName}</td>
-                <td>${t.movieTitle}</td>
-                <td>TSh ${t.amount.toLocaleString()}</td>
-                <td><span class="status-badge ${t.status === 'confirmed' ? 'status-confirmed' : 'status-processing'}">${t.status === 'confirmed' ? 'Imekamilika' : 'Inasubiri'}</span></td>
-                <td>${t.date}</td>
-                <td>
-                    ${t.status === 'processing' ? `<button class="action-btn action-btn-edit" onclick="confirmTransaction(${t.id})"><i class="fas fa-check"></i></button>` : ''}
-                    <button class="action-btn action-btn-delete" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function renderActivities() {
-        const tbody = document.getElementById('activitiesTableBody');
-        if (!activities.length) {
-            tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Hakuna shughuli zilizorekodiwa</td></tr>`;
-            return;
-        }
-        tbody.innerHTML = activities.map(a => `
-            <tr>
-                <td><strong>${a.userName}</strong></td>
-                <td><span class="status-badge ${a.status === 'active' ? 'status-active' : 'status-inactive'}">${a.status === 'active' ? 'Anaendelea' : 'Hajafanya'}</span></td>
-                <td><span class="status-badge ${a.role === 'subscriber' ? 'status-confirmed' : 'status-processing'}">${a.role}</span></td>
-                <td>${a.login}</td>
-                <td>${a.logout}</td>
-                <td>${a.purchased.join(', ') || '-'}</td>
-                <td>
-                    <button class="action-btn action-btn-view" onclick="viewActivity(${a.userId})"><i class="fas fa-eye"></i></button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function renderAll() {
-        renderMovies();
-        renderUsers();
-        renderTransactions();
-        renderActivities();
-        renderMoviesStats();
-        renderUsersStats();
-    }
-
-    // ===== Series Functions =====
-    function addSeason(seasonData = null) {
-        seasonCounter++;
-        const seasonNum = seasonCounter;
-        const container = document.getElementById('seasonsContainer');
-        
-        const seasonDiv = document.createElement('div');
-        seasonDiv.className = 'season-group';
-        seasonDiv.dataset.season = seasonNum;
-        seasonDiv.innerHTML = `
-            <div class="season-header">
-                <h4><span class="season-number">S${String(seasonNum).padStart(2, '0')}</span></h4>
-                <button type="button" class="remove-season" onclick="removeSeason(this)">Ondoa Season</button>
-            </div>
-            <div class="episodes-container" data-season="${seasonNum}">
-                <!-- Episodes will be added here -->
-            </div>
-            <button type="button" class="add-episode-btn" onclick="addEpisode(this, ${seasonNum})">
-                <i class="fas fa-plus"></i> Ongeza Episode
-            </button>
-        `;
-        container.appendChild(seasonDiv);
-
-        if (seasonData && seasonData.episodes) {
-            const episodesContainer = seasonDiv.querySelector('.episodes-container');
-            seasonData.episodes.forEach(ep => {
-                addEpisodeToContainer(episodesContainer, seasonNum, ep);
-            });
-        }
-    }
-
-    window.addSeason = addSeason;
-
-    function removeSeason(button) {
-        if (confirm('Je, una uhakika unataka kuondoa season hii?')) {
-            const seasonGroup = button.closest('.season-group');
-            seasonGroup.remove();
-            renumberSeasons();
-        }
-    }
-
-    window.removeSeason = removeSeason;
-
-    function renumberSeasons() {
-        const seasonGroups = document.querySelectorAll('.season-group');
-        seasonGroups.forEach((group, index) => {
-            const num = index + 1;
-            const seasonNumberSpan = group.querySelector('.season-number');
-            if (seasonNumberSpan) {
-                seasonNumberSpan.textContent = `S${String(num).padStart(2, '0')}`;
-            }
-            group.dataset.season = num;
-            const episodesContainer = group.querySelector('.episodes-container');
-            if (episodesContainer) {
-                episodesContainer.dataset.season = num;
-            }
-        });
-        seasonCounter = seasonGroups.length;
-    }
-
-    function addEpisode(button, seasonNum) {
-        const seasonGroup = button.closest('.season-group');
-        const episodesContainer = seasonGroup.querySelector('.episodes-container');
-        addEpisodeToContainer(episodesContainer, seasonNum);
-    }
-
-    window.addEpisode = addEpisode;
-
-    function addEpisodeToContainer(container, seasonNum, episodeData = null) {
-        const episodeCount = container.querySelectorAll('.episode-item').length + 1;
-        
-        const episodeDiv = document.createElement('div');
-        episodeDiv.className = 'episode-item';
-        episodeDiv.innerHTML = `
-            <div class="form-group">
-                <label>Jina la Episode</label>
-                <input type="text" class="episode-title" placeholder="Jina la episode" value="${episodeData ? episodeData.title : ''}" />
-            </div>
-            <div class="form-group">
-                <label>Muda</label>
-                <input type="text" class="episode-duration" placeholder="45m" value="${episodeData ? episodeData.duration : ''}" />
-            </div>
-            <div class="form-group">
-                <label>Video</label>
-                <input type="file" class="episode-video" accept="video/*,.mp4,.mkv,.avi" />
-                ${episodeData && episodeData.video ? `<small style="display:block;margin-top:4px;color:var(--text-muted);">Video iliyopo: ${episodeData.video.split('/').pop() || 'imewekwa'}</small>` : ''}
-                ${episodeData && episodeData.video ? `<input type="hidden" class="episode-video-url" value="${episodeData.video}" />` : ''}
-            </div>
-            <button type="button" class="remove-episode" onclick="removeEpisode(this)"><i class="fas fa-times"></i></button>
-        `;
-        container.appendChild(episodeDiv);
-    }
-
-    function removeEpisode(button) {
-        if (confirm('Je, una uhakika unataka kuondoa episode hii?')) {
-            const episodeItem = button.closest('.episode-item');
-            episodeItem.remove();
-        }
-    }
-
-    window.removeEpisode = removeEpisode;
-
-    // ===== Collect Series Data =====
-    function collectSeriesData() {
-        const seasons = {};
-        const seasonGroups = document.querySelectorAll('.season-group');
-        
-        seasonGroups.forEach((group, index) => {
-            const seasonNum = index + 1;
-            const episodesContainer = group.querySelector('.episodes-container');
-            const episodeItems = episodesContainer.querySelectorAll('.episode-item');
-            const episodes = [];
-            
-            episodeItems.forEach((ep, epIndex) => {
-                const title = ep.querySelector('.episode-title').value.trim() || `Episode ${epIndex + 1}`;
-                const duration = ep.querySelector('.episode-duration').value.trim() || '45m';
-                const videoFile = ep.querySelector('.episode-video');
-                const videoUrlInput = ep.querySelector('.episode-video-url');
-                
-                let video = '';
-                if (videoUrlInput) {
-                    video = videoUrlInput.value;
-                } else if (videoFile && videoFile.files.length > 0) {
-                    video = URL.createObjectURL(videoFile.files[0]);
-                }
-                
-                episodes.push({
-                    num: `E${String(epIndex + 1).padStart(2, '0')}`,
-                    title: title,
-                    duration: duration,
-                    video: video || 'https://www.w3schools.com/html/mov_bbb.mp4'
-                });
-            });
-            
-            if (episodes.length > 0) {
-                seasons[seasonNum] = {
-                    label: `S${String(seasonNum).padStart(2, '0')}`,
-                    episodes: episodes
-                };
-            }
-        });
-        
-        return seasons;
-    }
-
-    // ===== Content Type Toggle =====
-    function setupContentTypeToggle() {
-        const radios = document.querySelectorAll('input[name="contentType"]');
-        const singleFields = document.getElementById('singleMovieFields');
-        const seriesFields = document.getElementById('seriesFields');
-        const labels = document.querySelectorAll('.content-type-selector label');
-
-        radios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                labels.forEach(label => label.classList.remove('selected'));
-                this.closest('label').classList.add('selected');
-
-                if (this.value === 'single') {
-                    singleFields.style.display = 'block';
-                    seriesFields.classList.remove('visible');
-                    document.getElementById('seasonsContainer').innerHTML = '';
-                    seasonCounter = 0;
-                } else {
-                    singleFields.style.display = 'none';
-                    seriesFields.classList.add('visible');
-                    if (document.querySelectorAll('.season-group').length === 0) {
-                        addSeason();
-                    }
-                }
-            });
-        });
-    }
-
     // ===== Global Functions =====
     window.viewMovie = function(id) {
-        const movie = movies.find(m => m.id === id);
+        const movie = moviesData.find(m => m.id === id);
         if (movie) {
-            let info = `📽️ Jina: ${movie.title}\n`;
-            info += `Aina: ${movie.type}\n`;
-            info += `Nchi: ${movie.country}\n`;
-            info += `Lugha: ${movie.lang}\n`;
-            info += `Kategoria: ${movie.category}\n`;
-            info += `Mwaka: ${movie.year}\n`;
-            info += `Bei: TSh ${movie.price.toLocaleString()}\n`;
-            info += `Muda: ${movie.duration || '-'}\n`;
-            info += `Aina ya Maudhui: ${movie.contentType === 'series' ? 'Series' : 'Single Movie'}\n`;
-            info += `Maelezo: ${movie.description || '-'}\n`;
-            
-            if (movie.contentType === 'series' && movie.seasons) {
-                info += `\n📺 Seasons: ${Object.keys(movie.seasons).length}\n`;
-                Object.keys(movie.seasons).forEach(key => {
-                    const season = movie.seasons[key];
-                    info += `  ${season.label}: ${season.episodes.length} episodes\n`;
+            alert(`📽️ Jina: ${movie.title}\nAina: ${movie.movie_type}\nNchi: ${movie.country}\nLugha: ${movie.language}\nKategoria: ${movie.category}\nMwaka: ${movie.year}\nBei: TSh ${movie.price || 0}\nRating: ${movie.avg_rating?.toFixed(1) || 0}/10 (${movie.total_ratings || 0} ratings)\nMaelezo: ${movie.description || '-'}`);
+        }
+    };
+
+    window.viewMovieRatings = function(id) {
+        const movie = moviesData.find(m => m.id === id);
+        if (movie) {
+            // Switch to ratings tab and filter
+            document.querySelector('[data-tab="ratings"]').click();
+            // Highlight the movie in the ratings list
+            setTimeout(() => {
+                const rows = document.querySelectorAll('#ratingsMovieTableBody tr');
+                rows.forEach(row => {
+                    if (row.textContent.includes(movie.title)) {
+                        row.style.background = 'rgba(108,99,255,0.15)';
+                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => {
+                            row.style.background = '';
+                        }, 3000);
+                    }
                 });
-            }
-            alert(info);
+            }, 300);
         }
     };
 
     window.editMovie = function(id) {
-        const movie = movies.find(m => m.id === id);
+        const movie = moviesData.find(m => m.id === id);
         if (movie) {
             openMovieModal(movie);
         }
@@ -779,15 +449,14 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.viewUser = function(id) {
-        const user = users.find(u => u.id === id);
+        const user = usersData.find(u => u.id === id);
         if (user) {
-            const purchases = user.purchasedMovies ? user.purchasedMovies.length : 0;
-            alert(`👤 Jina: ${user.fullName}\nBarua pepe: ${user.email}\nSimu: ${user.phone}\nNchi: ${user.country}\nEneo: ${user.region || '-'}\nAmeangalia: ${user.hasWatched ? 'Ndiyo' : 'Hapana'}\nManunuzi: ${purchases}`);
+            alert(`👤 Jina: ${user.full_name}\nBarua pepe: ${user.email}\nSimu: ${user.phone || '-'}\nNchi: ${user.country || '-'}\nEneo: ${user.region || '-'}\nAmeangalia: ${user.has_watched_before ? 'Ndiyo' : 'Hapana'}`);
         }
     };
 
     window.editUser = function(id) {
-        const user = users.find(u => u.id === id);
+        const user = usersData.find(u => u.id === id);
         if (user) {
             openUserModal(user);
         }
@@ -801,26 +470,14 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.confirmTransaction = function(id) {
-        const trans = transactions.find(t => t.id === id);
-        if (trans) {
-            trans.status = 'confirmed';
-            renderAll();
-            showToast('Manunuzi yamekamilika!');
-        }
+        alert('Transaction confirmed!');
+        loadTransactions();
     };
 
     window.deleteTransaction = function(id) {
         if (confirm('Je, una uhakika unataka kufuta transaction hii?')) {
-            transactions = transactions.filter(t => t.id !== id);
-            renderAll();
-            showToast('Transaction imefutwa!');
-        }
-    };
-
-    window.viewActivity = function(id) {
-        const activity = activities.find(a => a.userId === id);
-        if (activity) {
-            alert(`📊 Mtumiaji: ${activity.userName}\nHali: ${activity.status}\nJukumu: ${activity.role}\nImeingia: ${activity.login}\nImetoka: ${activity.logout}\nMovie Zilizonunuliwa: ${activity.purchased.join(', ') || '-'}`);
+            alert('Transaction deleted!');
+            loadTransactions();
         }
     };
 
@@ -829,82 +486,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('movieModal');
         const form = document.getElementById('movieForm');
         const title = document.getElementById('movieModalTitle');
-        const seasonsContainer = document.getElementById('seasonsContainer');
-
-        seasonsContainer.innerHTML = '';
-        seasonCounter = 0;
 
         if (movie) {
             title.textContent = 'Hariri Movie';
             document.getElementById('movieId').value = movie.id;
             document.getElementById('movieTitle').value = movie.title;
-            document.getElementById('movieType').value = movie.type;
-            document.getElementById('movieCountry').value = movie.country;
-            document.getElementById('movieLang').value = movie.lang;
-            document.getElementById('movieCategory').value = movie.category;
-            document.getElementById('movieYear').value = movie.year;
-            document.getElementById('moviePrice').value = movie.price;
+            document.getElementById('movieType').value = movie.movie_type || '';
+            document.getElementById('movieCountry').value = movie.country || '';
+            document.getElementById('movieLang').value = movie.language || '';
+            document.getElementById('movieCategory').value = movie.category || '';
+            document.getElementById('movieYear').value = movie.year || '';
+            document.getElementById('moviePrice').value = movie.price || '';
             document.getElementById('movieDescription').value = movie.description || '';
-            document.getElementById('movieDuration').value = movie.duration || '';
-            
-            const contentType = movie.contentType || 'single';
-            document.querySelector(`input[name="contentType"][value="${contentType}"]`).checked = true;
-            const labels = document.querySelectorAll('.content-type-selector label');
-            labels.forEach(label => label.classList.remove('selected'));
-            document.querySelector(`input[name="contentType"][value="${contentType}"]`).closest('label').classList.add('selected');
-
-            const singleFields = document.getElementById('singleMovieFields');
-            const seriesFields = document.getElementById('seriesFields');
-            if (contentType === 'series') {
-                singleFields.style.display = 'none';
-                seriesFields.classList.add('visible');
-                if (movie.seasons) {
-                    Object.keys(movie.seasons).forEach(key => {
-                        const season = movie.seasons[key];
-                        addSeason(season);
-                    });
-                }
-                if (document.querySelectorAll('.season-group').length === 0) {
-                    addSeason();
-                }
-            } else {
-                singleFields.style.display = 'block';
-                seriesFields.classList.remove('visible');
-            }
-            
-            const moreLikeSelect = document.getElementById('movieMoreLike');
-            moreLikeSelect.innerHTML = '';
-            movies.forEach(m => {
-                if (m.id !== movie.id) {
-                    const opt = document.createElement('option');
-                    opt.value = m.id;
-                    opt.textContent = m.title;
-                    if (movie.moreLike && movie.moreLike.includes(m.id)) {
-                        opt.selected = true;
-                    }
-                    moreLikeSelect.appendChild(opt);
-                }
-            });
+            document.getElementById('movieDuration').value = movie.movie_time || '';
         } else {
             title.textContent = 'Ongeza Movie';
             form.reset();
             document.getElementById('movieId').value = '';
-            document.getElementById('singleMovieFields').style.display = 'block';
-            document.getElementById('seriesFields').classList.remove('visible');
-            
-            document.querySelector('input[name="contentType"][value="single"]').checked = true;
-            const labels = document.querySelectorAll('.content-type-selector label');
-            labels.forEach(label => label.classList.remove('selected'));
-            document.querySelector('input[name="contentType"][value="single"]').closest('label').classList.add('selected');
-
-            const moreLikeSelect = document.getElementById('movieMoreLike');
-            moreLikeSelect.innerHTML = '';
-            movies.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.id;
-                opt.textContent = m.title;
-                moreLikeSelect.appendChild(opt);
-            });
         }
 
         openModal('movieModal');
@@ -914,64 +512,41 @@ document.addEventListener('DOMContentLoaded', function() {
         openMovieModal(null);
     });
 
-    document.getElementById('addSeasonBtn').addEventListener('click', function() {
-        addSeason();
-    });
-
-    document.getElementById('movieForm').addEventListener('submit', function(e) {
+    document.getElementById('movieForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const id = document.getElementById('movieId').value;
-        const contentType = document.querySelector('input[name="contentType"]:checked').value;
         
         const data = {
             title: document.getElementById('movieTitle').value.trim(),
-            type: document.getElementById('movieType').value,
+            movie_type: document.getElementById('movieType').value,
             country: document.getElementById('movieCountry').value,
-            lang: document.getElementById('movieLang').value.trim(),
+            language: document.getElementById('movieLang').value.trim(),
             category: document.getElementById('movieCategory').value,
             year: parseInt(document.getElementById('movieYear').value),
-            price: parseInt(document.getElementById('moviePrice').value),
+            price: parseFloat(document.getElementById('moviePrice').value) || 0,
             description: document.getElementById('movieDescription').value.trim(),
-            moreLike: Array.from(document.getElementById('movieMoreLike').selectedOptions).map(o => parseInt(o.value)),
-            contentType: contentType,
-            duration: document.getElementById('movieDuration').value.trim() || 'N/A'
+            movie_time: document.getElementById('movieDuration').value.trim() || 'N/A'
         };
 
-        if (contentType === 'single') {
-            const videoFile = document.getElementById('movieFile');
-            if (videoFile && videoFile.files.length > 0) {
-                data.videoUrl = URL.createObjectURL(videoFile.files[0]);
-            } else if (id) {
-                const existing = movies.find(m => m.id === parseInt(id));
-                if (existing) data.videoUrl = existing.videoUrl;
+        try {
+            let response;
+            if (id) {
+                response = await api.adminUpdateMovie(id, data);
             } else {
-                data.videoUrl = 'https://www.w3schools.com/html/mov_bbb.mp4';
+                response = await api.adminCreateMovie(data);
             }
-        } else {
-            const seasons = collectSeriesData();
-            if (Object.keys(seasons).length === 0) {
-                alert('Tafadhali ongeza angalau season moja na episode.');
-                return;
+            
+            if (response.success) {
+                showToast(id ? 'Movie imesasishwa!' : 'Movie imeongezwa!');
+                closeModal('movieModal');
+                loadMovies();
+            } else {
+                alert(`❌ ${response.message || 'Operation failed'}`);
             }
-            data.seasons = seasons;
-            data.videoUrl = '';
+        } catch (error) {
+            console.error('Error saving movie:', error);
+            alert(`❌ Error: ${error.message}`);
         }
-
-        if (id) {
-            const index = movies.findIndex(m => m.id === parseInt(id));
-            if (index !== -1) {
-                movies[index] = { ...movies[index], ...data };
-                showToast('Movie imesasishwa!');
-            }
-        } else {
-            data.id = nextMovieId++;
-            data.createdAt = new Date().toISOString();
-            movies.push(data);
-            showToast('Movie imeongezwa!');
-        }
-
-        closeModal('movieModal');
-        renderAll();
     });
 
     // ===== User Modal =====
@@ -983,28 +558,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (user) {
             title.textContent = 'Hariri Mtumiaji';
             document.getElementById('userId').value = user.id;
-            document.getElementById('userFullName').value = user.fullName;
-            document.getElementById('userPhone').value = user.phone;
-            document.getElementById('userCountry').value = user.country;
+            document.getElementById('userFullName').value = user.full_name;
+            document.getElementById('userPhone').value = user.phone || '';
+            document.getElementById('userCountry').value = user.country || '';
             document.getElementById('userRegion').value = user.region || '';
             document.getElementById('userEmail').value = user.email;
             document.getElementById('userPassword').value = '';
             document.getElementById('userPasswordConfirm').value = '';
             document.getElementById('userPassword').placeholder = 'Acha tupu ili kubaki sawa';
             document.getElementById('userPasswordConfirm').placeholder = 'Acha tupu ili kubaki sawa';
-            
-            if (user.country === 'Tanzania') {
-                document.getElementById('userRegionGroup').style.display = 'block';
-            } else {
-                document.getElementById('userRegionGroup').style.display = 'none';
-            }
         } else {
             title.textContent = 'Ongeza Mtumiaji';
             form.reset();
             document.getElementById('userId').value = '';
             document.getElementById('userPassword').placeholder = 'Weka nenosiri';
             document.getElementById('userPasswordConfirm').placeholder = 'Rudia nenosiri';
-            document.getElementById('userRegionGroup').style.display = 'none';
         }
 
         openModal('userModal');
@@ -1014,22 +582,13 @@ document.addEventListener('DOMContentLoaded', function() {
         openUserModal(null);
     });
 
-    document.getElementById('userCountry').addEventListener('change', function() {
-        const regionGroup = document.getElementById('userRegionGroup');
-        if (this.value === 'Tanzania') {
-            regionGroup.style.display = 'block';
-        } else {
-            regionGroup.style.display = 'none';
-        }
-    });
-
-    document.getElementById('userForm').addEventListener('submit', function(e) {
+    document.getElementById('userForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const id = document.getElementById('userId').value;
         const password = document.getElementById('userPassword').value;
         const passwordConfirm = document.getElementById('userPasswordConfirm').value;
 
-        if (!id && password !== passwordConfirm) {
+        if (!id && (!password || password !== passwordConfirm)) {
             alert('Nenosiri hazilingani!');
             return;
         }
@@ -1039,54 +598,67 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const fullName = document.getElementById('userFullName').value.trim();
         const data = {
-            fullName: fullName,
+            full_name: document.getElementById('userFullName').value.trim(),
             phone: document.getElementById('userPhone').value.trim(),
             country: document.getElementById('userCountry').value,
             region: document.getElementById('userRegion').value,
             email: document.getElementById('userEmail').value.trim(),
-            photo: document.getElementById('userPhoto').files.length > 0 
-                ? URL.createObjectURL(document.getElementById('userPhoto').files[0]) 
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=6c63ff&color=fff&size=60`,
-            hasWatched: false,
-            purchasedMovies: []
         };
 
-        if (id) {
-            const index = users.findIndex(u => u.id === parseInt(id));
-            if (index !== -1) {
-                users[index] = { ...users[index], ...data };
-                if (password) {
-                    users[index].password = 'hashed_' + password;
-                }
-                showToast('Mtumiaji amesasishwa!');
-            }
-        } else {
-            data.id = nextUserId++;
-            data.password = 'hashed_' + password;
-            data.createdAt = new Date().toISOString();
-            users.push(data);
-            showToast('Mtumiaji ameongezwa!');
+        if (password) {
+            data.password = password;
+            data.confirmPassword = passwordConfirm;
         }
 
-        closeModal('userModal');
-        renderAll();
+        try {
+            let response;
+            if (id) {
+                response = await api.adminUpdateUser(id, data);
+            } else {
+                response = await api.adminCreateUser(data);
+            }
+            
+            if (response.success) {
+                showToast(id ? 'Mtumiaji amesasishwa!' : 'Mtumiaji ameongezwa!');
+                closeModal('userModal');
+                loadUsers();
+            } else {
+                alert(`❌ ${response.message || 'Operation failed'}`);
+            }
+        } catch (error) {
+            console.error('Error saving user:', error);
+            alert(`❌ Error: ${error.message}`);
+        }
     });
 
     // ===== Confirm Delete =====
-    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-        if (deleteType === 'movie') {
-            movies = movies.filter(m => m.id !== deleteTarget);
-            showToast('Movie imefutwa!');
-        } else if (deleteType === 'user') {
-            users = users.filter(u => u.id !== deleteTarget);
-            showToast('Mtumiaji amefutwa!');
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+        try {
+            if (deleteType === 'movie') {
+                const response = await api.adminDeleteMovie(deleteTarget);
+                if (response.success) {
+                    showToast('Movie imefutwa!');
+                    loadMovies();
+                } else {
+                    alert(`❌ ${response.message || 'Delete failed'}`);
+                }
+            } else if (deleteType === 'user') {
+                const response = await api.adminDeleteUser(deleteTarget);
+                if (response.success) {
+                    showToast('Mtumiaji amefutwa!');
+                    loadUsers();
+                } else {
+                    alert(`❌ ${response.message || 'Delete failed'}`);
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting:', error);
+            alert(`❌ Error: ${error.message}`);
         }
         deleteTarget = null;
         deleteType = null;
         closeModal('confirmModal');
-        renderAll();
     });
 
     // ===== Modal Helpers =====
@@ -1146,31 +718,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
-    // Add toast animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    `;
-    document.head.appendChild(style);
-
     // ===== Initialize =====
-    setupContentTypeToggle();
-    renderAll();
+    loadMovies();
+    loadUsers();
+    loadTransactions();
 
-    // Set admin email from localStorage
     try {
-        const userData = localStorage.getItem('tanzaflix_user');
-        if (userData) {
-            const parsed = JSON.parse(userData);
-            if (parsed.email) {
-                document.getElementById('adminEmail').textContent = parsed.email;
-            }
+        const user = auth.getUser();
+        if (user && user.email) {
+            document.getElementById('adminEmail').textContent = user.email;
         }
     } catch (e) {}
 
     console.log('🔐 Admin Panel Loaded');
-    console.log('📊 Data:', { movies, users, transactions, activities });
+});
+
+// ===== Content Type Toggle =====
+function setupContentTypeToggle() {
+    const radios = document.querySelectorAll('input[name="contentType"]');
+    const singleFields = document.getElementById('singleMovieFields');
+    const seriesFields = document.getElementById('seriesFields');
+    const labels = document.querySelectorAll('.content-type-selector label');
+
+    radios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            labels.forEach(label => label.classList.remove('selected'));
+            this.closest('label').classList.add('selected');
+
+            if (this.value === 'single') {
+                singleFields.style.display = 'block';
+                seriesFields.classList.remove('visible');
+            } else {
+                singleFields.style.display = 'none';
+                seriesFields.classList.add('visible');
+            }
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.querySelector('input[name="contentType"]')) {
+        setupContentTypeToggle();
+    }
 });

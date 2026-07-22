@@ -5,21 +5,160 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TanzaFlix | Dashibodi</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* ===== Profile Card Styles ===== */
+    .profile-card {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 0.5rem 0;
+    }
+
+    .profile-card .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(108, 99, 255, 0.3);
+      flex-shrink: 0;
+    }
+
+    .profile-card .profile-avatar-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6c63ff, #ff4eb0);
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .profile-card .profile-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .profile-card .profile-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0;
+      color: #f0f3ff;
+    }
+
+    .profile-card .profile-email {
+      font-size: 0.9rem;
+      color: #9aa2d7;
+      margin: 0.2rem 0 0.1rem;
+    }
+
+    .profile-card .profile-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-top: 0.3rem;
+    }
+
+    .profile-card .profile-details span {
+      font-size: 0.8rem;
+      color: #b8c4ff;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.2rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .profile-card .profile-details .badge-subscriber {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border-color: rgba(34, 197, 94, 0.15);
+    }
+
+    .profile-card .profile-details .badge-guest {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.15);
+    }
+
+    /* Logout Button in Header */
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logout-btn-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.2rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 999px;
+      color: #f87171;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .logout-btn-header:hover {
+      background: rgba(239, 68, 68, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .logout-btn-header i {
+      font-size: 0.9rem;
+    }
+
+    /* Remove user table */
+    .user-list-section {
+      display: none !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .profile-card {
+        flex-direction: column;
+        text-align: center;
+      }
+      .profile-card .profile-details {
+        justify-content: center;
+      }
+      .dash-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+      }
+      .header-right {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="page-shell dashboard-shell">
     <header class="dash-header">
       <div>
         <p class="eyebrow">TanzaFlix</p>
-        <h1 class="dashboard-title">Karibu Nyumbani, Mpenzi wa Filamu</h1>
-        <p class="hero-copy"><strong>TanzaFlix</strong><br><em>Nyumba ya Tamthilia na Michezo ya Filamu ya Kiswahili. Shuhudia visa, michezo ya kuigiza, na mfululizo wa visa vya kusisimua kwa ubora wa hali ya juu (HD) kutoka kwa mastaa unaowapenda.</em></p>
+        <h1 class="dashboard-title" style="font-size: clamp(1.2rem, 2.5vw, 2.2rem);">Karibu Nyumbani, Mpenzi wa Filamu</h1>
       </div>
-      <nav class="dash-nav">
-        <a href="dashboard.html" class="nav-link active">Nyumbani</a>
-        <a href="movies.html?translated=0" class="nav-link">Filamu</a>
-        <a href="subscription.html" class="nav-link" id="navPayment">Malipo ya Akaunti</a>
-        <a href="#" class="nav-link" id="navAbout">Kuhusu Sisi</a>
-      </nav>
+      <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+        <nav class="dash-nav">
+          <a href="dashboard.html" class="nav-link active">Nyumbani</a>
+          <a href="movies.html?translated=0" class="nav-link">Filamu</a>
+          <a href="subscription.html" class="nav-link" id="navPayment">Malipo ya Akaunti</a>
+          <a href="#" class="nav-link" id="navAbout">Kuhusu Sisi</a>
+        </nav>
+        <button class="logout-btn-header" id="logoutBtnHeader">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Ondoka</span>
+        </button>
+      </div>
     </header>
 
     <!-- About Modal -->
@@ -42,6 +181,7 @@
       </div>
     </div>
 
+    <!-- Choice Panel -->
     <section class="choice-panel" aria-label="Chaguzi za Maudhui">
       <a href="movies.html?translated=1" class="choice-card choice-primary" id="translatedOption" role="button">
         <div class="choice-content">
@@ -58,28 +198,33 @@
       </a>
     </section>
 
+    <!-- Dashboard Grid -->
     <section class="dash-grid">
+      <!-- Profile Card -->
       <article class="dash-card">
         <p class="card-label">Picha ya Wasifu</p>
-        <div id="userPhotoContainer" style="text-align: center; margin: 15px 0;">
-          <img id="userPhoto" src="" alt="Picha ya wasifu" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #ddd; display: none;" />
-          <p id="noPhotoText" style="color: #999;">Hakuna picha ya wasifu</p>
+        <div id="profileContainer" class="profile-card">
+          <!-- Dynamically rendered -->
         </div>
       </article>
 
+      <!-- System Name Card -->
       <article class="dash-card highlight-card">
         <p class="card-label">Jina la Mfumo</p>
         <h2>TanzaFlix</h2>
-        <p>Jukwaa namba moja la Burudani ya Nyumbani. Sinema, tamthilia, na makala za Kiswahili kwa ubora wa juu kabisa (HD/4K) popote ulipo duniani..</p>
+        <p>Jukwaa namba moja la Burudani ya Nyumbani. Sinema, tamthilia, na makala za Kiswahili kwa ubora wa juu kabisa (HD/4K) popote ulipo duniani.</p>
       </article>
 
+      <!-- Account Status Card -->
       <article class="dash-card">
         <p class="card-label">Uhalisia wa Akaunti</p>
         <h2 id="userName">Mgeni</h2>
-        <p><strong>Mgeni (Guest):</strong> Karibu TanzaFlix! Jiunge leo uanze kufuatilia michezo ya filamu inayovuma zaidi Tanzania. Tazama sehemu ya kwanza (Episode 1) ya tamthilia yoyote bure kabisa!</p>
-        <p><strong>Mwanachama (Subscriber):</strong> Karibu tena, [Jina la Mtumiaji]. Endelea na Sehemu ya 4 pale ulipoishia jana, au gundua tamthilia mpya zilizoongezwa wiki hii.</p>
+        <div id="accountStatusMessage">
+          <!-- Dynamically rendered -->
+        </div>
       </article>
 
+      <!-- Security Card -->
       <article class="dash-card">
         <p class="card-label">Stakabadhi ya Usajili</p>
         <h2>100%</h2>
@@ -87,6 +232,7 @@
         <p><strong>Ushuhuda wa Vipindi:</strong> Hifadhi kumbukumbu ya sehemu ulizotazama (Watch History) ili usipoteze mlolongo wa kisa chako hata ukitofautisha kifaa unachotazamia.</p>
       </article>
 
+      <!-- Recommendations Card -->
       <article class="dash-card">
         <p class="card-label">Mapendekezo ya Kirafiki</p>
         <ul class="feature-list">
@@ -97,34 +243,7 @@
       </article>
     </section>
 
-    <section class="user-list-section">
-      <div class="user-list-header">
-        <h2>Watumiaji waliosajiliwa</h2>
-        <p>Ona watumiaji wote waliopo kwenye database kwa moja.</p>
-      </div>
-      <div class="user-list-card">
-        <table class="user-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Jina</th>
-              <th>Barua pepe</th>
-              <th>Simu</th>
-              <th>Nchi</th>
-              <th>Eneo</th>
-              <th>Picha</th>
-              <th>Wakati wa Usajili</th>
-            </tr>
-          </thead>
-          <tbody id="registeredUsersTableBody">
-            <tr>
-              <td colspan="8" class="empty-state" id="noUsersMessage">Inapakia watumiaji...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
+    <!-- Action Panel -->
     <section class="action-panel">
       <div class="action-card">
         <h3>Huduma za Haraka</h3>
@@ -141,6 +260,6 @@
     </section>
   </div>
 
-  <script src="js/dashboard.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
 </body>
 </html>

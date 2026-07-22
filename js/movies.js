@@ -1,211 +1,207 @@
-document.addEventListener('DOMContentLoaded', function() {
-  const params = new URLSearchParams(window.location.search);
-  const translated = params.get('translated') === '1';
-  const category = params.get('category');
-  const moviesList = document.getElementById('moviesList');
-  const categoryFilters = document.getElementById('categoryFilters');
-  const title = document.getElementById('moviesTitle');
+// js/movies.js - Movies Page with Ratings
 
-  // Set page title
-  if (translated) {
-    title.textContent = 'Movies za Kihindi, Kizungu, Kiitaliano, Kifilipino na Bongo Movies';
-  } else if (category) {
-    title.textContent = `${category} za asili`;
-  } else {
-    title.textContent = 'Movies za asili / Michezo hazijatafsiriwa';
-  }
+import api from './api.js';
+import auth from './auth.js';
 
-  // Render category filters for non-translated view
-  if (!translated) {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Check authentication
+    if (!auth.checkAuth()) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const translated = params.get('translated') === '1';
+    const moviesList = document.getElementById('moviesList');
+    const categoryFilters = document.getElementById('categoryFilters');
+
+    // Set title based on translation preference
+    document.getElementById('moviesTitle').textContent = translated 
+        ? 'Michezo / Movies zilizotafsiriwa' 
+        : 'Michezo / Movies hazijatafsiriwa';
+
+    // ===== Category Filters =====
+    const categories = [
+        { id: 'all', label: 'Zote' },
+        { id: 'Action', label: 'Action' },
+        { id: 'Love story', label: 'Love Story' },
+        { id: 'Drama', label: 'Drama' },
+        { id: 'Mix', label: 'Mix' }
+    ];
+
     categoryFilters.innerHTML = `
-      <div class="category-filter-header">
-        <p class="category-hint">Chagua filamu hapa chini</p>
-        <span class="category-arrow" aria-hidden="true">↓</span>
-      </div>
-      <div class="category-filter-chips">
-        <a href="movies.html?translated=0&category=Kiarabu" class="category-filter-link ${category === 'Kiarabu' ? 'active' : ''}">Movies za Kiarabu</a>
-        <a href="movies.html?translated=0&category=Kifilipino" class="category-filter-link ${category === 'Kifilipino' ? 'active' : ''}">Movies za Kifilipino</a>
-        <a href="movies.html?translated=0&category=Kihindi" class="category-filter-link ${category === 'Kihindi' ? 'active' : ''}">Movies za Kihindi</a>
-        <a href="movies.html?translated=0&category=Bongo" class="category-filter-link ${category === 'Bongo' ? 'active' : ''}">Bongo Movies</a>
-        <a href="movies.html?translated=0&category=Kiitaliano" class="category-filter-link ${category === 'Kiitaliano' ? 'active' : ''}">Movies za Kiitaliano</a>
-      </div>
+        <div class="category-filter-header">
+            <span class="category-hint">Chagua Kategoria</span>
+            <span class="category-arrow">↓</span>
+        </div>
+        <div class="category-filter-chips" id="categoryChips">
+            ${categories.map(cat => `
+                <a href="#" class="category-filter-link ${cat.id === 'all' ? 'active' : ''}" data-category="${cat.id}">
+                    ${cat.label}
+                </a>
+            `).join('')}
+        </div>
     `;
-  } else {
-    categoryFilters.innerHTML = '';
-  }
 
-  // Movie data with poster images and type (single/series)
-  const movies = [
-    { 
-      id: 1, 
-      title: 'Safari ya Mtaa', 
-      lang: 'Kiswahili', 
-      category: 'Bongo', 
-      type: 'single',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      poster: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="400" height="225"><rect width="400" height="225" fill="%2311152d"/><rect y="0" width="400" height="4" fill="%236c63ff"/><text x="20" y="120" font-family="Arial" font-size="22" fill="%23f0f3ff" font-weight="bold">Safari ya Mtaa</text><text x="20" y="150" font-family="Arial" font-size="13" fill="%2394a3b8">Action • 2024 • Bongo</text><circle cx="350" cy="50" r="30" fill="%236c63ff" opacity="0.2"/><circle cx="30" cy="200" r="20" fill="%23ff4eb0" opacity="0.15"/></svg>'
-    },
-    { 
-      id: 2, 
-      title: 'The Silent Shore', 
-      lang: 'English', 
-      category: 'International', 
-      type: 'single',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      poster: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="400" height="225"><rect width="400" height="225" fill="%2311152d"/><rect y="0" width="400" height="4" fill="%2322d3ee"/><text x="20" y="120" font-family="Arial" font-size="20" fill="%23f0f3ff" font-weight="bold">The Silent Shore</text><text x="20" y="150" font-family="Arial" font-size="13" fill="%2394a3b8">Drama • 2023 • Intl</text><circle cx="350" cy="50" r="30" fill="%2322d3ee" opacity="0.2"/><circle cx="30" cy="200" r="20" fill="%23f97316" opacity="0.15"/></svg>'
-    },
-    { 
-      id: 3, 
-      title: 'Mapenzi ya Mwanga', 
-      lang: 'Kiswahili', 
-      category: 'Bongo', 
-      type: 'single',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      poster: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="400" height="225"><rect width="400" height="225" fill="%2311152d"/><rect y="0" width="400" height="4" fill="%23ec4899"/><text x="20" y="120" font-family="Arial" font-size="20" fill="%23f0f3ff" font-weight="bold">Mapenzi ya Mwanga</text><text x="20" y="150" font-family="Arial" font-size="13" fill="%2394a3b8">Romance • 2024 • Bongo</text><circle cx="350" cy="50" r="30" fill="%23ec4899" opacity="0.2"/><circle cx="30" cy="200" r="20" fill="%236c63ff" opacity="0.15"/></svg>'
-    },
-    { 
-      id: 4, 
-      title: 'Bollywood Dreams', 
-      lang: 'Hindi', 
-      category: 'Kihindi', 
-      type: 'single',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      poster: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="400" height="225"><rect width="400" height="225" fill="%2311152d"/><rect y="0" width="400" height="4" fill="%23f59e0b"/><text x="20" y="120" font-family="Arial" font-size="20" fill="%23f0f3ff" font-weight="bold">Bollywood Dreams</text><text x="20" y="150" font-family="Arial" font-size="13" fill="%2394a3b8">Musical • 2024 • Hindi</text><circle cx="350" cy="50" r="30" fill="%23f59e0b" opacity="0.2"/><circle cx="30" cy="200" r="20" fill="%23ec4899" opacity="0.15"/></svg>'
-    },
-    { 
-      id: 5, 
-      title: 'Filipino Fiesta', 
-      lang: 'Filipino', 
-      category: 'Kifilipino', 
-      type: 'single',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      poster: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="400" height="225"><rect width="400" height="225" fill="%2311152d"/><rect y="0" width="400" height="4" fill="%2314b8a6"/><text x="20" y="120" font-family="Arial" font-size="20" fill="%23f0f3ff" font-weight="bold">Filipino Fiesta</text><text x="20" y="150" font-family="Arial" font-size="13" fill="%2394a3b8">Comedy • 2023 • Filipino</text><circle cx="350" cy="50" r="30" fill="%2314b8a6" opacity="0.2"/><circle cx="30" cy="200" r="20" fill="%23f97316" opacity="0.15"/></svg>'
-    },
-    { 
-      id: 6, 
-      title: 'Arab Nights', 
-      lang: 'Arabic', 
-      category: 'Kiarabu', 
-      type: 'single',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      poster: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="400" height="225"><rect width="400" height="225" fill="%2311152d"/><rect y="0" width="400" height="4" fill="%23f97316"/><text x="20" y="120" font-family="Arial" font-size="20" fill="%23f0f3ff" font-weight="bold">Arab Nights</text><text x="20" y="150" font-family="Arial" font-size="13" fill="%2394a3b8">Thriller • 2024 • Arabic</text><circle cx="350" cy="50" r="30" fill="%23f97316" opacity="0.2"/><circle cx="30" cy="200" r="20" fill="%23ec4899" opacity="0.15"/></svg>'
-    },
-    // ===== SERIES =====
-    { 
-      id: 7, 
-      title: 'Mafia: The Untold Story', 
-      lang: 'Kiswahili', 
-      category: 'Bongo', 
-      type: 'series',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      poster: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="400" height="225"><rect width="400" height="225" fill="%2311152d"/><rect y="0" width="400" height="4" fill="%23fb923c"/><text x="20" y="120" font-family="Arial" font-size="20" fill="%23f0f3ff" font-weight="bold">Mafia: The Untold Story</text><text x="20" y="150" font-family="Arial" font-size="13" fill="%2394a3b8">Series • 2024 • Crime</text><circle cx="350" cy="50" r="30" fill="%23fb923c" opacity="0.2"/><circle cx="30" cy="200" r="20" fill="%236c63ff" opacity="0.15"/></svg>'
-    },
-    { 
-      id: 8, 
-      title: 'Tanzania Love Stories', 
-      lang: 'Kiswahili', 
-      category: 'Bongo', 
-      type: 'series',
-      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      poster: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="400" height="225"><rect width="400" height="225" fill="%2311152d"/><rect y="0" width="400" height="4" fill="%23ec4899"/><text x="20" y="120" font-family="Arial" font-size="20" fill="%23f0f3ff" font-weight="bold">Tanzania Love Stories</text><text x="20" y="150" font-family="Arial" font-size="13" fill="%2394a3b8">Series • 2024 • Romance</text><circle cx="350" cy="50" r="30" fill="%23ec4899" opacity="0.2"/><circle cx="30" cy="200" r="20" fill="%23fb923c" opacity="0.15"/></svg>'
+    // ===== Load Movies =====
+    let moviesData = [];
+    let selectedCategory = 'all';
+
+    async function loadMovies() {
+        try {
+            moviesList.innerHTML = `
+                <div style="grid-column:1/-1;text-align:center;padding:3rem;color:#9aa2d7;">
+                    <i class="fas fa-spinner fa-spin" style="font-size:2rem;margin-bottom:1rem;display:block;"></i>
+                    Inapakia movies...
+                </div>
+            `;
+
+            const response = await api.getUserMovies();
+            
+            if (response.success && response.movies) {
+                moviesData = response.movies;
+                filterAndRenderMovies();
+            } else {
+                throw new Error(response.message || 'Failed to load movies');
+            }
+        } catch (error) {
+            console.error('Error loading movies:', error);
+            moviesList.innerHTML = `
+                <div class="empty-state">
+                    <p style="color:#f87171;">❌ Error loading movies: ${error.message}</p>
+                    <p style="color:#9aa2d7;margin-top:1rem;">Tafadhasi jaribu tena baadaye.</p>
+                </div>
+            `;
+        }
     }
-  ];
 
-  // Filter movies based on category
-  let filteredMovies = movies;
-  if (category) {
-    filteredMovies = movies.filter(m => m.category === category);
-  }
+    function filterAndRenderMovies() {
+        const filtered = selectedCategory === 'all' 
+            ? moviesData 
+            : moviesData.filter(m => m.category === selectedCategory);
 
-  // Render movies with type badge
-  if (!filteredMovies.length) {
-    moviesList.innerHTML = '<div class="empty-state">Hakuna maudhui yaliyopatikana kwa sasa.</div>';
-    return;
-  }
+        if (filtered.length === 0) {
+            moviesList.innerHTML = `
+                <div class="empty-state">
+                    <p style="color:#9aa2d7;">Hakuna movies katika kategoria hii</p>
+                </div>
+            `;
+            return;
+        }
 
-  moviesList.innerHTML = filteredMovies.map(movie => {
-    const typeLabel = movie.type === 'series' ? '📺 Series' : '🎬 Single Movie';
-    const typeClass = movie.type === 'series' ? 'series' : 'single';
-    return `
-      <article class="movie-card" data-id="${movie.id}" data-url="watch.html?id=${movie.id}">
-        <div class="movie-poster">
-          <img src="${movie.poster}" alt="${movie.title} poster" loading="lazy" />
-          <div class="play-overlay">
-            <span>▶ Tazama</span>
-          </div>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <p class="card-label">Filamu</p>
-          <span class="type-badge ${typeClass}">${typeLabel}</span>
-        </div>
-        <h2>${movie.title}</h2>
-        <div class="movie-meta">
-          <span class="lang-tag">${movie.lang || 'Unknown'}</span>
-          <span class="category-tag">${movie.category || 'Mengine'}</span>
-        </div>
-        <a href="watch.html?id=${movie.id}" class="watch-btn">
-          ${movie.type === 'series' ? '📺 Tazama Series' : '▶ Tazama sasa'}
-        </a>
-      </article>
-    `;
-  }).join('');
+        moviesList.innerHTML = filtered.map(movie => {
+            const typeBadge = movie.movie_type === 'series' 
+                ? '<span class="type-badge series">📺 Series</span>' 
+                : '<span class="type-badge single">🎬 Single</span>';
+            
+            // Rating display
+            const avgRating = movie.rating?.average || 0;
+            const totalRatings = movie.rating?.total || 0;
+            const ratingDisplay = totalRatings > 0 
+                ? `<span style="color:#fbbf24;">★</span> ${avgRating.toFixed(1)} (${totalRatings})` 
+                : '⭐ Hakuna rating';
 
-  // Add click event to entire card
-  document.querySelectorAll('.movie-card').forEach(card => {
-    card.addEventListener('click', function(e) {
-      if (e.target.closest('.watch-btn')) {
-        return;
-      }
-      const url = this.dataset.url;
-      if (url) {
-        window.location.href = url;
-      }
+            return `
+                <div class="movie-card" data-id="${movie.id}">
+                    <div class="movie-poster">
+                        ${movie.poster 
+                            ? `<img src="${movie.poster}" alt="${movie.title}" loading="lazy" />` 
+                            : `<div style="padding:2rem;text-align:center;color:#6b7280;">🎬 No Poster</div>`
+                        }
+                        <div class="play-overlay">
+                            <span>▶ Tazama</span>
+                        </div>
+                    </div>
+                    <div class="card-label">${typeBadge}</div>
+                    <h2>${movie.title}</h2>
+                    <div class="movie-meta">
+                        <span>${movie.year || 'N/A'}</span>
+                        <span class="lang-tag">${movie.language || 'N/A'}</span>
+                        <span class="category-tag">${movie.category || 'N/A'}</span>
+                    </div>
+                    <div style="margin: 0.3rem 0 0.5rem; font-size:0.85rem; color:#b8c4ff;">
+                        ${ratingDisplay}
+                    </div>
+                    <button class="watch-btn" data-id="${movie.id}">Tazama Sasa</button>
+                </div>
+            `;
+        }).join('');
+
+        // Add click handlers
+        document.querySelectorAll('.movie-card .watch-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const id = this.dataset.id;
+                window.location.href = `watch.html?id=${id}`;
+            });
+        });
+
+        document.querySelectorAll('.movie-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const id = this.dataset.id;
+                window.location.href = `watch.html?id=${id}`;
+            });
+        });
+    }
+
+    // ===== Category Filter Click Handlers =====
+    document.getElementById('categoryChips').addEventListener('click', function(e) {
+        const link = e.target.closest('.category-filter-link');
+        if (!link) return;
+        e.preventDefault();
+
+        document.querySelectorAll('.category-filter-link').forEach(el => el.classList.remove('active'));
+        link.classList.add('active');
+
+        selectedCategory = link.dataset.category;
+        filterAndRenderMovies();
     });
-  });
+
+    // ===== Load Movies =====
+    await loadMovies();
 });
 
 // ===== About Modal Functions =====
 function openAboutModal() {
-  const modal = document.getElementById('aboutModal');
-  if (modal) modal.style.display = 'block';
+    const modal = document.getElementById('aboutModal');
+    if (modal) modal.style.display = 'block';
 }
 
 function closeModals() {
-  document.querySelectorAll('.modal').forEach(m => {
-    m.style.display = 'none';
-  });
+    document.querySelectorAll('.modal').forEach(m => {
+        m.style.display = 'none';
+    });
 }
 
 // Navigation click handlers
 document.querySelectorAll('.nav-link').forEach(link => {
-  link.addEventListener('click', function(e) {
-    const href = this.getAttribute('href');
-    if (href && !href.startsWith('#')) {
-      return;
-    }
-    e.preventDefault();
-    const id = this.id;
-    if (id === 'navAbout') {
-      openAboutModal();
-    }
-  });
+    link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href && !href.startsWith('#')) {
+            return;
+        }
+        e.preventDefault();
+        const id = this.id;
+        if (id === 'navAbout') {
+            openAboutModal();
+        } else if (id === 'navPayment') {
+            window.location.href = 'subscription.html';
+        }
+    });
 });
 
 // Modal close handlers
 document.querySelectorAll('.modal-close').forEach(btn => {
-  btn.addEventListener('click', closeModals);
+    btn.addEventListener('click', closeModals);
 });
 
 document.querySelectorAll('.modal').forEach(modal => {
-  modal.addEventListener('click', function(e) {
-    if (e.target === this) closeModals();
-  });
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) closeModals();
+    });
 });
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    closeModals();
-  }
+    if (e.key === 'Escape') {
+        closeModals();
+    }
 });
 
-console.log('✅ TanzaFlix movies page with series support initialized');
+console.log('🎬 TanzaFlix Movies page loaded');

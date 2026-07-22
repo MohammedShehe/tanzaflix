@@ -6,299 +6,279 @@
   <title>TanzaFlix | OTP Verification</title>
   <link rel="stylesheet" href="css/styles.css" />
   <style>
-    /* OTP Specific Styles */
-    .otp-container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: var(--space-7) var(--space-5);
-    }
+        /* OTP Specific Styles */
+        .otp-container {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: var(--space-7) var(--space-5);
+        }
 
-    .otp-header {
-      text-align: center;
-      margin-bottom: var(--space-7);
-    }
+        .otp-header {
+        text-align: center;
+        margin-bottom: var(--space-7);
+        }
 
-    .otp-header .otp-icon {
-      width: 68px;
-      height: 68px;
-      background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 78, 176, 0.2));
-      border-radius: var(--radius-pill);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto var(--space-4);
-      border: 2px solid rgba(108, 99, 255, 0.3);
-      font-size: 1.8rem;
-    }
+        .otp-header .otp-icon {
+        width: 68px;
+        height: 68px;
+        background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 78, 176, 0.2));
+        border-radius: var(--radius-pill);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-4);
+        border: 2px solid rgba(108, 99, 255, 0.3);
+        font-size: 1.8rem;
+        }
 
-    .otp-header h2 {
-      margin: 0 0 var(--space-2);
-      font-size: 1.7rem;
-      background: linear-gradient(135deg, var(--brand-violet), var(--brand-pink));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+        .otp-header h2 {
+        margin: 0 0 var(--space-2);
+        font-size: 1.7rem;
+        background: linear-gradient(135deg, var(--brand-violet), var(--brand-pink));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        }
 
-    .otp-header p {
-      color: var(--ink-5);
-      font-size: 0.92rem;
-      margin: 0;
-    }
+        .otp-header p {
+        color: var(--ink-5);
+        font-size: 0.92rem;
+        margin: 0;
+        }
 
-    .otp-header .email-display {
-      display: inline-block;
-      background: var(--surface-3);
-      padding: 0.3rem 1rem;
-      border-radius: var(--radius-pill);
-      margin-top: var(--space-3);
-      font-weight: 600;
-      color: #c7d2fe;
-      font-size: 0.88rem;
-      border: 1px solid var(--line-soft);
-    }
+        .otp-header .email-display {
+        display: inline-block;
+        background: var(--surface-3);
+        padding: 0.3rem 1rem;
+        border-radius: var(--radius-pill);
+        margin-top: var(--space-3);
+        font-weight: 600;
+        color: #c7d2fe;
+        font-size: 0.88rem;
+        border: 1px solid var(--line-soft);
+        }
 
-    .otp-input-group {
-      display: flex;
-      gap: var(--space-3);
-      justify-content: center;
-      margin: var(--space-7) 0;
-    }
+        .otp-input-group {
+        display: flex;
+        gap: var(--space-3);
+        justify-content: center;
+        margin: var(--space-7) 0;
+        }
 
-    .otp-input {
-      width: 50px;
-      height: 58px;
-      text-align: center;
-      font-family: var(--font-display);
-      font-size: 1.4rem;
-      font-weight: 700;
-      border: 2px solid var(--line-mid);
-      border-radius: var(--radius-md);
-      background: var(--surface-1);
-      color: var(--ink-1);
-      transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease, transform var(--dur-fast) ease, background-color var(--dur-fast) ease;
-      padding: 0;
-    }
-
-    .otp-input:focus {
-      border-color: var(--brand-violet);
-      box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15);
-      outline: none;
-      transform: translateY(-2px);
-    }
-
-    .otp-input.filled {
-      border-color: rgba(108, 99, 255, 0.5);
-      background: rgba(108, 99, 255, 0.08);
-    }
-
-    .otp-input.error {
-      border-color: var(--danger);
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
-      animation: shake 0.5s ease;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
-    }
-
-    .otp-timer {
-      text-align: center;
-      color: var(--ink-5);
-      font-size: 0.88rem;
-      margin: var(--space-6) 0;
-    }
-
-    .otp-timer .timer-count {
-      font-family: var(--font-display);
-      font-weight: 700;
-      color: #c7d2fe;
-      font-size: 1.05rem;
-    }
-
-    .otp-timer .timer-count.warning {
-      color: #fbbf24;
-    }
-
-    .otp-actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3);
-      margin-top: var(--space-4);
-    }
-
-    .otp-actions .submit-btn {
-      padding: 0.9rem;
-      font-size: 0.98rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .otp-actions .submit-btn:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      transform: none !important;
-    }
-
-    .otp-actions .resend-btn {
-      background: transparent;
-      border: 1px solid var(--line-mid);
-      color: var(--ink-5);
-      padding: 0.8rem;
-      border-radius: var(--radius-md);
-      font-size: 0.92rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all var(--dur-fast) ease;
-      position: relative;
-    }
-
-    .otp-actions .resend-btn:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.2);
-      color: var(--ink-1);
-      transform: translateY(-1px);
-    }
-
-    .otp-actions .resend-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .otp-actions .resend-btn .loading-spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      border-top-color: var(--brand-violet);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .otp-actions .resend-btn .btn-text {
-      vertical-align: middle;
-    }
-
-    .otp-back {
-      text-align: center;
-      margin-top: var(--space-6);
-    }
-
-    .otp-back a {
-      color: var(--ink-5);
-      text-decoration: none;
-      font-size: 0.88rem;
-      transition: color var(--dur-fast) ease;
-    }
-
-    .otp-back a:hover {
-      color: #c7d2fe;
-      text-decoration: underline;
-    }
-
-    .otp-success-message {
-      text-align: center;
-      padding: var(--space-4);
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.2);
-      border-radius: var(--radius-md);
-      color: var(--success-light);
-      margin-top: var(--space-4);
-      display: none;
-    }
-
-    .otp-success-message.show {
-      display: block;
-      animation: fadeSlideIn 0.4s ease;
-    }
-
-    .otp-error-message {
-      text-align: center;
-      padding: 0.8rem;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      border-radius: var(--radius-md);
-      color: var(--danger-light);
-      margin-top: var(--space-4);
-      display: none;
-      font-size: 0.88rem;
-    }
-
-    .otp-error-message.show {
-      display: block;
-      animation: fadeSlideIn 0.4s ease;
-    }
-
-    @keyframes fadeSlideIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .otp-verification-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(34, 197, 94, 0.15);
-      color: var(--success-light);
-      padding: 6px 14px;
-      border-radius: var(--radius-pill);
-      font-size: 0.85rem;
-      font-weight: 600;
-      border: 1px solid rgba(34, 197, 94, 0.2);
-      margin-top: var(--space-4);
-    }
-
-    .otp-verification-badge .check-icon {
-      font-size: 1.05rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 520px) {
-      .otp-input {
-        width: 42px;
-        height: 50px;
-        font-size: 1.2rem;
-      }
-      .otp-input-group {
-        gap: var(--space-2);
-      }
-      .otp-container {
-        padding: var(--space-6) var(--space-4);
-      }
-      .otp-header h2 {
+        .otp-input {
+        width: 50px;
+        height: 58px;
+        text-align: center;
+        font-family: var(--font-display);
         font-size: 1.4rem;
-      }
-    }
+        font-weight: 700;
+        border: 2px solid var(--line-mid);
+        border-radius: var(--radius-md);
+        background: var(--surface-1);
+        color: var(--ink-1);
+        transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease, transform var(--dur-fast) ease, background-color var(--dur-fast) ease;
+        padding: 0;
+        }
 
-    @media (max-width: 400px) {
-      .otp-input {
-        width: 36px;
-        height: 44px;
-        font-size: 0.95rem;
-      }
-      .otp-input-group {
-        gap: 0.35rem;
-      }
-    }
+        .otp-input:focus {
+        border-color: var(--brand-violet);
+        box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15);
+        outline: none;
+        transform: translateY(-2px);
+        }
 
-    /* Pulse animation for resend button */
-    .resend-btn.pulse {
-      animation: btnPulse 1.5s ease-in-out;
-    }
+        .otp-input.filled {
+        border-color: rgba(108, 99, 255, 0.5);
+        background: rgba(108, 99, 255, 0.08);
+        }
 
-    @keyframes btnPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-    }
-  </style>
+        .otp-input.error {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+        animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-8px); }
+        75% { transform: translateX(8px); }
+        }
+
+        .otp-timer {
+        text-align: center;
+        color: var(--ink-5);
+        font-size: 0.88rem;
+        margin: var(--space-6) 0;
+        }
+
+        .otp-timer .timer-count {
+        font-family: var(--font-display);
+        font-weight: 700;
+        color: #c7d2fe;
+        font-size: 1.05rem;
+        }
+
+        .otp-timer .timer-count.warning {
+        color: #fbbf24;
+        }
+
+        .otp-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        margin-top: var(--space-4);
+        }
+
+        .otp-actions .submit-btn {
+        padding: 0.9rem;
+        font-size: 0.98rem;
+        position: relative;
+        overflow: hidden;
+        }
+
+        .otp-actions .submit-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none !important;
+        }
+
+        .otp-actions .resend-btn {
+        background: transparent;
+        border: 1px solid var(--line-mid);
+        color: var(--ink-5);
+        padding: 0.8rem;
+        border-radius: var(--radius-md);
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--dur-fast) ease;
+        position: relative;
+        }
+
+        .otp-actions .resend-btn:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: var(--ink-1);
+        transform: translateY(-1px);
+        }
+
+        .otp-actions .resend-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        }
+
+        .otp-back {
+        text-align: center;
+        margin-top: var(--space-6);
+        }
+
+        .otp-back a {
+        color: var(--ink-5);
+        text-decoration: none;
+        font-size: 0.88rem;
+        transition: color var(--dur-fast) ease;
+        }
+
+        .otp-back a:hover {
+        color: #c7d2fe;
+        text-decoration: underline;
+        }
+
+        .otp-success-message {
+        text-align: center;
+        padding: var(--space-4);
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: var(--radius-md);
+        color: var(--success-light);
+        margin-top: var(--space-4);
+        display: none;
+        }
+
+        .otp-success-message.show {
+        display: block;
+        animation: fadeSlideIn 0.4s ease;
+        }
+
+        .otp-error-message {
+        text-align: center;
+        padding: 0.8rem;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: var(--radius-md);
+        color: var(--danger-light);
+        margin-top: var(--space-4);
+        display: none;
+        font-size: 0.88rem;
+        }
+
+        .otp-error-message.show {
+        display: block;
+        animation: fadeSlideIn 0.4s ease;
+        }
+
+        @keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+        }
+
+        .otp-verification-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(34, 197, 94, 0.15);
+        color: var(--success-light);
+        padding: 6px 14px;
+        border-radius: var(--radius-pill);
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        margin-top: var(--space-4);
+        }
+
+        .otp-verification-badge .check-icon {
+        font-size: 1.05rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 520px) {
+        .otp-input {
+            width: 42px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+        .otp-input-group {
+            gap: var(--space-2);
+        }
+        .otp-container {
+            padding: var(--space-6) var(--space-4);
+        }
+        .otp-header h2 {
+            font-size: 1.4rem;
+        }
+        }
+
+        @media (max-width: 400px) {
+        .otp-input {
+            width: 36px;
+            height: 44px;
+            font-size: 0.95rem;
+        }
+        .otp-input-group {
+            gap: 0.35rem;
+        }
+        }
+
+        /* Pulse animation for resend button */
+        .resend-btn.pulse {
+        animation: btnPulse 1.5s ease-in-out;
+        }
+
+        @keyframes btnPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        }
+    </style>
 </head>
 <body>
   <div class="page-shell">
@@ -342,13 +322,13 @@
 
             <div class="otp-timer">
               <span>Nambari itaisha baada ya </span>
-              <span class="timer-count" id="timerCount">2:00</span>
+              <span class="timer-count" id="timerCount">5:00</span>
             </div>
 
             <div class="otp-actions">
               <button type="submit" class="submit-btn" id="verifyBtn">Thibitisha OTP</button>
               <button type="button" class="resend-btn" id="resendBtn">
-                <span class="btn-text">📨 Tuma OTP tena</span>
+                📨 Tuma OTP tena
               </button>
             </div>
 
@@ -360,7 +340,7 @@
 
         <div class="login-notes" style="margin-top: 1.5rem; padding: 1rem 1.2rem; text-align: center;">
           <p style="margin: 0; font-size: 0.85rem;">
-            <strong>Maelezo:</strong> Nambari ya OTP itatumwa kwa barua pepe yako iliyosajiliwa. 
+            <strong>Maelezo:</strong> Nambari ya OTP ina muda wa dakika 5 (sawa na sekunde 300) kabla ya kuisha muda wake. 
             Hakikisha umeingiza nambari sahihi kwa usalama wa akaunti yako.
           </p>
         </div>
@@ -368,340 +348,6 @@
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // ===== DOM Elements =====
-      const otpInputs = document.querySelectorAll('.otp-input');
-      const verifyBtn = document.getElementById('verifyBtn');
-      const resendBtn = document.getElementById('resendBtn');
-      const timerCount = document.getElementById('timerCount');
-      const errorMessage = document.getElementById('otpErrorMessage');
-      const successMessage = document.getElementById('otpSuccessMessage');
-      const otpForm = document.getElementById('otpForm');
-      const userEmailDisplay = document.getElementById('userEmailDisplay');
-
-      // ===== Configuration =====
-      const OTP_EXPIRY_SECONDS = 120;
-      const RESEND_COOLDOWN_SECONDS = 30;
-
-      // ===== State =====
-      let timerInterval = null;
-      let timeLeft = OTP_EXPIRY_SECONDS;
-      let isResending = false;
-      let isVerified = false;
-      let resendCooldown = 0;
-      let resendCooldownInterval = null;
-
-      // ===== Get user email from URL or localStorage =====
-      function getUserEmail() {
-        const params = new URLSearchParams(window.location.search);
-        const emailParam = params.get('email');
-        if (emailParam) return emailParam;
-
-        try {
-          const userData = localStorage.getItem('tanzaflix_user');
-          if (userData) {
-            const parsed = JSON.parse(userData);
-            if (parsed.email) return parsed.email;
-          }
-        } catch (e) {}
-
-        return 'admin@tanzaflix.com';
-      }
-
-      const userEmail = getUserEmail();
-      userEmailDisplay.textContent = userEmail;
-
-      // ===== OTP Input Handling =====
-      otpInputs.forEach((input, index) => {
-        input.addEventListener('input', function(e) {
-          const value = this.value;
-          
-          if (!/^\d*$/.test(value)) {
-            this.value = value.replace(/\D/g, '');
-            return;
-          }
-
-          this.classList.remove('error');
-          errorMessage.classList.remove('show');
-
-          if (value.length === 1) {
-            this.classList.add('filled');
-            if (index < otpInputs.length - 1) {
-              otpInputs[index + 1].focus();
-            }
-          } else if (value.length === 0) {
-            this.classList.remove('filled');
-          }
-        });
-
-        input.addEventListener('keydown', function(e) {
-          if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
-            otpInputs[index - 1].focus();
-            otpInputs[index - 1].classList.remove('filled');
-          }
-        });
-
-        input.addEventListener('paste', function(e) {
-          e.preventDefault();
-          const pastedData = (e.clipboardData || window.clipboardData).getData('text');
-          const digits = pastedData.replace(/\D/g, '').slice(0, otpInputs.length);
-          
-          if (digits) {
-            const digitArray = digits.split('');
-            otpInputs.forEach((inp, idx) => {
-              if (idx < digitArray.length) {
-                inp.value = digitArray[idx];
-                inp.classList.add('filled');
-              } else {
-                inp.value = '';
-                inp.classList.remove('filled');
-              }
-            });
-            const nextIndex = Math.min(digitArray.length, otpInputs.length - 1);
-            otpInputs[nextIndex].focus();
-          }
-        });
-
-        if (index === 0) {
-          input.focus();
-        }
-      });
-
-      // ===== Get OTP value =====
-      function getOTP() {
-        let otp = '';
-        otpInputs.forEach(input => {
-          otp += input.value;
-        });
-        return otp;
-      }
-
-      // ===== Timer Functions =====
-      function startTimer() {
-        clearInterval(timerInterval);
-        timeLeft = OTP_EXPIRY_SECONDS;
-        updateTimerDisplay();
-
-        timerInterval = setInterval(() => {
-          timeLeft--;
-          updateTimerDisplay();
-
-          if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            timerCount.textContent = '0:00';
-            timerCount.classList.add('warning');
-            verifyBtn.disabled = true;
-            verifyBtn.style.opacity = '0.5';
-          }
-        }, 1000);
-      }
-
-      function updateTimerDisplay() {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        timerCount.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        
-        if (timeLeft <= 10) {
-          timerCount.classList.add('warning');
-        } else {
-          timerCount.classList.remove('warning');
-        }
-      }
-
-      // ===== Resend OTP =====
-      function handleResendOTP() {
-        if (isResending || resendCooldown > 0 || isVerified) return;
-
-        isResending = true;
-        resendBtn.disabled = true;
-        
-        const btnText = resendBtn.querySelector('.btn-text');
-        const originalText = btnText.textContent;
-        btnText.innerHTML = '<span class="loading-spinner"></span> Inatuma...';
-
-        setTimeout(() => {
-          isResending = false;
-          resendBtn.disabled = false;
-          btnText.textContent = originalText;
-
-          clearInterval(timerInterval);
-          startTimer();
-          verifyBtn.disabled = false;
-          verifyBtn.style.opacity = '1';
-
-          errorMessage.classList.remove('show');
-          successMessage.classList.remove('show');
-
-          otpInputs.forEach(input => {
-            input.value = '';
-            input.classList.remove('filled', 'error');
-          });
-          otpInputs[0].focus();
-
-          const tempMsg = document.createElement('div');
-          tempMsg.style.cssText = `
-            text-align: center;
-            padding: 0.8rem;
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            border-radius: 14px;
-            color: #4ade80;
-            margin-top: 1rem;
-            animation: fadeSlideIn 0.4s ease;
-          `;
-          tempMsg.textContent = '✅ Nambari mpya ya OTP imetumwa!';
-          
-          const form = document.getElementById('otpForm');
-          const timerEl = document.querySelector('.otp-timer');
-          form.insertBefore(tempMsg, timerEl);
-          
-          setTimeout(() => {
-            tempMsg.remove();
-          }, 3000);
-
-          startResendCooldown();
-
-          resendBtn.classList.add('pulse');
-          setTimeout(() => resendBtn.classList.remove('pulse'), 1500);
-
-        }, 1500);
-      }
-
-      // ===== Resend Cooldown =====
-      function startResendCooldown() {
-        resendCooldown = RESEND_COOLDOWN_SECONDS;
-        updateResendButton();
-
-        clearInterval(resendCooldownInterval);
-        resendCooldownInterval = setInterval(() => {
-          resendCooldown--;
-          updateResendButton();
-
-          if (resendCooldown <= 0) {
-            clearInterval(resendCooldownInterval);
-            resendCooldownInterval = null;
-            resendBtn.disabled = false;
-            const btnText = resendBtn.querySelector('.btn-text');
-            btnText.textContent = '📨 Tuma OTP tena';
-          }
-        }, 1000);
-      }
-
-      function updateResendButton() {
-        const btnText = resendBtn.querySelector('.btn-text');
-        if (resendCooldown > 0) {
-          btnText.textContent = `⏳ Subiri sekunde ${resendCooldown}`;
-          resendBtn.disabled = true;
-        } else {
-          btnText.textContent = '📨 Tuma OTP tena';
-          resendBtn.disabled = false;
-        }
-      }
-
-      // ===== Verify OTP =====
-      function handleVerifyOTP(e) {
-        e.preventDefault();
-
-        if (isVerified) return;
-
-        const otp = getOTP();
-
-        const allFilled = otp.length === otpInputs.length;
-        if (!allFilled) {
-          otpInputs.forEach((input, index) => {
-            if (!input.value) {
-              input.classList.add('error');
-              if (index === 0) input.focus();
-            }
-          });
-          errorMessage.textContent = '⚠️ Tafadhali jaza nambari zote sita za OTP.';
-          errorMessage.classList.add('show');
-          successMessage.classList.remove('show');
-          return;
-        }
-
-        const CORRECT_OTP = '123456';
-
-        if (otp === CORRECT_OTP) {
-          isVerified = true;
-          errorMessage.classList.remove('show');
-          successMessage.classList.add('show');
-          
-          otpInputs.forEach(input => {
-            input.disabled = true;
-            input.style.cursor = 'not-allowed';
-          });
-          verifyBtn.disabled = true;
-          verifyBtn.style.opacity = '0.5';
-          resendBtn.disabled = true;
-          clearInterval(timerInterval);
-
-          const badge = document.createElement('div');
-          badge.className = 'otp-verification-badge';
-          badge.innerHTML = '<span class="check-icon">✅</span> Uthibitishaji umekamilika';
-          const form = document.getElementById('otpForm');
-          const actions = document.querySelector('.otp-actions');
-          form.insertBefore(badge, actions);
-
-          setTimeout(() => {
-            window.location.href = 'admin.html?verified=1';
-          }, 2000);
-
-        } else {
-          otpInputs.forEach(input => {
-            input.classList.add('error');
-            input.value = '';
-            input.classList.remove('filled');
-          });
-          otpInputs[0].focus();
-          errorMessage.textContent = '⚠️ Nambari ya OTP si sahihi. Tafadhali jaribu tena.';
-          errorMessage.classList.add('show');
-          successMessage.classList.remove('show');
-
-          const group = document.getElementById('otpInputGroup');
-          group.style.animation = 'none';
-          setTimeout(() => {
-            group.style.animation = 'shake 0.5s ease';
-          }, 10);
-          setTimeout(() => {
-            group.style.animation = '';
-          }, 500);
-        }
-      }
-
-      // ===== Event Listeners =====
-      otpForm.addEventListener('submit', handleVerifyOTP);
-      resendBtn.addEventListener('click', handleResendOTP);
-
-      // ===== Initialize =====
-      startTimer();
-
-      document.addEventListener('visibilitychange', function() {
-        if (document.hidden && timerInterval) {
-        } else if (!document.hidden && !timerInterval && timeLeft > 0) {
-          startTimer();
-        }
-      });
-
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && document.activeElement.classList.contains('otp-input')) {
-          e.preventDefault();
-          otpForm.dispatchEvent(new Event('submit'));
-        }
-      });
-
-      window.addEventListener('beforeunload', function() {
-        clearInterval(timerInterval);
-        clearInterval(resendCooldownInterval);
-      });
-
-      console.log('🔐 OTP Page initialized');
-      console.log(`📧 Email: ${userEmail}`);
-      console.log('⏱️ OTP expires in 2 minutes');
-      console.log('🔑 Correct OTP for demo: 123456');
-    });
-  </script>
+  <script type="module" src="js/otp.js"></script>
 </body>
 </html>

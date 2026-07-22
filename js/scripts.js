@@ -1,76 +1,84 @@
-// Login page functionality - Frontend only simulation
+// js/scripts.js - Login Page
+
+import api from './api.js';
+import auth from './auth.js';
+
 document.addEventListener('DOMContentLoaded', function() {
-  const loginForm = document.getElementById('loginForm');
-  const passwordInput = document.getElementById('password');
-  const visibilityToggle = document.querySelector('.visibility-toggle');
+    const loginForm = document.getElementById('loginForm');
+    const passwordInput = document.getElementById('password');
+    const visibilityToggle = document.querySelector('.visibility-toggle');
+    const submitBtn = document.querySelector('.submit-btn');
 
-  // Password visibility toggle
-  if (visibilityToggle && passwordInput) {
-    const btn = visibilityToggle;
-    btn.addEventListener('click', () => {
-      const isPassword = passwordInput.type === 'password';
-      passwordInput.type = isPassword ? 'text' : 'password';
-      const label = btn.querySelector('.vis-label');
-      if (label) label.textContent = isPassword ? 'Ficha' : 'Onyesha';
-      btn.setAttribute('aria-pressed', String(isPassword));
-      btn.setAttribute('aria-label', isPassword ? 'Ficha nenosiri' : 'Onyesha nenosiri');
-      btn.classList.toggle('active', isPassword);
-    });
-  }
+    // Password visibility toggle
+    if (visibilityToggle && passwordInput) {
+        const btn = visibilityToggle;
+        btn.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            const label = btn.querySelector('.vis-label');
+            if (label) label.textContent = isPassword ? 'Ficha' : 'Onyesha';
+            btn.setAttribute('aria-pressed', String(isPassword));
+            btn.setAttribute('aria-label', isPassword ? 'Ficha nenosiri' : 'Onyesha nenosiri');
+            btn.classList.toggle('active', isPassword);
+        });
+    }
 
-  // Login form submission
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
+    // ===== Set Button Loading State =====
+    function setButtonLoading(button, isLoading, loadingText = 'Inapakia...') {
+        if (isLoading) {
+            button.disabled = true;
+            button.dataset.originalText = button.textContent;
+            button.innerHTML = `
+                <span class="spinner" style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:10px;"></span>
+                ${loadingText}
+            `;
+        } else {
+            button.disabled = false;
+            button.textContent = button.dataset.originalText || 'Iingia sasa';
+        }
+    }
 
-      const email = document.getElementById('email').value.trim();
-      const password = passwordInput.value.trim();
+    // Login form submission
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
 
-      if (!email || !password) {
-        alert('Tafadhali jaza barua pepe na nenosiri kwa usahihi.');
-        return;
-      }
+            const email = document.getElementById('email').value.trim();
+            const password = passwordInput.value.trim();
 
-      if (!email.includes('@')) {
-        alert('Tafadhali tumia barua pepe halali.');
-        return;
-      }
+            if (!email || !password) {
+                alert('Tafadhali jaza barua pepe na nenosiri kwa usahihi.');
+                return;
+            }
 
-      // Check if admin credentials
-      const ADMIN_EMAIL = 'admin@tanzaflix.com';
-      const ADMIN_PASSWORD = 'Admin@124';
+            if (!email.includes('@')) {
+                alert('Tafadhali tumia barua pepe halali.');
+                return;
+            }
 
-      console.log('Email entered:', email);
-      console.log('Password entered:', password);
-      console.log('Admin email:', ADMIN_EMAIL);
-      console.log('Admin password:', ADMIN_PASSWORD);
-      console.log('Admin match:', email === ADMIN_EMAIL && password === ADMIN_PASSWORD);
+            // Show loading state
+            setButtonLoading(submitBtn, true, 'Inaingiza...');
 
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        // Admin login - store admin flag and redirect to OTP
-        console.log('✅ Admin credentials matched! Redirecting to OTP...');
-        const adminData = {
-          email: email,
-          isAdmin: true,
-          name: 'Admin'
-        };
-        localStorage.setItem('tanzaflix_user', JSON.stringify(adminData));
-        localStorage.setItem('tanzaflix_admin_session', 'true');
-        window.location.href = `otp.html?email=${encodeURIComponent(email)}`;
-        return;
-      }
-
-      // Normal user login
-      console.log('👤 Normal user login');
-      const userData = {
-        name: email.split('@')[0],
-        email: email,
-        photo_url: ''
-      };
-      localStorage.setItem('tanzaflix_user', JSON.stringify(userData));
-      localStorage.removeItem('tanzaflix_admin_session');
-      
-      window.location.href = `dashboard.html?name=${encodeURIComponent(userData.name)}`;
-    });
-  }
+            try {
+                const result = await auth.login(email, password);
+                
+                if (result.requiresOTP) {
+                    // Admin needs OTP verification
+                    setButtonLoading(submitBtn, false);
+                    window.location.href = `otp.html?email=${encodeURIComponent(email)}`;
+                } else if (result.success) {
+                    // Regular user login successful
+                    setButtonLoading(submitBtn, false);
+                    window.location.href = `dashboard.html?name=${encodeURIComponent(email.split('@')[0])}`;
+                } else {
+                    setButtonLoading(submitBtn, false);
+                    alert('❌ Login failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                setButtonLoading(submitBtn, false);
+                alert(`❌ ${error.message || 'Login failed. Please try again.'}`);
+            }
+        });
+    }
 });
