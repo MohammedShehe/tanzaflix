@@ -1291,12 +1291,12 @@
 
   <!-- User Modal -->
   <div class="modal" id="userModal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 550px;">
       <div class="modal-header">
         <h3 id="userModalTitle">Ongeza Mtumiaji</h3>
         <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
       </div>
-      <form id="userForm">
+      <form id="userForm" enctype="multipart/form-data">
         <input type="hidden" id="userId" />
 
         <div class="form-row">
@@ -1339,17 +1339,29 @@
         <div class="form-row">
           <div class="form-group">
             <label>Nenosiri</label>
-            <input type="password" id="userPassword" placeholder="Weka nenosiri" required />
+            <input type="password" id="userPassword" placeholder="Weka nenosiri" />
+            <small style="display:block;margin-top:0.3rem;color:var(--text-muted);font-size:0.7rem;">
+              Acha tupu ili kubaki nenosiri la sasa (wakati wa kuhariri)
+            </small>
           </div>
           <div class="form-group">
             <label>Hakiki Nenosiri</label>
-            <input type="password" id="userPasswordConfirm" placeholder="Rudia nenosiri" required />
+            <input type="password" id="userPasswordConfirm" placeholder="Rudia nenosiri" />
           </div>
         </div>
 
         <div class="form-group">
           <label>Picha ya Wasifu</label>
           <input type="file" id="userPhoto" accept="image/*" />
+          <small style="display:block;margin-top:0.3rem;color:var(--text-muted);font-size:0.7rem;">
+            Chagua picha mpya ili kubadilisha (hiari)
+          </small>
+        </div>
+
+        <!-- Current photo preview -->
+        <div id="userPhotoPreview" class="user-photo-preview" style="display:none; margin-top:0.5rem;">
+          <label style="font-size:0.75rem;color:var(--text-secondary);">Picha ya sasa:</label>
+          <img id="userCurrentPhoto" src="" alt="Picha ya sasa" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.1);display:block;margin-top:0.3rem;" />
         </div>
 
         <div class="modal-actions">

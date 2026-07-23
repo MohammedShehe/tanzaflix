@@ -20,7 +20,7 @@ window.closeModal = function(id) {
     }
 };
 
-// ===== Global Season/Episode Functions (for inline onclick) =====
+// ===== Global Season/Episode Functions =====
 let seasonCounter = 0;
 let episodeCounter = 0;
 
@@ -62,7 +62,6 @@ window.addSeason = function(seasonData = null) {
     `;
     container.appendChild(group);
     
-    // If we have episode data, add them
     if (seasonData?.episodes) {
         seasonData.episodes.forEach(ep => {
             window.addEpisode(seasonId, ep);
@@ -77,10 +76,7 @@ window.addEpisode = function(seasonId, episodeData = null) {
     const episodeIndex = container.children.length;
     const episodeNumber = episodeData?.episode_number || episodeIndex + 1;
     const episodeId = episodeCounter++;
-    const seasonNumber = document.querySelector(`.season-group[data-season-id="${seasonId}"]`)?.dataset?.seasonNumber || 1;
     
-    // Generate field name for the backend: episodes_{seasonIndex}_{episodeIndex}
-    // Or simpler: episodes_0, episodes_1, episodes_2, etc.
     const fieldName = `episodes_${episodeId}`;
     
     const item = document.createElement('div');
@@ -110,7 +106,6 @@ window.addEpisode = function(seasonId, episodeData = null) {
     `;
     container.appendChild(item);
     
-    // Add file change listener to update status
     const fileInput = item.querySelector('.episode-video');
     const statusSpan = item.querySelector('.file-status');
     if (fileInput && statusSpan) {
@@ -744,7 +739,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!modal || !form) return;
 
-        // Reset form
         form.reset();
         
         const movieIdInput = document.getElementById('movieId');
@@ -762,7 +756,6 @@ document.addEventListener('DOMContentLoaded', function() {
         seasonCounter = 0;
         episodeCounter = 0;
 
-        // Set default content type
         const singleRadio = document.querySelector('input[name="contentType"][value="single"]');
         if (singleRadio) {
             singleRadio.checked = true;
@@ -865,7 +858,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const id = document.getElementById('movieId')?.value || '';
             const contentType = document.querySelector('input[name="contentType"]:checked')?.value || 'single';
             
-            // Show loading state
             setButtonLoading(submitBtn, true, id ? 'Inasasisha...' : 'Inaongeza...');
             
             const formData = new FormData();
@@ -917,11 +909,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
             } else {
-                // Series - collect seasons, episodes, and video files
                 const seasons = [];
                 const seasonGroups = document.querySelectorAll('.season-group');
-                
-                // Track episode index for file naming
                 let epIdx = 0;
                 
                 seasonGroups.forEach((group, sIdx) => {
@@ -943,13 +932,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         const epTitle = epTitleInput ? epTitleInput.value.trim() || `Episode ${epNumber}` : `Episode ${epNumber}`;
                         const duration = epDurationInput ? epDurationInput.value.trim() || '' : '';
                         
-                        // IMPORTANT: Add video file with field name episodes_{epIdx}
                         if (epVideoInput && epVideoInput.files && epVideoInput.files[0]) {
                             const fieldName = `episodes_${epIdx}`;
                             formData.append(fieldName, epVideoInput.files[0]);
                             epIdx++;
                         } else if (!id) {
-                            // For new series, video is required for each episode
                             alert(`❌ Tafadhali weka video kwa Episode ${epNumber} katika Season ${seasonNumber}.`);
                             setButtonLoading(submitBtn, false);
                             return;
@@ -983,9 +970,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // Check if any episodes are missing videos for new series
                 if (!id) {
-                    // Count total video files added
                     let totalVideos = 0;
                     formData.forEach((value, key) => {
                         if (key.startsWith('episodes_') && value instanceof File) {
@@ -993,7 +978,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                     
-                    // Count total episodes
                     let totalEpisodes = 0;
                     seasons.forEach(s => {
                         totalEpisodes += s.episodes.length;
@@ -1047,46 +1031,89 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('userModal');
         const form = document.getElementById('userForm');
         const title = document.getElementById('userModalTitle');
+        const photoPreview = document.getElementById('userPhotoPreview');
+        const currentPhotoImg = document.getElementById('userCurrentPhoto');
         
         if (!modal || !form) return;
 
+        // Reset form
+        form.reset();
+        
+        const userIdInput = document.getElementById('userId');
+        const fullNameInput = document.getElementById('userFullName');
+        const phoneInput = document.getElementById('userPhone');
+        const countrySelect = document.getElementById('userCountry');
+        const regionSelect = document.getElementById('userRegion');
+        const emailInput = document.getElementById('userEmail');
+        const passwordInput = document.getElementById('userPassword');
+        const passwordConfirmInput = document.getElementById('userPasswordConfirm');
+        const photoInput = document.getElementById('userPhoto');
+        
+        // Hide photo preview initially
+        if (photoPreview) photoPreview.style.display = 'none';
+
         if (user) {
             if (title) title.textContent = 'Hariri Mtumiaji';
-            
-            const userIdInput = document.getElementById('userId');
-            const fullNameInput = document.getElementById('userFullName');
-            const phoneInput = document.getElementById('userPhone');
-            const countrySelect = document.getElementById('userCountry');
-            const regionSelect = document.getElementById('userRegion');
-            const emailInput = document.getElementById('userEmail');
-            const passwordInput = document.getElementById('userPassword');
-            const passwordConfirmInput = document.getElementById('userPasswordConfirm');
-            
             if (userIdInput) userIdInput.value = user.id;
-            if (fullNameInput) fullNameInput.value = user.full_name;
+            if (fullNameInput) fullNameInput.value = user.full_name || '';
             if (phoneInput) phoneInput.value = user.phone || '';
             if (countrySelect) countrySelect.value = user.country || '';
             if (regionSelect) regionSelect.value = user.region || '';
-            if (emailInput) emailInput.value = user.email;
-            if (passwordInput) passwordInput.value = '';
-            if (passwordConfirmInput) passwordConfirmInput.value = '';
-            if (passwordInput) passwordInput.placeholder = 'Acha tupu ili kubaki sawa';
-            if (passwordConfirmInput) passwordConfirmInput.placeholder = 'Acha tupu ili kubaki sawa';
+            if (emailInput) emailInput.value = user.email || '';
+            
+            // Show current photo if exists
+            if (user.profile_image && currentPhotoImg) {
+                currentPhotoImg.src = user.profile_image;
+                if (photoPreview) photoPreview.style.display = 'block';
+            }
+            
+            // Make password optional for editing
+            if (passwordInput) {
+                passwordInput.placeholder = 'Acha tupu ili kubaki sawa';
+                passwordInput.required = false;
+            }
+            if (passwordConfirmInput) {
+                passwordConfirmInput.placeholder = 'Acha tupu ili kubaki sawa';
+                passwordConfirmInput.required = false;
+            }
         } else {
             if (title) title.textContent = 'Ongeza Mtumiaji';
-            form.reset();
-            
-            const userIdInput = document.getElementById('userId');
-            const passwordInput = document.getElementById('userPassword');
-            const passwordConfirmInput = document.getElementById('userPasswordConfirm');
-            
             if (userIdInput) userIdInput.value = '';
-            if (passwordInput) passwordInput.placeholder = 'Weka nenosiri';
-            if (passwordConfirmInput) passwordConfirmInput.placeholder = 'Rudia nenosiri';
+            
+            // NEW USER: Password is REQUIRED
+            if (passwordInput) {
+                passwordInput.required = true;
+                passwordInput.placeholder = 'Weka nenosiri (herufi 6 au zaidi)';
+            }
+            if (passwordConfirmInput) {
+                passwordConfirmInput.required = true;
+                passwordConfirmInput.placeholder = 'Rudia nenosiri';
+            }
+            
+            // Clear photo preview
+            if (photoPreview) photoPreview.style.display = 'none';
+            if (currentPhotoImg) currentPhotoImg.src = '';
+        }
+
+        // Update region visibility based on country
+        const regionGroup = document.getElementById('userRegionGroup');
+        if (countrySelect && regionGroup) {
+            const isTanzania = countrySelect.value === 'Tanzania';
+            regionGroup.style.display = isTanzania ? 'block' : 'none';
         }
 
         openModal('userModal');
     }
+
+    // Country change handler for user modal
+    document.addEventListener('change', function(e) {
+        if (e.target.id === 'userCountry') {
+            const regionGroup = document.getElementById('userRegionGroup');
+            if (regionGroup) {
+                regionGroup.style.display = e.target.value === 'Tanzania' ? 'block' : 'none';
+            }
+        }
+    });
 
     const addUserBtn = document.getElementById('addUserBtn');
     if (addUserBtn) {
@@ -1095,6 +1122,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ===== USER FORM SUBMIT - FIXED =====
     const userForm = document.getElementById('userForm');
     if (userForm) {
         userForm.addEventListener('submit', async function(e) {
@@ -1102,40 +1130,126 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const submitBtn = document.getElementById('submitUserBtn');
             const id = document.getElementById('userId')?.value || '';
+            
+            // Get all form values with proper trimming
+            const full_name = document.getElementById('userFullName')?.value?.trim() || '';
+            const phone = document.getElementById('userPhone')?.value?.trim() || '';
+            let country = document.getElementById('userCountry')?.value || '';
+            const region = document.getElementById('userRegion')?.value || '';
+            const email = document.getElementById('userEmail')?.value?.trim() || '';
             const password = document.getElementById('userPassword')?.value || '';
-            const passwordConfirm = document.getElementById('userPasswordConfirm')?.value || '';
+            const confirmPassword = document.getElementById('userPasswordConfirm')?.value || '';
+            const photoInput = document.getElementById('userPhoto');
 
-            if (!id && (!password || password !== passwordConfirm)) {
-                alert('Nenosiri hazilingani!');
-                return;
+            // Map "Other" to "Nchi nyengine" for backend
+            if (country === 'Other') {
+                country = 'Nchi nyengine';
             }
 
-            if (!id && password.length < 6) {
-                alert('Nenosiri lazima iwe na herufi 6 au zaidi!');
+            // Debug: Log all values
+            console.log('📝 Form Values:', { 
+                id: id || 'new',
+                full_name: full_name || '(empty)',
+                phone: phone || '(empty)',
+                country: country || '(empty)',
+                region: region || '(empty)',
+                email: email || '(empty)',
+                password: password ? '***' : '(empty)',
+                confirmPassword: confirmPassword ? '***' : '(empty)'
+            });
+
+            // ===== VALIDATION =====
+            let missingFields = [];
+            
+            if (!full_name) missingFields.push('Jina kamili');
+            if (!phone) missingFields.push('Namba ya simu');
+            if (!country) missingFields.push('Nchi');
+            if (!email) missingFields.push('Barua pepe');
+            
+            // Password validation
+            if (!id) {
+                // New user - password REQUIRED
+                if (!password || password.length < 6) {
+                    alert('❌ Nenosiri lazima iwe na herufi 6 au zaidi!');
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    alert('❌ Nenosiri hazilingani!');
+                    return;
+                }
+            } else {
+                // Editing user - password optional
+                if (password && password.length < 6) {
+                    alert('❌ Nenosiri lazima iwe na herufi 6 au zaidi!');
+                    return;
+                }
+                if (password && password !== confirmPassword) {
+                    alert('❌ Nenosiri hazilingani!');
+                    return;
+                }
+            }
+            
+            // If any required fields are missing
+            if (missingFields.length > 0) {
+                alert(`❌ Tafadhali jaza sehemu zifuatazo:\n- ${missingFields.join('\n- ')}`);
                 return;
             }
 
             setButtonLoading(submitBtn, true, id ? 'Inasasisha...' : 'Inaongeza...');
 
-            const data = {
-                full_name: document.getElementById('userFullName')?.value.trim() || '',
-                phone: document.getElementById('userPhone')?.value.trim() || '',
-                country: document.getElementById('userCountry')?.value || '',
-                region: document.getElementById('userRegion')?.value || '',
-                email: document.getElementById('userEmail')?.value.trim() || '',
+            // Build user data object with CORRECT field names
+            const userData = {
+                full_name: full_name,
+                phone: phone,
+                country: country,
+                region: region,
+                email: email
             };
 
-            if (password) {
-                data.password = password;
-                data.confirmPassword = passwordConfirm;
+            // CRITICAL FIX: Use correct field names for backend
+            if (!id) {
+                // NEW USER: Always send password (already validated)
+                userData.password = password;
+                userData.confirmPassword = confirmPassword;
+            } else if (password) {
+                // EDIT USER: Only send if password is provided
+                userData.password = password;
+                userData.confirmPassword = confirmPassword;
+            }
+
+            // Add photo if selected
+            if (photoInput && photoInput.files && photoInput.files[0]) {
+                userData.profile_image = photoInput.files[0];
             }
 
             try {
                 let response;
                 if (id) {
-                    response = await api.adminUpdateUser(id, data);
+                    // For update, we need to build FormData with CORRECT field names
+                    const formData = new FormData();
+                    const fieldsToSend = {
+                        full_name: userData.full_name,
+                        phone: userData.phone,
+                        country: userData.country,
+                        region: userData.region || '',
+                        email: userData.email,
+                        password: userData.password,
+                        confirmPassword: userData.confirmPassword
+                    };
+                    
+                    Object.keys(fieldsToSend).forEach(key => {
+                        if (fieldsToSend[key] !== undefined && fieldsToSend[key] !== null && fieldsToSend[key] !== '') {
+                            formData.append(key, fieldsToSend[key]);
+                        }
+                    });
+                    
+                    if (userData.profile_image && userData.profile_image instanceof File) {
+                        formData.append('profile_image', userData.profile_image);
+                    }
+                    
+                    response = await api.adminUpdateUser(id, formData);
                 } else {
-                    response = await api.adminCreateUser(data);
+                    response = await api.adminCreateUser(userData);
                 }
                 
                 setButtonLoading(submitBtn, false);
@@ -1150,7 +1264,15 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error saving user:', error);
                 setButtonLoading(submitBtn, false);
-                alert(`❌ Error: ${error.message}`);
+                
+                // Check if it's a duplicate email error
+                if (error.message && error.message.toLowerCase().includes('duplicate')) {
+                    alert('❌ Barua pepe hii tayari imesajiliwa. Tafadhali tumia barua pepe nyingine.');
+                } else if (error.message && error.message.toLowerCase().includes('required')) {
+                    alert('❌ Tafadhali jaza sehemu zote zinazohitajika.');
+                } else {
+                    alert(`❌ Error: ${error.message}`);
+                }
             }
         });
     }
@@ -1193,7 +1315,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== Modal Helpers =====
-    // Modal close handlers for backdrop clicks
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', function(e) {
             if (e.target === this) {

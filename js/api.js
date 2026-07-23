@@ -254,7 +254,7 @@ class ApiService {
         return this.request(`/movie-purchases/verify/${reference}`);
     }
 
-    // ==================== ADMIN ENDPOINTS ====================
+    // ==================== ADMIN MOVIE ENDPOINTS ====================
     async adminGetMovies() {
         return this.request('/movies');
     }
@@ -293,20 +293,43 @@ class ApiService {
         return this.request('/movies/stats');
     }
 
+    // ==================== ADMIN USER ENDPOINTS ====================
     async adminGetUsers() {
         return this.request('/users');
     }
 
     async adminCreateUser(userData) {
         const formData = new FormData();
-        Object.keys(userData).forEach(key => {
-            if (key === 'profile_image' && userData[key] instanceof File) {
-                formData.append(key, userData[key]);
-            } else {
-                formData.append(key, userData[key]);
+        
+        // CRITICAL FIX: Use correct field names for backend
+        const fieldsToSend = {
+            full_name: userData.full_name,
+            phone: userData.phone,
+            country: userData.country,
+            region: userData.region || '',
+            email: userData.email,
+            password: userData.password,
+            confirmPassword: userData.confirmPassword
+        };
+        
+        // Append all fields if they have values
+        Object.keys(fieldsToSend).forEach(key => {
+            if (fieldsToSend[key] !== undefined && fieldsToSend[key] !== null && fieldsToSend[key] !== '') {
+                formData.append(key, fieldsToSend[key]);
             }
         });
         
+        // Append profile image if it's a File
+        if (userData.profile_image && userData.profile_image instanceof File) {
+            formData.append('profile_image', userData.profile_image);
+        }
+
+        // Debug: Log what we're sending
+        console.log('📤 Sending FormData:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+        }
+
         return fetch(`${this.baseUrl}/users/create`, {
             method: 'POST',
             headers: {
@@ -317,15 +340,39 @@ class ApiService {
     }
 
     async adminUpdateUser(id, userData) {
+        // If userData is already FormData, use it directly
+        if (userData instanceof FormData) {
+            return fetch(`${this.baseUrl}/users/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                },
+                body: userData,
+            }).then(res => res.json());
+        }
+        
+        // Otherwise build FormData with correct field names
         const formData = new FormData();
-        Object.keys(userData).forEach(key => {
-            if (key === 'profile_image' && userData[key] instanceof File) {
-                formData.append(key, userData[key]);
-            } else {
-                formData.append(key, userData[key]);
+        const fieldsToSend = {
+            full_name: userData.full_name,
+            phone: userData.phone,
+            country: userData.country,
+            region: userData.region || '',
+            email: userData.email,
+            password: userData.password,
+            confirmPassword: userData.confirmPassword
+        };
+        
+        Object.keys(fieldsToSend).forEach(key => {
+            if (fieldsToSend[key] !== undefined && fieldsToSend[key] !== null && fieldsToSend[key] !== '') {
+                formData.append(key, fieldsToSend[key]);
             }
         });
         
+        if (userData.profile_image && userData.profile_image instanceof File) {
+            formData.append('profile_image', userData.profile_image);
+        }
+
         return fetch(`${this.baseUrl}/users/${id}`, {
             method: 'PUT',
             headers: {
@@ -345,6 +392,7 @@ class ApiService {
         return this.request('/users/stats');
     }
 
+    // ==================== ADMIN PAYMENT ENDPOINTS ====================
     async adminGetAllPayments() {
         return this.request('/payments/admin/all');
     }
@@ -353,6 +401,7 @@ class ApiService {
         return this.request('/payments/admin/stats');
     }
 
+    // ==================== ADMIN ACTIVITIES ENDPOINTS ====================
     async adminGetDashboardOverview() {
         return this.request('/admin/activities/dashboard/overview');
     }
