@@ -66,8 +66,19 @@
       color: var(--text-primary);
     }
 
+    .active-subscription-banner .banner-details .detail-item .value.status-cancelling {
+      color: #fbbf24;
+    }
+
+    .active-subscription-banner .banner-details .detail-item .value.status-expiring {
+      color: #f87171;
+    }
+
     .active-subscription-banner .banner-actions {
       margin-top: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
     }
 
     .active-subscription-banner .btn-upgrade {
@@ -86,6 +97,107 @@
     .active-subscription-banner .btn-upgrade:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow-brand-hover);
+    }
+
+    .active-subscription-banner .btn-cancel-subscription {
+      padding: 0.6rem 1.5rem;
+      border: none;
+      border-radius: var(--radius-md);
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all var(--dur-med) ease;
+      font-family: inherit;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .active-subscription-banner .btn-cancel-subscription:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .active-subscription-banner .btn-cancel-subscription:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ===== Cancel Modal ===== */
+    .cancel-modal .modal-content {
+      max-width: 450px;
+    }
+
+    .cancel-modal .warning-icon {
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .cancel-modal .warning-title {
+      text-align: center;
+      color: #f87171;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .cancel-modal .warning-text {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .cancel-modal .warning-text strong {
+      color: var(--text-primary);
+    }
+
+    .cancel-modal .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .cancel-modal .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+    }
+
+    .cancel-modal .btn-cancel-action {
+      padding: 0.6rem 1.5rem;
+      border: none;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all var(--dur-med) ease;
+      font-family: inherit;
+    }
+
+    .cancel-modal .btn-cancel-action:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .cancel-modal .btn-confirm-cancel {
+      padding: 0.6rem 1.5rem;
+      border: none;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all var(--dur-med) ease;
+      font-family: inherit;
+    }
+
+    .cancel-modal .btn-confirm-cancel:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(239, 68, 68, 0.3);
     }
 
     /* ===== Plan Card - Subscribed State ===== */
@@ -153,6 +265,12 @@
       margin-top: 0.3rem;
     }
 
+    /* ===== Loading Button ===== */
+    .btn-loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
     /* ===== Responsive ===== */
     @media (max-width: 768px) {
       .active-subscription-banner .banner-details {
@@ -160,6 +278,13 @@
       }
       .card-fields .form-row {
         grid-template-columns: 1fr;
+      }
+      .active-subscription-banner .banner-actions {
+        flex-direction: column;
+      }
+      .active-subscription-banner .banner-actions button {
+        width: 100%;
+        justify-content: center;
       }
     }
 
@@ -172,6 +297,13 @@
       }
       .active-subscription-banner .banner-header h2 {
         font-size: 1.1rem;
+      }
+      .cancel-modal .modal-actions {
+        flex-direction: column;
+      }
+      .cancel-modal .modal-actions button {
+        width: 100%;
+        justify-content: center;
       }
     }
   </style>
@@ -204,6 +336,7 @@
           </div>
           <div class="banner-actions">
             <button class="btn-upgrade" id="upgradeBtn">➕ Ongeza Usajili</button>
+            <button class="btn-cancel-subscription" id="cancelSubscriptionBtn">❌ Ghairi Usajili</button>
           </div>
         </div>
 
@@ -303,6 +436,31 @@
             Usajili wako utaanza mara baada ya malipo kukamilika.
           </p>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Subscription Modal -->
+  <div class="modal cancel-modal" id="cancelModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Thibitisha Kughairi Usajili</h3>
+        <button class="modal-close" id="closeCancelModal">&times;</button>
+      </div>
+      <div class="warning-icon">⚠️</div>
+      <div class="warning-title">Je, una uhakika?</div>
+      <div class="warning-text">
+        Ukighairi usajili wako, <strong>utapoteza ufikiaji wa filamu zote</strong> baada ya kipindi chako cha sasa kuisha.
+        <br><br>
+        Bado utaweza kutumia huduma hadi tarehe ya mwisho ya usajili wako.
+      </div>
+      <div class="form-group">
+        <label for="cancelReason">Sababu ya Kughairi (hiari)</label>
+        <textarea id="cancelReason" placeholder="Tueleze kwa nini unaghairi usajili wako..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel-action" id="closeCancelModalBtn">Rudi</button>
+        <button type="button" class="btn-confirm-cancel" id="confirmCancelBtn">✅ Thibitisha Kughairi</button>
       </div>
     </div>
   </div>

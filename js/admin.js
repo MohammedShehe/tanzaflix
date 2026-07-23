@@ -1,4 +1,4 @@
-// js/admin.js - Admin Panel with Ratings Tab
+// js/admin.js - Admin Panel
 
 import api from './api.js';
 import auth from './auth.js';
@@ -20,7 +20,7 @@ window.closeModal = function(id) {
     }
 };
 
-// ===== Global Season/Episode Functions =====
+// ===== Season/Episode Functions =====
 let seasonCounter = 0;
 let episodeCounter = 0;
 
@@ -121,7 +121,6 @@ window.addEpisode = function(seasonId, episodeData = null) {
     }
 };
 
-// ===== Set Button Loading State =====
 function setButtonLoading(button, isLoading, loadingText = 'Inapakia...') {
     if (!button) return;
     
@@ -146,7 +145,6 @@ function setButtonLoading(button, isLoading, loadingText = 'Inapakia...') {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Check admin session
     if (!auth.checkAuth() || !auth.checkAdmin()) return;
 
     // ===== State =====
@@ -157,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let usersStatsVisible = true;
     let moviesData = [];
     let usersData = [];
-    let ratingsData = [];
+    let subscriptionsData = [];
 
     // ===== DOM Elements =====
     const tabs = document.querySelectorAll('.nav-item');
@@ -165,9 +163,65 @@ document.addEventListener('DOMContentLoaded', function() {
         movies: document.getElementById('moviesTab'),
         users: document.getElementById('usersTab'),
         transactions: document.getElementById('transactionsTab'),
-        activities: document.getElementById('activitiesTab'),
+        subscriptions: document.getElementById('subscriptionsTab'),
         ratings: document.getElementById('ratingsTab'),
     };
+
+    // ===== Function to switch tabs =====
+    function switchTab(tabName) {
+        // Update nav items
+        tabs.forEach(t => t.classList.remove('active'));
+        const activeTab = document.querySelector(`.nav-item[data-tab="${tabName}"]`);
+        if (activeTab) activeTab.classList.add('active');
+        
+        // Update tab contents
+        Object.keys(tabContents).forEach(key => {
+            if (tabContents[key]) {
+                tabContents[key].classList.remove('active');
+            }
+        });
+        if (tabContents[tabName]) {
+            tabContents[tabName].classList.add('active');
+        }
+        currentTab = tabName;
+        
+        // Load data for the tab
+        if (tabName === 'movies') loadMovies();
+        else if (tabName === 'users') loadUsers();
+        else if (tabName === 'transactions') loadTransactions();
+        else if (tabName === 'ratings') loadRatings();
+        else if (tabName === 'subscriptions') loadSubscriptions();
+    }
+
+    // ===== Check URL hash for initial tab =====
+    function getTabFromHash() {
+        const hash = window.location.hash.replace('#', '');
+        const validTabs = ['movies', 'users', 'subscriptions', 'transactions', 'ratings'];
+        if (hash && validTabs.includes(hash)) {
+            return hash;
+        }
+        return 'movies';
+    }
+
+    // ===== Activities Navigation =====
+    const navActivities = document.getElementById('navActivities');
+    const openActivitiesBtn1 = document.getElementById('openActivitiesDashboardBtn');
+    const openActivitiesBtn2 = document.getElementById('openActivitiesDashboardBtn2');
+
+    function navigateToActivities(e) {
+        if (e) e.preventDefault();
+        window.location.href = 'admin-activities.html';
+    }
+
+    if (navActivities) {
+        navActivities.addEventListener('click', navigateToActivities);
+    }
+    if (openActivitiesBtn1) {
+        openActivitiesBtn1.addEventListener('click', navigateToActivities);
+    }
+    if (openActivitiesBtn2) {
+        openActivitiesBtn2.addEventListener('click', navigateToActivities);
+    }
 
     // ===== Real-time Clock =====
     function updateClock() {
@@ -217,26 +271,23 @@ document.addEventListener('DOMContentLoaded', function() {
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             const tabName = this.dataset.tab;
+            
+            // Skip activities tab - handled by navigateToActivities
             if (tabName === 'activities') {
-                window.location.href = 'admin-activities.html';
+                navigateToActivities();
                 return;
             }
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            Object.keys(tabContents).forEach(key => {
-                if (tabContents[key]) {
-                    tabContents[key].classList.remove('active');
-                }
-            });
-            if (tabContents[tabName]) {
-                tabContents[tabName].classList.add('active');
-            }
-            currentTab = tabName;
-            if (tabName === 'movies') loadMovies();
-            else if (tabName === 'users') loadUsers();
-            else if (tabName === 'transactions') loadTransactions();
-            else if (tabName === 'ratings') loadRatings();
+            
+            // Update URL hash without page reload
+            window.location.hash = tabName;
+            switchTab(tabName);
         });
+    });
+
+    // ===== Handle hash change (for back/forward buttons) =====
+    window.addEventListener('hashchange', function() {
+        const tab = getTabFromHash();
+        switchTab(tab);
     });
 
     // ===== Load Movies =====
@@ -391,15 +442,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const pending = payments.filter(p => p.status === 'pending' || p.status === 'processing').length;
         const customers = new Set(payments.filter(p => p.status === 'paid').map(p => p.user_id)).size;
 
-        const totalIncomeEl = document.getElementById('totalIncome');
-        const completedEl = document.getElementById('completedTransactions');
-        const pendingEl = document.getElementById('pendingTransactions');
-        const customersEl = document.getElementById('totalCustomers');
-        
-        if (totalIncomeEl) totalIncomeEl.textContent = `TSh ${totalIncome.toLocaleString()}`;
-        if (completedEl) completedEl.textContent = completed;
-        if (pendingEl) pendingEl.textContent = pending;
-        if (customersEl) customersEl.textContent = customers;
+        document.getElementById('totalIncome').textContent = `TSh ${totalIncome.toLocaleString()}`;
+        document.getElementById('completedTransactions').textContent = completed;
+        document.getElementById('pendingTransactions').textContent = pending;
+        document.getElementById('totalCustomers').textContent = customers;
 
         if (!payments.length) {
             tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Hakuna manunuzi yaliyofanywa</td></tr>`;
@@ -413,13 +459,111 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>TSh ${parseFloat(p.amount || 0).toLocaleString()}</td>
                 <td><span class="status-badge ${p.status === 'paid' ? 'status-confirmed' : 'status-processing'}">${p.status === 'paid' ? 'Imekamilika' : 'Inasubiri'}</span></td>
                 <td>${p.paid_at ? new Date(p.paid_at).toLocaleString('sw') : new Date(p.created_at).toLocaleString('sw')}</td>
-                <td>
-                    ${p.status === 'processing' || p.status === 'pending' ? 
-                        `<button class="action-btn action-btn-edit" onclick="window.confirmTransaction(${p.id})"><i class="fas fa-check"></i></button>` : ''}
-                    <button class="action-btn action-btn-delete" onclick="window.deleteTransaction(${p.id})"><i class="fas fa-trash"></i></button>
-                </td>
             </tr>
         `).join('');
+    }
+
+    // ===== Load Subscriptions =====
+    async function loadSubscriptions() {
+        try {
+            const response = await api.adminGetAllSubscriptions();
+            if (response.success && response.subscriptions) {
+                subscriptionsData = response.subscriptions;
+                renderSubscriptions();
+            }
+        } catch (error) {
+            console.error('Error loading subscriptions:', error);
+            const tbody = document.getElementById('subscriptionsTableBody');
+            if (tbody) {
+                tbody.innerHTML = 
+                    `<tr><td colspan="8" class="empty-state">Error loading subscriptions: ${error.message}</td></tr>`;
+            }
+        }
+    }
+
+    function renderSubscriptions() {
+        const tbody = document.getElementById('subscriptionsTableBody');
+        if (!tbody) return;
+        
+        if (!subscriptionsData.length) {
+            tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Hakuna usajili uliosajiliwa</td></tr>`;
+            return;
+        }
+
+        const activeCount = subscriptionsData.filter(s => s.status === 'active' && new Date(s.expires_at) > new Date()).length;
+        const cancellingCount = subscriptionsData.filter(s => s.status === 'cancelling').length;
+        const expiredCount = subscriptionsData.filter(s => s.status === 'expired').length;
+        
+        document.getElementById('subActiveCount').textContent = activeCount;
+        document.getElementById('subCancellingCount').textContent = cancellingCount;
+        document.getElementById('subExpiredCount').textContent = expiredCount;
+        document.getElementById('subTotalCount').textContent = subscriptionsData.length;
+
+        tbody.innerHTML = subscriptionsData.map(s => {
+            const isActive = s.status === 'active' && new Date(s.expires_at) > new Date();
+            const isCancelling = s.status === 'cancelling';
+            const isExpired = s.status === 'expired';
+            
+            let statusBadge = '';
+            let statusLabel = '';
+            
+            if (isActive) {
+                statusBadge = 'status-active';
+                statusLabel = '✅ Inatumika';
+            } else if (isCancelling) {
+                statusBadge = 'status-cancelling';
+                statusLabel = '⏳ Inaghairiwa';
+            } else if (isExpired) {
+                statusBadge = 'status-expired';
+                statusLabel = '❌ Imeisha';
+            } else {
+                statusBadge = 'status-unknown';
+                statusLabel = s.status_label || s.status || 'Unknown';
+            }
+            
+            const expiryDate = new Date(s.expires_at);
+            const daysLeft = Math.max(0, Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)));
+            
+            return `
+            <tr>
+                <td><strong>${s.user_name || 'Unknown'}</strong></td>
+                <td>${s.user_email || '-'}</td>
+                <td>${s.plan_name || '-'}</td>
+                <td>TSh ${parseFloat(s.price || 0).toLocaleString()}</td>
+                <td><span class="subscription-status ${statusBadge}">${statusLabel}</span></td>
+                <td>${expiryDate.toLocaleDateString('sw')}</td>
+                <td>${daysLeft > 0 ? `${daysLeft} siku` : 'Imeisha'}</td>
+                <td>
+                    ${isActive ? 
+                        `<button class="action-btn action-btn-delete" onclick="window.cancelSubscriptionAdmin(${s.user_id}, '${s.user_name}')" title="Ghairi Usajili"><i class="fas fa-ban"></i></button>` : 
+                        '<span style="color:var(--text-muted);font-size:0.7rem;">-</span>'
+                    }
+                </td>
+            </tr>
+        `}).join('');
+    }
+
+    // ===== Admin Cancel Subscription =====
+    window.cancelSubscriptionAdmin = function(userId, userName) {
+        if (confirm(`Je, una uhakika unataka kughairi usajili wa ${userName} mara moja?`)) {
+            const reason = prompt('Sababu ya kughairi (hiari):');
+            cancelSubscriptionAdminAction(userId, reason);
+        }
+    };
+
+    async function cancelSubscriptionAdminAction(userId, reason) {
+        try {
+            const response = await api.adminCancelSubscriptionImmediately(userId, reason || undefined);
+            if (response.success) {
+                showToast('✅ Usajili umefutwa mara moja!');
+                loadSubscriptions();
+            } else {
+                alert(`❌ ${response.message || 'Imeshindwa kughairi usajili'}`);
+            }
+        } catch (error) {
+            console.error('Admin cancel subscription error:', error);
+            alert(`❌ Error: ${error.message}`);
+        }
     }
 
     // ===== Load Ratings =====
@@ -427,42 +571,36 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await api.adminGetRatingStats();
             if (response.success && response.statistics) {
-                ratingsData = response.statistics;
-                renderRatings();
+                renderRatings(response.statistics);
             }
         } catch (error) {
             console.error('Error loading ratings:', error);
-            const tbody = document.getElementById('ratingsTableBody');
-            if (tbody) {
-                tbody.innerHTML = 
-                    `<tr><td colspan="6" class="empty-state">Error loading ratings: ${error.message}</td></tr>`;
-            }
+            document.getElementById('ratingTotalRatings').textContent = 'Error';
+            document.getElementById('ratingOverallAvg').textContent = '0.0';
+            document.getElementById('ratingMoviesWithRatings').textContent = '0';
         }
     }
 
-    function renderRatings() {
-        const stats = ratingsData;
+    function renderRatings(stats) {
         if (!stats) return;
 
-        const ratingTotalEl = document.getElementById('ratingTotalRatings');
-        const ratingAvgEl = document.getElementById('ratingOverallAvg');
-        const ratingMoviesEl = document.getElementById('ratingMoviesWithRatings');
-        
-        if (ratingTotalEl) ratingTotalEl.textContent = stats.total_ratings || 0;
-        if (ratingAvgEl) ratingAvgEl.textContent = (stats.overall_average || 0).toFixed(1);
-        if (ratingMoviesEl) ratingMoviesEl.textContent = stats.movies_with_ratings || 0;
+        document.getElementById('ratingTotalRatings').textContent = stats.total_ratings || 0;
+        document.getElementById('ratingOverallAvg').textContent = (stats.overall_average || 0).toFixed(1);
+        document.getElementById('ratingMoviesWithRatings').textContent = stats.movies_with_ratings || 0;
 
-        const distributionContainer = document.getElementById('ratingDistribution');
+        // Distribution
+        const distContainer = document.getElementById('ratingDistribution');
         const distribution = stats.rating_distribution || [];
-        if (distributionContainer) {
+        if (distContainer) {
             if (distribution.length === 0) {
-                distributionContainer.innerHTML = '<p style="color:#9aa2d7;">Hakuna data ya usambazaji</p>';
+                distContainer.innerHTML = '<p style="color:#9aa2d7;">Hakuna data ya usambazaji</p>';
             } else {
-                distributionContainer.innerHTML = distribution.map(d => `
+                const total = distribution.reduce((sum, d) => sum + d.count, 0) || 1;
+                distContainer.innerHTML = distribution.map(d => `
                     <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.3rem;">
                         <span style="min-width:30px;font-weight:600;color:#f5f7ff;">${d.rating}</span>
                         <div style="flex:1;height:10px;background:rgba(255,255,255,0.05);border-radius:999px;overflow:hidden;">
-                            <div style="width:${(d.count / (stats.total_ratings || 1)) * 100}%;height:100%;background:linear-gradient(90deg,#6c63ff,#ff4eb0);border-radius:999px;transition:width 0.6s ease;"></div>
+                            <div style="width:${(d.count / total) * 100}%;height:100%;background:linear-gradient(90deg,#6c63ff,#ff4eb0);border-radius:999px;transition:width 0.6s ease;"></div>
                         </div>
                         <span style="min-width:40px;color:#9aa2d7;font-size:0.85rem;">${d.count}</span>
                     </div>
@@ -470,11 +608,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Movie table
         const movieTableBody = document.getElementById('ratingsMovieTableBody');
         const movies = stats.ratings_by_movie || [];
         if (movieTableBody) {
             if (movies.length === 0) {
-                movieTableBody.innerHTML = `<tr><td colspan="6" class="empty-state">Hakuna movies zilizo na rating</td></tr>`;
+                movieTableBody.innerHTML = `<tr><td colspan="4" class="empty-state">Hakuna movies zilizo na rating</td></tr>`;
             } else {
                 movieTableBody.innerHTML = movies.slice(0, 50).map(m => `
                     <tr>
@@ -486,15 +625,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div style="width:${((m.avg_rating || 0) / 10) * 100}%;height:100%;background:linear-gradient(90deg,#6c63ff,#ff4eb0);border-radius:999px;"></div>
                             </div>
                         </td>
-                        <td>${m.category || '-'}</td>
-                        <td>
-                            <button class="action-btn action-btn-view" onclick="window.viewMovieRatings(${m.id})"><i class="fas fa-star"></i></button>
-                        </td>
                     </tr>
                 `).join('');
             }
         }
 
+        // Top raters
         const topRatersContainer = document.getElementById('ratingTopRaters');
         const topRaters = stats.top_raters || [];
         if (topRatersContainer) {
@@ -523,20 +659,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await api.adminGetMovieStats();
             if (response.success && response.stats) {
                 const stats = response.stats;
-                const elMap = {
-                    'statTotalMovies': stats.total_movies || 0,
-                    'statSingleMovies': stats.movies_by_type?.find(t => t.movie_type === 'single')?.count || 0,
-                    'statSeriesMovies': stats.movies_by_type?.find(t => t.movie_type === 'series')?.count || 0,
-                    'statRecentMovies': stats.recent_30_days || 0,
-                    'statTotalSeasons': stats.series_stats?.total_seasons || 0,
-                    'statTotalEpisodes': stats.series_stats?.total_episodes || 0,
-                    'statAvgPrice': `TSh ${Math.round(stats.price_distribution?.find(p => p.price_type === 'Paid')?.avg_price || 0).toLocaleString()}`,
-                    'statPaidMovies': stats.price_distribution?.find(p => p.price_type === 'Paid')?.count || 0
-                };
-                Object.keys(elMap).forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.textContent = elMap[id];
-                });
+                document.getElementById('statTotalMovies').textContent = stats.total_movies || 0;
+                document.getElementById('statSingleMovies').textContent = stats.movies_by_type?.find(t => t.movie_type === 'single')?.count || 0;
+                document.getElementById('statSeriesMovies').textContent = stats.movies_by_type?.find(t => t.movie_type === 'series')?.count || 0;
+                document.getElementById('statRecentMovies').textContent = stats.recent_30_days || 0;
             }
         } catch (error) {
             console.warn('Error loading movie stats:', error);
@@ -549,32 +675,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await api.adminGetUserStats();
             if (response.success && response.stats) {
                 const stats = response.stats;
-                const elMap = {
-                    'statTotalUsers': stats.total_users || 0,
-                    'statHasWatched': stats.watch_activity?.has_watched || 0,
-                    'statNeverWatched': stats.watch_activity?.never_watched || 0,
-                    'statUsersWithPurchases': stats.purchases?.users_with_purchases || 0,
-                    'statTotalPurchases': stats.purchases?.total_purchases || 0,
-                    'statUserRevenue': `TSh ${(stats.purchases?.total_revenue || 0).toLocaleString()}`,
-                    'statWatchRate': `${stats.summary?.watch_rate || 0}%`,
-                    'statPurchaseRate': `${stats.summary?.purchase_rate || 0}%`,
-                    'statRepeatCustomers': stats.users_with_multiple_purchases || 0,
-                    'statAvgSpend': `TSh ${Math.round(stats.avg_spend_per_user || 0).toLocaleString()}`
-                };
-                Object.keys(elMap).forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.textContent = elMap[id];
-                });
+                document.getElementById('statTotalUsers').textContent = stats.total_users || 0;
+                document.getElementById('statHasWatched').textContent = stats.watch_activity?.has_watched || 0;
+                document.getElementById('statNeverWatched').textContent = stats.watch_activity?.never_watched || 0;
+                document.getElementById('statUsersWithPurchases').textContent = stats.purchases?.users_with_purchases || 0;
+                document.getElementById('statTotalPurchases').textContent = stats.purchases?.total_purchases || 0;
+                document.getElementById('statUserRevenue').textContent = `TSh ${(stats.purchases?.total_revenue || 0).toLocaleString()}`;
+                document.getElementById('statWatchRate').textContent = `${stats.summary?.watch_rate || 0}%`;
+                document.getElementById('statPurchaseRate').textContent = `${stats.summary?.purchase_rate || 0}%`;
                 
                 const countryContainer = document.getElementById('usersCountryStats');
-                if (countryContainer && stats.users_by_country && stats.users_by_country.length > 0) {
+                if (countryContainer && stats.users_by_country) {
                     countryContainer.innerHTML = stats.users_by_country.map(c => 
                         `<span class="country-tag">${c.country} <span class="count">(${c.count})</span></span>`
                     ).join(' ');
                 }
                 
                 const newestContainer = document.getElementById('usersNewestList');
-                if (newestContainer && stats.newest_users && stats.newest_users.length > 0) {
+                if (newestContainer && stats.newest_users) {
                     newestContainer.innerHTML = `
                         <div class="newest-users-list">
                             ${stats.newest_users.map(u => `
@@ -596,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ===== Toggle Stats Visibility =====
+    // ===== Toggle Stats =====
     const toggleStatsBtn = document.getElementById('toggleStatsBtn');
     const statsToggleLabel = document.getElementById('statsToggleLabel');
     const moviesStatsContainer = document.getElementById('moviesStatsContainer');
@@ -625,27 +743,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.viewMovie = function(id) {
         const movie = moviesData.find(m => m.id === id);
         if (movie) {
-            alert(`📽️ Jina: ${movie.title}\nAina: ${movie.movie_type}\nNchi: ${movie.country}\nLugha: ${movie.language}\nKategoria: ${movie.category}\nImetafsiriwa: ${movie.is_translated ? 'Ndiyo' : 'Hapana'}\nMwaka: ${movie.year}\nBei: TSh ${movie.price || 0}\nRating: ${movie.avg_rating?.toFixed(1) || 0}/10 (${movie.total_ratings || 0} ratings)\nMaelezo: ${movie.description || '-'}`);
-        }
-    };
-
-    window.viewMovieRatings = function(id) {
-        const movie = moviesData.find(m => m.id === id);
-        if (movie) {
-            const ratingsTab = document.querySelector('[data-tab="ratings"]');
-            if (ratingsTab) ratingsTab.click();
-            setTimeout(() => {
-                const rows = document.querySelectorAll('#ratingsMovieTableBody tr');
-                rows.forEach(row => {
-                    if (row.textContent.includes(movie.title)) {
-                        row.style.background = 'rgba(108,99,255,0.15)';
-                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        setTimeout(() => {
-                            row.style.background = '';
-                        }, 3000);
-                    }
-                });
-            }, 300);
+            alert(`📽️ Jina: ${movie.title}\nAina: ${movie.movie_type}\nNchi: ${movie.country}\nLugha: ${movie.language}\nKategoria: ${movie.category}\nImetafsiriwa: ${movie.is_translated ? 'Ndiyo' : 'Hapana'}\nMwaka: ${movie.year}\nBei: TSh ${movie.price || 0}\nRating: ${movie.avg_rating?.toFixed(1) || 0}/10 (${movie.total_ratings || 0} ratings)`);
         }
     };
 
@@ -659,17 +757,14 @@ document.addEventListener('DOMContentLoaded', function() {
     window.deleteMovie = function(id) {
         deleteTarget = id;
         deleteType = 'movie';
-        const msgEl = document.getElementById('confirmMessage');
-        if (msgEl) {
-            msgEl.textContent = 'Je, una uhakika unataka kufuta movie hii? Kitendo hiki hakiwezi kutenduliwa.';
-        }
+        document.getElementById('confirmMessage').textContent = 'Je, una uhakika unataka kufuta movie hii? Kitendo hiki hakiwezi kutenduliwa.';
         openModal('confirmModal');
     };
 
     window.viewUser = function(id) {
         const user = usersData.find(u => u.id === id);
         if (user) {
-            alert(`👤 Jina: ${user.full_name}\nBarua pepe: ${user.email}\nSimu: ${user.phone || '-'}\nNchi: ${user.country || '-'}\nEneo: ${user.region || '-'}\nAmeangalia: ${user.has_watched_before ? 'Ndiyo' : 'Hapana'}`);
+            alert(`👤 Jina: ${user.full_name}\nBarua pepe: ${user.email}\nSimu: ${user.phone || '-'}\nNchi: ${user.country || '-'}\nEneo: ${user.region || '-'}`);
         }
     };
 
@@ -683,23 +778,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.deleteUser = function(id) {
         deleteTarget = id;
         deleteType = 'user';
-        const msgEl = document.getElementById('confirmMessage');
-        if (msgEl) {
-            msgEl.textContent = 'Je, una uhakika unataka kufuta mtumiaji huyu? Kitendo hiki hakiwezi kutenduliwa.';
-        }
+        document.getElementById('confirmMessage').textContent = 'Je, una uhakika unataka kufuta mtumiaji huyu? Kitendo hiki hakiwezi kutenduliwa.';
         openModal('confirmModal');
-    };
-
-    window.confirmTransaction = function(id) {
-        alert('Transaction confirmed!');
-        loadTransactions();
-    };
-
-    window.deleteTransaction = function(id) {
-        if (confirm('Je, una uhakika unataka kufuta transaction hii?')) {
-            alert('Transaction deleted!');
-            loadTransactions();
-        }
     };
 
     // ===== Content Type Toggle =====
@@ -707,7 +787,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const radios = document.querySelectorAll('input[name="contentType"]');
         const singleFields = document.getElementById('singleMovieFields');
         const seriesFields = document.getElementById('seriesFields');
-        const durationGroup = document.getElementById('movieTimeGroup');
         const fileInput = document.getElementById('movieFile');
 
         radios.forEach(radio => {
@@ -719,12 +798,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (this.value === 'single') {
                     if (singleFields) singleFields.style.display = 'block';
                     if (seriesFields) seriesFields.classList.remove('visible');
-                    if (durationGroup) durationGroup.style.display = 'block';
                     if (fileInput) fileInput.required = true;
                 } else {
                     if (singleFields) singleFields.style.display = 'none';
                     if (seriesFields) seriesFields.classList.add('visible');
-                    if (durationGroup) durationGroup.style.display = 'none';
                     if (fileInput) fileInput.required = false;
                 }
             });
@@ -741,70 +818,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
         form.reset();
         
-        const movieIdInput = document.getElementById('movieId');
-        const movieFileInput = document.getElementById('movieFile');
-        const moviePosterInput = document.getElementById('moviePoster');
-        const seasonsContainer = document.getElementById('seasonsContainer');
-        
-        if (movieIdInput) movieIdInput.value = '';
-        if (movieFileInput) movieFileInput.required = true;
-        if (moviePosterInput) moviePosterInput.required = true;
-        
-        if (seasonsContainer) {
-            seasonsContainer.innerHTML = '';
-        }
+        document.getElementById('movieId').value = '';
+        document.getElementById('movieFile').required = true;
+        document.getElementById('moviePoster').required = true;
+        document.getElementById('seasonsContainer').innerHTML = '';
         seasonCounter = 0;
         episodeCounter = 0;
 
-        const singleRadio = document.querySelector('input[name="contentType"][value="single"]');
-        if (singleRadio) {
-            singleRadio.checked = true;
-            singleRadio.dispatchEvent(new Event('change'));
-        }
-        
-        const labels = document.querySelectorAll('.content-type-selector label');
-        labels.forEach((label, idx) => {
+        document.querySelector('input[name="contentType"][value="single"]').checked = true;
+        document.querySelectorAll('.content-type-selector label').forEach((label, idx) => {
             label.classList.toggle('selected', idx === 0);
         });
-        
-        const singleFields = document.getElementById('singleMovieFields');
-        const seriesFields = document.getElementById('seriesFields');
-        const durationGroup = document.getElementById('movieTimeGroup');
-        
-        if (singleFields) singleFields.style.display = 'block';
-        if (seriesFields) seriesFields.classList.remove('visible');
-        if (durationGroup) durationGroup.style.display = 'block';
+        document.getElementById('singleMovieFields').style.display = 'block';
+        document.getElementById('seriesFields').classList.remove('visible');
 
         if (movie) {
-            if (title) title.textContent = 'Hariri Movie';
-            if (movieIdInput) movieIdInput.value = movie.id;
-            
-            const titleInput = document.getElementById('movieTitle');
-            const countrySelect = document.getElementById('movieCountry');
-            const langInput = document.getElementById('movieLang');
-            const categorySelect = document.getElementById('movieCategory');
-            const translatedSelect = document.getElementById('movieTranslated');
-            const yearInput = document.getElementById('movieYear');
-            const priceInput = document.getElementById('moviePrice');
-            const descTextarea = document.getElementById('movieDescription');
-            const durationInput = document.getElementById('movieDuration');
-            
-            if (titleInput) titleInput.value = movie.title || '';
-            if (countrySelect) countrySelect.value = movie.country || '';
-            if (langInput) langInput.value = movie.language || '';
-            if (categorySelect) categorySelect.value = movie.category || '';
-            if (translatedSelect) translatedSelect.value = movie.is_translated ? '1' : '0';
-            if (yearInput) yearInput.value = movie.year || '';
-            if (priceInput) priceInput.value = movie.price || '';
-            if (descTextarea) descTextarea.value = movie.description || '';
-            if (durationInput) durationInput.value = movie.movie_time || '';
+            title.textContent = 'Hariri Movie';
+            document.getElementById('movieId').value = movie.id;
+            document.getElementById('movieTitle').value = movie.title || '';
+            document.getElementById('movieCountry').value = movie.country || '';
+            document.getElementById('movieLang').value = movie.language || '';
+            document.getElementById('movieCategory').value = movie.category || '';
+            document.getElementById('movieTranslated').value = movie.is_translated ? '1' : '0';
+            document.getElementById('movieYear').value = movie.year || '';
+            document.getElementById('moviePrice').value = movie.price || '';
+            document.getElementById('movieDescription').value = movie.description || '';
+            document.getElementById('movieDuration').value = movie.movie_time || '';
 
             const type = movie.movie_type || 'single';
-            const radio = document.querySelector(`input[name="contentType"][value="${type}"]`);
-            if (radio) {
-                radio.checked = true;
-                radio.dispatchEvent(new Event('change'));
-            }
+            document.querySelector(`input[name="contentType"][value="${type}"]`).checked = true;
+            document.querySelector(`input[name="contentType"][value="${type}"]`).dispatchEvent(new Event('change'));
 
             if (type === 'series' && movie.seasons) {
                 movie.seasons.forEach(season => {
@@ -812,16 +855,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
 
-            if (moviePosterInput) moviePosterInput.required = false;
-            if (movieFileInput) movieFileInput.required = false;
+            document.getElementById('moviePoster').required = false;
+            document.getElementById('movieFile').required = false;
         } else {
-            if (title) title.textContent = 'Ongeza Movie';
-            if (moviePosterInput) moviePosterInput.required = true;
-            if (movieFileInput) movieFileInput.required = true;
-            
-            const translatedSelect = document.getElementById('movieTranslated');
-            if (translatedSelect) translatedSelect.value = '0';
-            
+            title.textContent = 'Ongeza Movie';
+            document.getElementById('movieTranslated').value = '0';
+            document.getElementById('moviePoster').required = true;
+            document.getElementById('movieFile').required = true;
             window.addSeason({ season_number: 1, episodes: [] });
         }
 
@@ -840,479 +880,297 @@ document.addEventListener('DOMContentLoaded', function() {
         openModal('movieModal');
     }
 
-    // ===== Add Season Button =====
-    const addSeasonBtn = document.getElementById('addSeasonBtn');
-    if (addSeasonBtn) {
-        addSeasonBtn.addEventListener('click', function() {
-            window.addSeason({ season_number: document.querySelectorAll('.season-group').length + 1, episodes: [] });
-        });
-    }
+    document.getElementById('addSeasonBtn')?.addEventListener('click', function() {
+        window.addSeason({ season_number: document.querySelectorAll('.season-group').length + 1, episodes: [] });
+    });
 
     // ===== Movie Form Submit =====
-    const movieForm = document.getElementById('movieForm');
-    if (movieForm) {
-        movieForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitMovieBtn');
-            const id = document.getElementById('movieId')?.value || '';
-            const contentType = document.querySelector('input[name="contentType"]:checked')?.value || 'single';
-            
-            setButtonLoading(submitBtn, true, id ? 'Inasasisha...' : 'Inaongeza...');
-            
-            const formData = new FormData();
-            
-            const titleInput = document.getElementById('movieTitle');
-            const countrySelect = document.getElementById('movieCountry');
-            const langInput = document.getElementById('movieLang');
-            const categorySelect = document.getElementById('movieCategory');
-            const translatedSelect = document.getElementById('movieTranslated');
-            const yearInput = document.getElementById('movieYear');
-            const priceInput = document.getElementById('moviePrice');
-            const descTextarea = document.getElementById('movieDescription');
-            const posterInput = document.getElementById('moviePoster');
-            const durationInput = document.getElementById('movieDuration');
-            const videoInput = document.getElementById('movieFile');
-            
-            formData.append('title', titleInput ? titleInput.value.trim() : '');
-            formData.append('movie_type', contentType);
-            formData.append('country', countrySelect ? countrySelect.value : '');
-            formData.append('language', langInput ? langInput.value.trim() : '');
-            formData.append('category', categorySelect ? categorySelect.value : '');
-            formData.append('is_translated', translatedSelect ? translatedSelect.value : '0');
-            formData.append('year', yearInput ? yearInput.value : '');
-            formData.append('price', priceInput ? priceInput.value : '');
-            formData.append('description', descTextarea ? descTextarea.value.trim() : '');
-            
-            if (posterInput && posterInput.files[0]) {
-                formData.append('poster', posterInput.files[0]);
+    document.getElementById('movieForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitMovieBtn');
+        const id = document.getElementById('movieId')?.value || '';
+        const contentType = document.querySelector('input[name="contentType"]:checked')?.value || 'single';
+        
+        setButtonLoading(submitBtn, true, id ? 'Inasasisha...' : 'Inaongeza...');
+        
+        const formData = new FormData();
+        
+        formData.append('title', document.getElementById('movieTitle').value.trim());
+        formData.append('movie_type', contentType);
+        formData.append('country', document.getElementById('movieCountry').value);
+        formData.append('language', document.getElementById('movieLang').value.trim());
+        formData.append('category', document.getElementById('movieCategory').value);
+        formData.append('is_translated', document.getElementById('movieTranslated').value);
+        formData.append('year', document.getElementById('movieYear').value);
+        formData.append('price', document.getElementById('moviePrice').value);
+        formData.append('description', document.getElementById('movieDescription').value.trim());
+        
+        if (document.getElementById('moviePoster').files[0]) {
+            formData.append('poster', document.getElementById('moviePoster').files[0]);
+        }
+        
+        const moreLikeSelect = document.getElementById('movieMoreLike');
+        if (moreLikeSelect) {
+            const values = Array.from(moreLikeSelect.selectedOptions).map(o => o.value).filter(v => v);
+            values.forEach(val => formData.append('more_like_this', val));
+        }
+        
+        if (contentType === 'single') {
+            formData.append('movie_time', document.getElementById('movieDuration').value.trim());
+            if (document.getElementById('movieFile').files[0]) {
+                formData.append('video', document.getElementById('movieFile').files[0]);
+            } else if (!id) {
+                alert('❌ Tafadhali weka video ya movie.');
+                setButtonLoading(submitBtn, false);
+                return;
             }
+        } else {
+            const seasons = [];
+            let epIdx = 0;
             
-            const moreLikeSelect = document.getElementById('movieMoreLike');
-            if (moreLikeSelect) {
-                const moreLikeValues = Array.from(moreLikeSelect.selectedOptions).map(o => o.value).filter(v => v);
-                if (moreLikeValues.length > 0) {
-                    moreLikeValues.forEach(val => {
-                        formData.append('more_like_this', val);
-                    });
-                }
-            }
-            
-            if (contentType === 'single') {
-                formData.append('movie_time', durationInput ? durationInput.value.trim() : '');
+            document.querySelectorAll('.season-group').forEach((group, sIdx) => {
+                const seasonNumber = parseInt(group.querySelector('.season-number-field')?.value) || sIdx + 1;
+                const seasonName = group.querySelector('.season-name-field')?.value.trim() || `Season ${seasonNumber}`;
                 
-                if (videoInput && videoInput.files[0]) {
-                    formData.append('video', videoInput.files[0]);
-                } else if (!id) {
-                    alert('❌ Tafadhali weka video ya movie.');
-                    setButtonLoading(submitBtn, false);
-                    return;
-                }
-            } else {
-                const seasons = [];
-                const seasonGroups = document.querySelectorAll('.season-group');
-                let epIdx = 0;
-                
-                seasonGroups.forEach((group, sIdx) => {
-                    const seasonNumberField = group.querySelector('.season-number-field');
-                    const seasonNameField = group.querySelector('.season-name-field');
-                    const seasonNumber = seasonNumberField ? parseInt(seasonNumberField.value) || sIdx + 1 : sIdx + 1;
-                    const seasonName = seasonNameField ? seasonNameField.value.trim() || `Season ${seasonNumber}` : `Season ${seasonNumber}`;
+                const episodes = [];
+                group.querySelectorAll('.episode-item').forEach((item) => {
+                    const epNumber = parseInt(item.querySelector('.episode-number')?.value) || episodes.length + 1;
+                    const epTitle = item.querySelector('.episode-title')?.value.trim() || `Episode ${epNumber}`;
+                    const duration = item.querySelector('.episode-duration')?.value.trim() || '';
                     
-                    const episodes = [];
-                    const episodeItems = group.querySelectorAll('.episode-item');
-                    
-                    episodeItems.forEach((item) => {
-                        const epNumberInput = item.querySelector('.episode-number');
-                        const epTitleInput = item.querySelector('.episode-title');
-                        const epDurationInput = item.querySelector('.episode-duration');
-                        const epVideoInput = item.querySelector('.episode-video');
-                        
-                        const epNumber = epNumberInput ? parseInt(epNumberInput.value) || episodes.length + 1 : episodes.length + 1;
-                        const epTitle = epTitleInput ? epTitleInput.value.trim() || `Episode ${epNumber}` : `Episode ${epNumber}`;
-                        const duration = epDurationInput ? epDurationInput.value.trim() || '' : '';
-                        
-                        if (epVideoInput && epVideoInput.files && epVideoInput.files[0]) {
-                            const fieldName = `episodes_${epIdx}`;
-                            formData.append(fieldName, epVideoInput.files[0]);
-                            epIdx++;
-                        } else if (!id) {
-                            alert(`❌ Tafadhali weka video kwa Episode ${epNumber} katika Season ${seasonNumber}.`);
-                            setButtonLoading(submitBtn, false);
-                            return;
-                        }
-                        
-                        episodes.push({
-                            episode_number: epNumber,
-                            episode_title: epTitle,
-                            duration: duration
-                        });
-                    });
-                    
-                    if (episodes.length === 0) {
-                        episodes.push({
-                            episode_number: 1,
-                            episode_title: `Episode 1`,
-                            duration: ''
-                        });
-                    }
-                    
-                    seasons.push({
-                        season_number: seasonNumber,
-                        season_name: seasonName,
-                        episodes: episodes
-                    });
-                });
-                
-                if (seasons.length === 0) {
-                    alert('❌ Tafadhali ongeza angalau season moja kwa series.');
-                    setButtonLoading(submitBtn, false);
-                    return;
-                }
-                
-                if (!id) {
-                    let totalVideos = 0;
-                    formData.forEach((value, key) => {
-                        if (key.startsWith('episodes_') && value instanceof File) {
-                            totalVideos++;
-                        }
-                    });
-                    
-                    let totalEpisodes = 0;
-                    seasons.forEach(s => {
-                        totalEpisodes += s.episodes.length;
-                    });
-                    
-                    if (totalVideos < totalEpisodes) {
-                        alert(`❌ Tafadhali weka video kwa kila episode. Zimegundulika ${totalVideos} video, lakini kuna ${totalEpisodes} episodes.`);
+                    const videoInput = item.querySelector('.episode-video');
+                    if (videoInput?.files?.[0]) {
+                        formData.append(`episodes_${epIdx}`, videoInput.files[0]);
+                        epIdx++;
+                    } else if (!id) {
+                        alert(`❌ Tafadhali weka video kwa Episode ${epNumber} katika Season ${seasonNumber}.`);
                         setButtonLoading(submitBtn, false);
                         return;
                     }
+                    
+                    episodes.push({ episode_number: epNumber, episode_title: epTitle, duration: duration });
+                });
+                
+                if (episodes.length === 0) {
+                    episodes.push({ episode_number: 1, episode_title: 'Episode 1', duration: '' });
                 }
                 
-                formData.append('seasons', JSON.stringify(seasons));
+                seasons.push({ season_number: seasonNumber, season_name: seasonName, episodes: episodes });
+            });
+            
+            if (seasons.length === 0) {
+                alert('❌ Tafadhali ongeza angalau season moja kwa series.');
+                setButtonLoading(submitBtn, false);
+                return;
             }
             
-            try {
-                let response;
-                if (id) {
-                    response = await api.adminUpdateMovie(id, formData);
-                } else {
-                    response = await api.adminCreateMovie(formData);
+            if (!id) {
+                let totalVideos = 0;
+                formData.forEach((value, key) => { if (key.startsWith('episodes_') && value instanceof File) totalVideos++; });
+                let totalEpisodes = 0;
+                seasons.forEach(s => totalEpisodes += s.episodes.length);
+                if (totalVideos < totalEpisodes) {
+                    alert(`❌ Tafadhali weka video kwa kila episode. Zimegundulika ${totalVideos} video, lakini kuna ${totalEpisodes} episodes.`);
+                    setButtonLoading(submitBtn, false);
+                    return;
                 }
-                
-                setButtonLoading(submitBtn, false);
-                
-                if (response.success) {
-                    showToast(id ? '✅ Movie imesasishwa!' : '✅ Movie imeongezwa!');
-                    closeModal('movieModal');
-                    loadMovies();
-                } else {
-                    alert(`❌ ${response.message || 'Operation failed'}`);
-                }
-            } catch (error) {
-                console.error('Error saving movie:', error);
-                setButtonLoading(submitBtn, false);
-                alert(`❌ Error: ${error.message}`);
             }
-        });
-    }
+            
+            formData.append('seasons', JSON.stringify(seasons));
+        }
+        
+        try {
+            const response = id ? await api.adminUpdateMovie(id, formData) : await api.adminCreateMovie(formData);
+            setButtonLoading(submitBtn, false);
+            if (response.success) {
+                showToast(id ? '✅ Movie imesasishwa!' : '✅ Movie imeongezwa!');
+                closeModal('movieModal');
+                loadMovies();
+            } else {
+                alert(`❌ ${response.message || 'Operation failed'}`);
+            }
+        } catch (error) {
+            setButtonLoading(submitBtn, false);
+            alert(`❌ Error: ${error.message}`);
+        }
+    });
 
     // ===== Add Movie Button =====
-    const addMovieBtn = document.getElementById('addMovieBtn');
-    if (addMovieBtn) {
-        addMovieBtn.addEventListener('click', function() {
-            openMovieModal(null);
-        });
-    }
+    document.getElementById('addMovieBtn')?.addEventListener('click', function() {
+        openMovieModal(null);
+    });
 
     // ===== User Modal =====
     function openUserModal(user = null) {
         const modal = document.getElementById('userModal');
         const form = document.getElementById('userForm');
         const title = document.getElementById('userModalTitle');
-        const photoPreview = document.getElementById('userPhotoPreview');
-        const currentPhotoImg = document.getElementById('userCurrentPhoto');
         
         if (!modal || !form) return;
 
-        // Reset form
         form.reset();
-        
-        const userIdInput = document.getElementById('userId');
-        const fullNameInput = document.getElementById('userFullName');
-        const phoneInput = document.getElementById('userPhone');
-        const countrySelect = document.getElementById('userCountry');
-        const regionSelect = document.getElementById('userRegion');
-        const emailInput = document.getElementById('userEmail');
-        const passwordInput = document.getElementById('userPassword');
-        const passwordConfirmInput = document.getElementById('userPasswordConfirm');
-        const photoInput = document.getElementById('userPhoto');
-        
-        // Hide photo preview initially
-        if (photoPreview) photoPreview.style.display = 'none';
+        document.getElementById('userId').value = '';
+        document.getElementById('userPhotoPreview').style.display = 'none';
 
         if (user) {
-            if (title) title.textContent = 'Hariri Mtumiaji';
-            if (userIdInput) userIdInput.value = user.id;
-            if (fullNameInput) fullNameInput.value = user.full_name || '';
-            if (phoneInput) phoneInput.value = user.phone || '';
-            if (countrySelect) countrySelect.value = user.country || '';
-            if (regionSelect) regionSelect.value = user.region || '';
-            if (emailInput) emailInput.value = user.email || '';
+            title.textContent = 'Hariri Mtumiaji';
+            document.getElementById('userId').value = user.id;
+            document.getElementById('userFullName').value = user.full_name || '';
+            document.getElementById('userPhone').value = user.phone || '';
+            document.getElementById('userCountry').value = user.country || '';
+            document.getElementById('userRegion').value = user.region || '';
+            document.getElementById('userEmail').value = user.email || '';
             
-            // Show current photo if exists
-            if (user.profile_image && currentPhotoImg) {
-                currentPhotoImg.src = user.profile_image;
-                if (photoPreview) photoPreview.style.display = 'block';
+            if (user.profile_image) {
+                document.getElementById('userCurrentPhoto').src = user.profile_image;
+                document.getElementById('userPhotoPreview').style.display = 'block';
             }
             
-            // Make password optional for editing
-            if (passwordInput) {
-                passwordInput.placeholder = 'Acha tupu ili kubaki sawa';
-                passwordInput.required = false;
-            }
-            if (passwordConfirmInput) {
-                passwordConfirmInput.placeholder = 'Acha tupu ili kubaki sawa';
-                passwordConfirmInput.required = false;
-            }
+            document.getElementById('userPassword').placeholder = 'Acha tupu ili kubaki sawa';
+            document.getElementById('userPassword').required = false;
+            document.getElementById('userPasswordConfirm').placeholder = 'Acha tupu ili kubaki sawa';
+            document.getElementById('userPasswordConfirm').required = false;
         } else {
-            if (title) title.textContent = 'Ongeza Mtumiaji';
-            if (userIdInput) userIdInput.value = '';
-            
-            // NEW USER: Password is REQUIRED
-            if (passwordInput) {
-                passwordInput.required = true;
-                passwordInput.placeholder = 'Weka nenosiri (herufi 6 au zaidi)';
-            }
-            if (passwordConfirmInput) {
-                passwordConfirmInput.required = true;
-                passwordConfirmInput.placeholder = 'Rudia nenosiri';
-            }
-            
-            // Clear photo preview
-            if (photoPreview) photoPreview.style.display = 'none';
-            if (currentPhotoImg) currentPhotoImg.src = '';
+            title.textContent = 'Ongeza Mtumiaji';
+            document.getElementById('userPassword').required = true;
+            document.getElementById('userPassword').placeholder = 'Weka nenosiri (herufi 6 au zaidi)';
+            document.getElementById('userPasswordConfirm').required = true;
+            document.getElementById('userPasswordConfirm').placeholder = 'Rudia nenosiri';
+            document.getElementById('userPhotoPreview').style.display = 'none';
         }
 
-        // Update region visibility based on country
         const regionGroup = document.getElementById('userRegionGroup');
-        if (countrySelect && regionGroup) {
-            const isTanzania = countrySelect.value === 'Tanzania';
-            regionGroup.style.display = isTanzania ? 'block' : 'none';
+        if (document.getElementById('userCountry').value === 'Tanzania') {
+            regionGroup.style.display = 'block';
+        } else {
+            regionGroup.style.display = 'none';
         }
 
         openModal('userModal');
     }
 
-    // Country change handler for user modal
-    document.addEventListener('change', function(e) {
-        if (e.target.id === 'userCountry') {
-            const regionGroup = document.getElementById('userRegionGroup');
-            if (regionGroup) {
-                regionGroup.style.display = e.target.value === 'Tanzania' ? 'block' : 'none';
+    document.getElementById('userCountry')?.addEventListener('change', function() {
+        document.getElementById('userRegionGroup').style.display = this.value === 'Tanzania' ? 'block' : 'none';
+    });
+
+    document.getElementById('addUserBtn')?.addEventListener('click', function() {
+        openUserModal(null);
+    });
+
+    // ===== User Form Submit =====
+    document.getElementById('userForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitUserBtn');
+        const id = document.getElementById('userId')?.value || '';
+        
+        const full_name = document.getElementById('userFullName').value.trim();
+        const phone = document.getElementById('userPhone').value.trim();
+        let country = document.getElementById('userCountry').value;
+        const region = document.getElementById('userRegion').value;
+        const email = document.getElementById('userEmail').value.trim();
+        const password = document.getElementById('userPassword').value;
+        const confirmPassword = document.getElementById('userPasswordConfirm').value;
+        const photoInput = document.getElementById('userPhoto');
+
+        let missingFields = [];
+        if (!full_name) missingFields.push('Jina kamili');
+        if (!phone) missingFields.push('Namba ya simu');
+        if (!country) missingFields.push('Nchi');
+        if (!email) missingFields.push('Barua pepe');
+        
+        if (!id) {
+            if (!password || password.length < 6) {
+                alert('❌ Nenosiri lazima iwe na herufi 6 au zaidi!');
+                return;
             }
+            if (password !== confirmPassword) {
+                alert('❌ Nenosiri hazilingani!');
+                return;
+            }
+        } else {
+            if (password && password.length < 6) {
+                alert('❌ Nenosiri lazima iwe na herufi 6 au zaidi!');
+                return;
+            }
+            if (password && password !== confirmPassword) {
+                alert('❌ Nenosiri hazilingani!');
+                return;
+            }
+        }
+        
+        if (missingFields.length > 0) {
+            alert(`❌ Tafadhali jaza sehemu zifuatazo:\n- ${missingFields.join('\n- ')}`);
+            return;
+        }
+
+        setButtonLoading(submitBtn, true, id ? 'Inasasisha...' : 'Inaongeza...');
+
+        try {
+            let response;
+            if (id) {
+                const formData = new FormData();
+                formData.append('full_name', full_name);
+                formData.append('phone', phone);
+                formData.append('country', country);
+                formData.append('region', region || '');
+                formData.append('email', email);
+                if (password) {
+                    formData.append('password', password);
+                    formData.append('confirmPassword', confirmPassword);
+                }
+                if (photoInput?.files?.[0]) {
+                    formData.append('profile_image', photoInput.files[0]);
+                }
+                response = await api.adminUpdateUser(id, formData);
+            } else {
+                const userData = { full_name, phone, country, region, email, password, confirmPassword };
+                if (photoInput?.files?.[0]) {
+                    userData.profile_image = photoInput.files[0];
+                }
+                response = await api.adminCreateUser(userData);
+            }
+            
+            setButtonLoading(submitBtn, false);
+            if (response.success) {
+                showToast(id ? '✅ Mtumiaji amesasishwa!' : '✅ Mtumiaji ameongezwa!');
+                closeModal('userModal');
+                loadUsers();
+            } else {
+                alert(`❌ ${response.message || 'Operation failed'}`);
+            }
+        } catch (error) {
+            setButtonLoading(submitBtn, false);
+            alert(`❌ Error: ${error.message}`);
         }
     });
 
-    const addUserBtn = document.getElementById('addUserBtn');
-    if (addUserBtn) {
-        addUserBtn.addEventListener('click', function() {
-            openUserModal(null);
-        });
-    }
-
-    // ===== USER FORM SUBMIT - FIXED =====
-    const userForm = document.getElementById('userForm');
-    if (userForm) {
-        userForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submitUserBtn');
-            const id = document.getElementById('userId')?.value || '';
-            
-            // Get all form values with proper trimming
-            const full_name = document.getElementById('userFullName')?.value?.trim() || '';
-            const phone = document.getElementById('userPhone')?.value?.trim() || '';
-            let country = document.getElementById('userCountry')?.value || '';
-            const region = document.getElementById('userRegion')?.value || '';
-            const email = document.getElementById('userEmail')?.value?.trim() || '';
-            const password = document.getElementById('userPassword')?.value || '';
-            const confirmPassword = document.getElementById('userPasswordConfirm')?.value || '';
-            const photoInput = document.getElementById('userPhoto');
-
-            // Map "Other" to "Nchi nyengine" for backend
-            if (country === 'Other') {
-                country = 'Nchi nyengine';
-            }
-
-            // Debug: Log all values
-            console.log('📝 Form Values:', { 
-                id: id || 'new',
-                full_name: full_name || '(empty)',
-                phone: phone || '(empty)',
-                country: country || '(empty)',
-                region: region || '(empty)',
-                email: email || '(empty)',
-                password: password ? '***' : '(empty)',
-                confirmPassword: confirmPassword ? '***' : '(empty)'
-            });
-
-            // ===== VALIDATION =====
-            let missingFields = [];
-            
-            if (!full_name) missingFields.push('Jina kamili');
-            if (!phone) missingFields.push('Namba ya simu');
-            if (!country) missingFields.push('Nchi');
-            if (!email) missingFields.push('Barua pepe');
-            
-            // Password validation
-            if (!id) {
-                // New user - password REQUIRED
-                if (!password || password.length < 6) {
-                    alert('❌ Nenosiri lazima iwe na herufi 6 au zaidi!');
-                    return;
-                }
-                if (password !== confirmPassword) {
-                    alert('❌ Nenosiri hazilingani!');
-                    return;
-                }
-            } else {
-                // Editing user - password optional
-                if (password && password.length < 6) {
-                    alert('❌ Nenosiri lazima iwe na herufi 6 au zaidi!');
-                    return;
-                }
-                if (password && password !== confirmPassword) {
-                    alert('❌ Nenosiri hazilingani!');
-                    return;
-                }
-            }
-            
-            // If any required fields are missing
-            if (missingFields.length > 0) {
-                alert(`❌ Tafadhali jaza sehemu zifuatazo:\n- ${missingFields.join('\n- ')}`);
-                return;
-            }
-
-            setButtonLoading(submitBtn, true, id ? 'Inasasisha...' : 'Inaongeza...');
-
-            // Build user data object with CORRECT field names
-            const userData = {
-                full_name: full_name,
-                phone: phone,
-                country: country,
-                region: region,
-                email: email
-            };
-
-            // CRITICAL FIX: Use correct field names for backend
-            if (!id) {
-                // NEW USER: Always send password (already validated)
-                userData.password = password;
-                userData.confirmPassword = confirmPassword;
-            } else if (password) {
-                // EDIT USER: Only send if password is provided
-                userData.password = password;
-                userData.confirmPassword = confirmPassword;
-            }
-
-            // Add photo if selected
-            if (photoInput && photoInput.files && photoInput.files[0]) {
-                userData.profile_image = photoInput.files[0];
-            }
-
-            try {
-                let response;
-                if (id) {
-                    // For update, we need to build FormData with CORRECT field names
-                    const formData = new FormData();
-                    const fieldsToSend = {
-                        full_name: userData.full_name,
-                        phone: userData.phone,
-                        country: userData.country,
-                        region: userData.region || '',
-                        email: userData.email,
-                        password: userData.password,
-                        confirmPassword: userData.confirmPassword
-                    };
-                    
-                    Object.keys(fieldsToSend).forEach(key => {
-                        if (fieldsToSend[key] !== undefined && fieldsToSend[key] !== null && fieldsToSend[key] !== '') {
-                            formData.append(key, fieldsToSend[key]);
-                        }
-                    });
-                    
-                    if (userData.profile_image && userData.profile_image instanceof File) {
-                        formData.append('profile_image', userData.profile_image);
-                    }
-                    
-                    response = await api.adminUpdateUser(id, formData);
-                } else {
-                    response = await api.adminCreateUser(userData);
-                }
-                
-                setButtonLoading(submitBtn, false);
-                
-                if (response.success) {
-                    showToast(id ? '✅ Mtumiaji amesasishwa!' : '✅ Mtumiaji ameongezwa!');
-                    closeModal('userModal');
-                    loadUsers();
-                } else {
-                    alert(`❌ ${response.message || 'Operation failed'}`);
-                }
-            } catch (error) {
-                console.error('Error saving user:', error);
-                setButtonLoading(submitBtn, false);
-                
-                // Check if it's a duplicate email error
-                if (error.message && error.message.toLowerCase().includes('duplicate')) {
-                    alert('❌ Barua pepe hii tayari imesajiliwa. Tafadhali tumia barua pepe nyingine.');
-                } else if (error.message && error.message.toLowerCase().includes('required')) {
-                    alert('❌ Tafadhali jaza sehemu zote zinazohitajika.');
-                } else {
-                    alert(`❌ Error: ${error.message}`);
-                }
-            }
-        });
-    }
-
     // ===== Confirm Delete =====
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', async function() {
-            const btn = this;
-            setButtonLoading(btn, true, 'Inafuta...');
-            
-            try {
-                if (deleteType === 'movie') {
-                    const response = await api.adminDeleteMovie(deleteTarget);
-                    if (response.success) {
-                        showToast('✅ Movie imefutwa!');
-                        loadMovies();
-                    } else {
-                        alert(`❌ ${response.message || 'Delete failed'}`);
-                    }
-                } else if (deleteType === 'user') {
-                    const response = await api.adminDeleteUser(deleteTarget);
-                    if (response.success) {
-                        showToast('✅ Mtumiaji amefutwa!');
-                        loadUsers();
-                    } else {
-                        alert(`❌ ${response.message || 'Delete failed'}`);
-                    }
-                }
-            } catch (error) {
-                console.error('Error deleting:', error);
-                alert(`❌ Error: ${error.message}`);
+    document.getElementById('confirmDeleteBtn')?.addEventListener('click', async function() {
+        const btn = this;
+        setButtonLoading(btn, true, 'Inafuta...');
+        
+        try {
+            let response;
+            if (deleteType === 'movie') {
+                response = await api.adminDeleteMovie(deleteTarget);
+                if (response.success) { showToast('✅ Movie imefutwa!'); loadMovies(); }
+                else alert(`❌ ${response.message || 'Delete failed'}`);
+            } else if (deleteType === 'user') {
+                response = await api.adminDeleteUser(deleteTarget);
+                if (response.success) { showToast('✅ Mtumiaji amefutwa!'); loadUsers(); }
+                else alert(`❌ ${response.message || 'Delete failed'}`);
             }
-            
-            setButtonLoading(btn, false);
-            deleteTarget = null;
-            deleteType = null;
-            closeModal('confirmModal');
-        });
-    }
+        } catch (error) {
+            alert(`❌ Error: ${error.message}`);
+        }
+        
+        setButtonLoading(btn, false);
+        deleteTarget = null;
+        deleteType = null;
+        closeModal('confirmModal');
+    });
 
     // ===== Modal Helpers =====
     document.querySelectorAll('.modal').forEach(modal => {
@@ -1324,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ===== Toast Notification =====
+    // ===== Toast =====
     function showToast(message) {
         const toast = document.createElement('div');
         toast.style.cssText = `
@@ -1354,15 +1212,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== Initialize =====
     setupContentTypeToggle();
-    loadMovies();
-    loadUsers();
-    loadTransactions();
+    
+    // Get initial tab from URL hash
+    const initialTab = getTabFromHash();
+    switchTab(initialTab);
 
     try {
         const user = auth.getUser();
-        if (user && user.email) {
-            const emailEl = document.getElementById('adminEmail');
-            if (emailEl) emailEl.textContent = user.email;
+        if (user?.email) {
+            document.getElementById('adminEmail').textContent = user.email;
         }
     } catch (e) {}
 

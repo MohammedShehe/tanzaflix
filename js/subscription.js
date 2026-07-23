@@ -1,4 +1,4 @@
-// js/subscription.js - Subscription Page with Proper Error Handling
+// js/subscription.js - Subscription Page with Cancellation Support
 
 import api from './api.js';
 import auth from './auth.js';
@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const phoneField = document.getElementById('phoneField');
     const cardFields = document.getElementById('cardFields');
     const phoneInput = document.getElementById('phoneNumber');
+    const cancelSubscriptionBtn = document.getElementById('cancelSubscriptionBtn');
+    const cancelReason = document.getElementById('cancelReason');
+    const cancelModal = document.getElementById('cancelModal');
 
     // ===== Error Message Container =====
     const errorContainer = document.createElement('div');
@@ -47,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     let selectedPlanData = null;
     let currentSubscription = null;
     let plansData = [];
+    let subscriptionStatus = null;
 
     // ===== Error Display Function =====
     function showError(message, type = 'error') {
@@ -60,7 +64,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             : 'rgba(239, 68, 68, 0.2)';
         errorContainer.style.color = type === 'warning' ? '#fbbf24' : '#f87171';
         
-        // Auto-hide after 8 seconds
         clearTimeout(errorContainer._hideTimer);
         errorContainer._hideTimer = setTimeout(() => {
             errorContainer.style.display = 'none';
@@ -111,9 +114,39 @@ document.addEventListener('DOMContentLoaded', async function() {
         return false;
     }
 
+    // ===== Fetch Subscription Status from API =====
+    async function fetchSubscriptionStatus() {
+        try {
+            const response = await api.getSubscriptionStatus();
+            if (response.success) {
+                subscriptionStatus = response;
+                if (response.subscription) {
+                    // Update local storage with latest data
+                    const subData = {
+                        isSubscribed: response.subscription.is_active,
+                        planId: response.subscription.plan_id,
+                        planName: response.subscription.plan_name,
+                        planPrice: `TSh ${response.subscription.price?.toLocaleString()}`,
+                        planAmount: response.subscription.price,
+                        expiryDate: response.subscription.expires_at,
+                        status: response.subscription.status,
+                        daysRemaining: response.subscription.days_remaining,
+                        cancellation: response.subscription.cancellation
+                    };
+                    localStorage.setItem('tanzaflix_subscription', JSON.stringify(subData));
+                    currentSubscription = subData;
+                }
+                return response;
+            }
+        } catch (error) {
+            console.error('Error fetching subscription status:', error);
+            return null;
+        }
+    }
+
     // ===== Render Active Subscription Banner =====
     function renderActiveSubscription() {
-        if (!currentSubscription) {
+        if (!currentSubscription || !currentSubscription.isSubscribed) {
             activeBanner.classList.remove('show');
             return;
         }
@@ -123,6 +156,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         const expiryDate = new Date(currentSubscription.expiryDate);
         const now = new Date();
         const daysLeft = Math.max(0, Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24)));
+        
+        // Check if subscription is in cancelling state
+        const isCancelling = currentSubscription.status === 'cancelling' || 
+                            (currentSubscription.cancellation && currentSubscription.cancellation.status === 'pending');
+        
+        let statusText = 'Inatumika ✅';
+        let statusClass = '';
+        
+        if (isCancelling) {
+            statusText = 'Inaghairiwa ⏳';
+            statusClass = 'status-cancelling';
+        } else if (daysLeft < 7) {
+            statusText = `Inaisha hivi karibuni ⚠️`;
+            statusClass = 'status-expiring';
+        }
         
         subscriptionDetails.innerHTML = `
             <div class="detail-item">
@@ -134,8 +182,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <span class="value">${currentSubscription.planPrice || 'TSh 0'}</span>
             </div>
             <div class="detail-item">
+                <span class="label">Hali</span>
+                <span class="value ${statusClass}">${statusText}</span>
+            </div>
+            <div class="detail-item">
                 <span class="label">Inaisha</span>
-                <span class="value">${expiryDate.toLocaleDateString('sw', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                <span class="value ${daysLeft < 7 ? 'expiry-warning' : ''}">
+                    ${expiryDate.toLocaleDateString('sw', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
             </div>
             <div class="detail-item">
                 <span class="label">Siku Zilizobaki</span>
@@ -145,6 +199,26 @@ document.addEventListener('DOMContentLoaded', async function() {
                 </span>
             </div>
         `;
+
+        // Show/hide cancellation button
+        if (cancelSubscriptionBtn) {
+            if (isCancelling) {
+                cancelSubscriptionBtn.textContent = '⏳ Ombi la Kughairi Limetumwa';
+                cancelSubscriptionBtn.disabled = true;
+                cancelSubscriptionBtn.style.opacity = '0.6';
+                cancelSubscriptionBtn.style.cursor = 'not-allowed';
+            } else if (daysLeft > 0) {
+                cancelSubscriptionBtn.textContent = '❌ Ghairi Usajili';
+                cancelSubscriptionBtn.disabled = false;
+                cancelSubscriptionBtn.style.opacity = '1';
+                cancelSubscriptionBtn.style.cursor = 'pointer';
+            } else {
+                cancelSubscriptionBtn.textContent = '❌ Usajili Umeisha';
+                cancelSubscriptionBtn.disabled = true;
+                cancelSubscriptionBtn.style.opacity = '0.6';
+                cancelSubscriptionBtn.style.cursor = 'not-allowed';
+            }
+        }
     }
 
     // ===== Load Plans from API =====
@@ -198,7 +272,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                     card.dataset.planPrice = `TSh ${plan.price.toLocaleString()}`;
                     card.dataset.planAmount = plan.price;
                     
-                    if (currentSubscription && currentSubscription.planId === plan.id) {
+                    // Check if user already has this plan
+                    if (currentSubscription && currentSubscription.planId === plan.id && currentSubscription.isSubscribed) {
                         card.classList.add('subscribed');
                         const badge = document.createElement('span');
                         badge.className = 'plan-badge-subscribed';
@@ -271,7 +346,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         
-        // Reset payment method selection
         paymentMethod.value = '';
         togglePaymentFields();
     }
@@ -292,12 +366,81 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // ===== Payment Form Submission with Proper Error Messages =====
+    // ===== CANCEL SUBSCRIPTION =====
+    if (cancelSubscriptionBtn) {
+        cancelSubscriptionBtn.addEventListener('click', function() {
+            if (this.disabled) return;
+            
+            // Show cancel modal
+            if (cancelModal) {
+                cancelModal.classList.add('active');
+                cancelModal.style.display = 'flex';
+                if (cancelReason) cancelReason.value = '';
+            }
+        });
+    }
+
+    // ===== Confirm Cancellation =====
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener('click', async function() {
+            const btn = this;
+            const reason = cancelReason ? cancelReason.value.trim() : '';
+            
+            setButtonLoading(btn, true, 'Inaghairi...');
+            
+            try {
+                const response = await api.cancelSubscription(reason || undefined);
+                
+                setButtonLoading(btn, false);
+                
+                if (response.success) {
+                    // Close modal
+                    if (cancelModal) {
+                        cancelModal.classList.remove('active');
+                        cancelModal.style.display = 'none';
+                    }
+                    
+                    showToast('✅ Usajili umeghairiwa. Utapata ufikiaji hadi mwisho wa kipindi chako.', 'warning');
+                    
+                    // Refresh subscription status
+                    await fetchSubscriptionStatus();
+                    renderActiveSubscription();
+                    
+                    // Update UI
+                    if (cancelSubscriptionBtn) {
+                        cancelSubscriptionBtn.textContent = '⏳ Ombi la Kughairi Limetumwa';
+                        cancelSubscriptionBtn.disabled = true;
+                        cancelSubscriptionBtn.style.opacity = '0.6';
+                        cancelSubscriptionBtn.style.cursor = 'not-allowed';
+                    }
+                } else {
+                    alert(`❌ ${response.message || 'Imeshindwa kughairi usajili'}`);
+                }
+            } catch (error) {
+                console.error('Cancel subscription error:', error);
+                setButtonLoading(btn, false);
+                alert(`❌ Error: ${error.message}`);
+            }
+        });
+    }
+
+    // ===== Close Cancel Modal =====
+    const closeCancelModal = document.getElementById('closeCancelModal');
+    if (closeCancelModal) {
+        closeCancelModal.addEventListener('click', function() {
+            if (cancelModal) {
+                cancelModal.classList.remove('active');
+                cancelModal.style.display = 'none';
+            }
+        });
+    }
+
+    // ===== Payment Form Submission =====
     paymentForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         hideError();
 
-        // ===== 1. FRONTEND VALIDATION ERRORS =====
         if (!selectedPlanId || !selectedPlanData) {
             showError('⚠️ Tafadhali chagua mpango wa usajili kwanza.', 'error');
             return;
@@ -309,12 +452,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        // Map frontend method names to backend values
         let backendMethod;
         let phone = '';
         let cardData = null;
 
-        // ===== CARD PAYMENT =====
         if (method === 'Card') {
             backendMethod = 'bank_card';
             
@@ -343,7 +484,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return;
             }
 
-            // Prepare card data for backend
             cardData = {
                 accountName: cardHolderName,
                 cardNumber: cardNumber.replace(/\s/g, ''),
@@ -351,12 +491,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 cvv: cardCvv
             };
             
-            // No phone needed for card
             phone = '';
 
-        // ===== MOBILE MONEY PAYMENT =====
         } else {
-            // Map frontend mobile money names to backend
             if (method === 'M-Pesa') {
                 backendMethod = 'mpesa';
             } else if (method === 'Airtel Money') {
@@ -374,14 +511,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
 
-        // ===== 2. SHOW PROCESSING STATE =====
         paymentProcessing.style.display = 'block';
         payNowBtn.style.display = 'none';
         payNowBtn.disabled = true;
         hideError();
 
         try {
-            // ===== 3. SEND PAYMENT REQUEST =====
             const response = await api.createPayment(
                 selectedPlanId, 
                 backendMethod, 
@@ -392,12 +527,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (response.success) {
                 const reference = response.reference;
                 
-                // Show initial success message
                 showError('✅ Malipo yameanzishwa! Tunasubiri uthibitisho...', 'warning');
                 
-                // ===== 4. POLL FOR PAYMENT STATUS =====
                 let attempts = 0;
-                const maxAttempts = 36; // 3 minutes (5 seconds * 36)
+                const maxAttempts = 36;
                 
                 const checkStatus = setInterval(async () => {
                     attempts++;
@@ -412,35 +545,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                             paymentSuccess.style.display = 'block';
                             hideError();
                             
-                            // Save subscription data
-                            const subscriptionData = {
-                                phone: phone || 'Card Payment',
-                                plan: selectedPlan,
-                                planId: selectedPlanId,
-                                planName: selectedPlan,
-                                planPrice: selectedPlanData.price,
-                                planAmount: selectedPlanData.amount,
-                                paymentMethod: method,
-                                subscriptionDate: new Date().toISOString(),
-                                expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                                isSubscribed: true,
-                                paymentStatus: 'confirmed',
-                                reference: reference
-                            };
-                            
-                            localStorage.setItem('tanzaflix_subscription', JSON.stringify(subscriptionData));
-                            
-                            try {
-                                const user = auth.getUser() || {};
-                                user.isSubscribed = true;
-                                user.plan = selectedPlan;
-                                user.planName = selectedPlan;
-                                user.planPrice = selectedPlanData.price;
-                                user.planAmount = selectedPlanData.amount;
-                                localStorage.setItem('tanzaflix_user', JSON.stringify(user));
-                            } catch (err) {
-                                console.warn('Error updating user data:', err);
-                            }
+                            // Refresh subscription status
+                            await fetchSubscriptionStatus();
+                            renderActiveSubscription();
                             
                             payNowBtn.textContent = '✅ Imefanikiwa!';
                             payNowBtn.style.display = 'block';
@@ -483,7 +590,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }, 5000);
                 
             } else {
-                // ===== 5. BACKEND REJECTED THE PAYMENT =====
                 paymentProcessing.style.display = 'none';
                 payNowBtn.style.display = 'block';
                 payNowBtn.disabled = false;
@@ -497,14 +603,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             
         } catch (error) {
-            // ===== 6. NETWORK / CONNECTION ERRORS =====
             console.error('Payment error:', error);
             paymentProcessing.style.display = 'none';
             payNowBtn.style.display = 'block';
             payNowBtn.disabled = false;
             payNowBtn.textContent = 'Jaribu tena';
             
-            // Differentiate between network errors and server errors
             if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                 showError('🌐 Tatizo la muunganisho wa mtandao. Hakikisha umeunganishwa kwenye intaneti na jaribu tena. Hakuna kiasi kilichotolewa.', 'error');
             } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
@@ -519,17 +623,39 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ===== Add More Subscription =====
     document.getElementById('upgradeBtn').addEventListener('click', function() {
-        if (confirm('Je, una uhakika unataka kuongeza mpango mwingine wa usajili?')) {
-            document.querySelector('.plans-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            document.querySelector('.plans-grid').style.animation = 'none';
-            setTimeout(() => {
-                document.querySelector('.plans-grid').style.animation = 'fadeSlideIn 0.4s ease';
-            }, 10);
-        }
+        document.querySelector('.plans-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelector('.plans-grid').style.animation = 'none';
+        setTimeout(() => {
+            document.querySelector('.plans-grid').style.animation = 'fadeSlideIn 0.4s ease';
+        }, 10);
     });
 
+    // ===== Set Button Loading State =====
+    function setButtonLoading(button, isLoading, loadingText = 'Inapakia...') {
+        if (!button) return;
+        
+        if (isLoading) {
+            button.disabled = true;
+            if (!button.dataset.originalHtml) {
+                button.dataset.originalHtml = button.innerHTML;
+            }
+            button.innerHTML = loadingText;
+            button.classList.add('btn-loading');
+        } else {
+            button.disabled = false;
+            button.classList.remove('btn-loading');
+            if (button.dataset.originalHtml) {
+                button.innerHTML = button.dataset.originalHtml;
+                delete button.dataset.originalHtml;
+            }
+        }
+    }
+
     // ===== Initialize =====
-    const hasSubscription = checkCurrentSubscription();
+    // First fetch subscription status from API
+    await fetchSubscriptionStatus();
+    
+    const hasSubscription = currentSubscription && currentSubscription.isSubscribed;
     await loadPlans();
     
     if (hasSubscription) {

@@ -201,7 +201,7 @@ class ApiService {
         return this.request('/plans');
     }
 
-    // ==================== PAYMENT ENDPOINTS ====================
+    // ==================== PAYMENT & SUBSCRIPTION ENDPOINTS ====================
     async createPayment(planId, paymentMethod, phoneNumber, cardData = null) {
         const payload = {
             planId: planId,
@@ -228,6 +228,38 @@ class ApiService {
 
     async getPaymentHistory() {
         return this.request('/payments/history');
+    }
+
+    // ===== SUBSCRIPTION MANAGEMENT =====
+    async getSubscriptionStatus() {
+        return this.request('/payments/subscription/status');
+    }
+
+    async cancelSubscription(reason = null) {
+        const payload = {};
+        if (reason) {
+            payload.reason = reason;
+        }
+        return this.request('/payments/subscription/cancel', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+    }
+
+    // ==================== ADMIN SUBSCRIPTION ENDPOINTS ====================
+    async adminGetAllSubscriptions() {
+        return this.request('/payments/admin/subscriptions');
+    }
+
+    async adminCancelSubscriptionImmediately(userId, reason = null) {
+        const payload = {};
+        if (reason) {
+            payload.reason = reason;
+        }
+        return this.request(`/payments/admin/subscription/cancel/${userId}`, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
     }
 
     // ==================== MOVIE PURCHASE ENDPOINTS ====================
@@ -301,7 +333,6 @@ class ApiService {
     async adminCreateUser(userData) {
         const formData = new FormData();
         
-        // CRITICAL FIX: Use correct field names for backend
         const fieldsToSend = {
             full_name: userData.full_name,
             phone: userData.phone,
@@ -312,22 +343,14 @@ class ApiService {
             confirmPassword: userData.confirmPassword
         };
         
-        // Append all fields if they have values
         Object.keys(fieldsToSend).forEach(key => {
             if (fieldsToSend[key] !== undefined && fieldsToSend[key] !== null && fieldsToSend[key] !== '') {
                 formData.append(key, fieldsToSend[key]);
             }
         });
         
-        // Append profile image if it's a File
         if (userData.profile_image && userData.profile_image instanceof File) {
             formData.append('profile_image', userData.profile_image);
-        }
-
-        // Debug: Log what we're sending
-        console.log('📤 Sending FormData:');
-        for (let pair of formData.entries()) {
-            console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
         }
 
         return fetch(`${this.baseUrl}/users/create`, {
@@ -340,7 +363,6 @@ class ApiService {
     }
 
     async adminUpdateUser(id, userData) {
-        // If userData is already FormData, use it directly
         if (userData instanceof FormData) {
             return fetch(`${this.baseUrl}/users/${id}`, {
                 method: 'PUT',
@@ -351,7 +373,6 @@ class ApiService {
             }).then(res => res.json());
         }
         
-        // Otherwise build FormData with correct field names
         const formData = new FormData();
         const fieldsToSend = {
             full_name: userData.full_name,

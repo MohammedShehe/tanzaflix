@@ -40,23 +40,31 @@
             </div>
         </header>
 
-        <!-- Navigation -->
+        <!-- Navigation - Same as admin.html -->
         <nav class="admin-nav">
-            <button class="nav-item" data-tab="movies">
+            <button class="nav-item" data-tab="movies" id="navMovies">
                 <i class="fas fa-film"></i>
                 <span>Movies</span>
             </button>
-            <button class="nav-item" data-tab="users">
+            <button class="nav-item" data-tab="users" id="navUsers">
                 <i class="fas fa-users"></i>
                 <span>Watumizi</span>
             </button>
-            <button class="nav-item" data-tab="transactions">
+            <button class="nav-item" data-tab="subscriptions" id="navSubscriptions">
+                <i class="fas fa-id-card"></i>
+                <span>Usajili</span>
+            </button>
+            <button class="nav-item" data-tab="transactions" id="navTransactions">
                 <i class="fas fa-shopping-cart"></i>
                 <span>Manunuzi</span>
             </button>
-            <button class="nav-item active" data-tab="activities">
+            <button class="nav-item active" data-tab="activities" id="navActivities">
                 <i class="fas fa-chart-line"></i>
                 <span>Shughuli</span>
+            </button>
+            <button class="nav-item" data-tab="ratings" id="navRatings">
+                <i class="fas fa-star"></i>
+                <span>Ratings</span>
             </button>
         </nav>
 
@@ -461,7 +469,7 @@
     </div>
 
     <!-- User Profile Modal -->
-    <div class="modal" id="userProfileModal">
+    <div class="modal" id="userProfileModal" style="display:none;">
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h3 id="profileModalTitle">Profaili ya Mtumiaji</h3>

@@ -170,24 +170,60 @@ function closeModals() {
     });
 }
 
-// Navigation click handlers
+// ===== Navigation click handlers - FIXED =====
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
-        if (href && !href.startsWith('#')) {
+        const id = this.id;
+        
+        // Handle About modal
+        if (id === 'navAbout') {
+            e.preventDefault();
+            openAboutModal();
             return;
         }
-        e.preventDefault();
-        const id = this.id;
-        if (id === 'navAbout') {
-            openAboutModal();
-        } else if (id === 'navPayment') {
+        
+        // Handle Payment/Subscription
+        if (id === 'navPayment') {
+            e.preventDefault();
             window.location.href = 'subscription.html';
+            return;
+        }
+        
+        // Handle Ratings - Navigate to admin.html with ratings tab
+        if (id === 'navRatings' || this.textContent.trim() === 'Ratings') {
+            e.preventDefault();
+            window.location.href = 'admin.html?tab=ratings';
+            return;
+        }
+        
+        // Handle navigation links with actual href
+        if (href && !href.startsWith('#') && href !== '#' && href !== '') {
+            // Allow normal navigation
+            return;
+        }
+        
+        // Prevent default for empty or # links
+        if (href === '#' || href === '' || href === null) {
+            e.preventDefault();
         }
     });
 });
 
-// Modal close handlers
+// ===== Also handle Ratings link specifically =====
+// Find the Ratings nav link by its text content or id
+const ratingsLink = document.querySelector('.nav-link#navRatings') || 
+                    document.querySelector('.nav-link:not(#navAbout):not(#navPayment)')?.textContent?.trim() === 'Ratings' ? 
+                    document.querySelector('.nav-link:not(#navAbout):not(#navPayment)') : null;
+
+if (ratingsLink) {
+    ratingsLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = 'admin.html?tab=ratings';
+    });
+}
+
+// ===== Modal close handlers =====
 document.querySelectorAll('.modal-close').forEach(btn => {
     btn.addEventListener('click', closeModals);
 });
