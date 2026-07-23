@@ -1,4 +1,4 @@
-// js/watch.js - Watch Page with Rating, Country Filter, and Professional History
+// js/watch.js - Watch Page with Rating, Country Filter, and Real-Time Video Tracking
 
 import api from './api.js';
 import auth from './auth.js';
@@ -44,11 +44,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     let canWatch = false;
     let accessType = null;
     let isFirstTime = false;
+    
+    // Real-time tracking variables
+    let lastProgressUpdate = 0;
+    const PROGRESS_INTERVAL = 5;
+    let isTrackingEnabled = false;
+    let currentEpisodeId = null;
+    let totalDuration = 0;
+    let hasMarkedComplete = false;
 
     // Show loading state
     titleEl.textContent = 'Inapakia...';
 
-    // ===== Country Display Map =====
+    // Country Display Map
     const countryMap = {
         'Bongo Movie': '🇹🇿 Bongo',
         'Movie ya Kiarabu': '🇸🇦 Kiarabu',
@@ -108,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     `;
     document.body.appendChild(ratingModal);
 
-    // ===== Rating Modal Functions =====
+    // Rating Modal Functions
     let selectedRating = 0;
     let userHasRated = false;
     let userRatingData = null;
@@ -117,7 +125,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const modal = document.getElementById('ratingModal');
         if (!modal) return;
         
-        // Reset form
         selectedRating = 0;
         document.getElementById('ratingReview').value = '';
         document.getElementById('ratingSelectedDisplay').textContent = 'Hakuna rating iliyochaguliwa';
@@ -130,7 +137,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('submitRatingBtn').disabled = false;
         document.getElementById('submitRatingBtn').textContent = 'Tuma Rating';
 
-        // If user already rated, show their rating
         if (userHasRated && userRatingData) {
             document.getElementById('ratingModalTitle').textContent = 'Rating Yako';
             document.getElementById('ratingSelectedDisplay').textContent = `Rating yako: ${userRatingData.rating}/10`;
@@ -159,7 +165,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (modal) modal.style.display = 'none';
     }
 
-    // Rating star click handlers
     document.querySelectorAll('.rating-star').forEach(el => {
         el.addEventListener('click', function() {
             if (userHasRated) return;
@@ -184,7 +189,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
 
-    // Rating form submission
     document.getElementById('ratingForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -225,7 +229,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     review_text: review || null
                 };
                 
-                // Update the rating display in the movie info
                 updateRatingDisplay();
                 
                 document.getElementById('submitRatingBtn').textContent = '✅ Imefanikiwa';
@@ -249,12 +252,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // Rating modal close handlers
     document.querySelectorAll('.rating-modal-close').forEach(btn => {
         btn.addEventListener('click', closeRatingModal);
     });
 
-    // ===== Update Rating Display =====
     function updateRatingDisplay() {
         if (movieData?.rating) {
             const avg = movieData.rating.average || 0;
@@ -271,18 +272,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    // ===== Format Runtime Helper =====
     function formatRuntime(minutes) {
         if (!minutes || minutes <= 0) {
             return 'N/A';
         }
         
-        // If it's already a string like "2h 10m", return as-is
         if (typeof minutes === 'string' && (minutes.includes('h') || minutes.includes('m'))) {
             return minutes;
         }
         
-        // Convert number to hours and minutes
         const mins = parseInt(minutes);
         if (isNaN(mins)) return 'N/A';
         
@@ -298,6 +296,121 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    // ===== Real-Time Video Tracking =====
+    
+    async function trackProgress(currentTime, duration) {
+        if (!isTrackingEnabled || hasMarkedComplete) return;
+        
+        try {
+            if (!isSeries) {
+                await api.markMovieComplete(
+                    movieId,
+                    Math.floor(currentTime),
+                    Math.floor(duration)
+                );
+            } else {
+                if (currentEpisodeId) {
+                    await api.markEpisodeComplete(
+                        movieId,
+                        currentEpisodeId,
+                        Math.floor(currentTime),
+                        Math.floor(duration)
+                    );
+                }
+            }
+        } catch (error) {
+            // Silently handle tracking errors
+        }
+    }
+
+    async function markComplete() {
+        if (hasMarkedComplete) return;
+        hasMarkedComplete = true;
+        
+        try {
+            const duration = Math.floor(video.duration);
+            await trackProgress(duration, duration);
+            
+            setTimeout(() => {
+                if (confirm('✅ Umaliza kutazama! Je, ungependa kuikadiria movie hii?')) {
+                    openRatingModal();
+                }
+            }, 2000);
+            
+        } catch (error) {
+            // Silently handle completion errors
+        }
+    }
+
+    async function saveFinalProgress() {
+        try {
+            const currentTime = Math.floor(video.currentTime);
+            const duration = Math.floor(video.duration);
+            
+            if (currentTime > 0 && currentTime < duration && !hasMarkedComplete) {
+                await trackProgress(currentTime, duration);
+            }
+        } catch (error) {
+            // Silently handle save errors
+        }
+    }
+
+    // ===== Video Event Listeners =====
+    
+    video.addEventListener('timeupdate', function() {
+        const currentTime = this.currentTime;
+        const duration = this.duration;
+        
+        if (!duration || isNaN(duration) || duration === 0) return;
+        
+        totalDuration = duration;
+        
+        if (currentTime - lastProgressUpdate >= PROGRESS_INTERVAL && currentTime > 0) {
+            lastProgressUpdate = currentTime;
+            trackProgress(currentTime, duration);
+        }
+    });
+
+    video.addEventListener('ended', function() {
+        markComplete();
+        
+        if (isSeries && movieData?.seasons) {
+            const season = movieData.seasons.find(s => s.season_number === currentSeason);
+            if (season?.episodes && currentEpisode < season.episodes.length - 1) {
+                setTimeout(() => {
+                    currentEpisode++;
+                    renderSeriesNav(movieData.seasons);
+                    loadEpisode(movieData.seasons, currentSeason, currentEpisode);
+                }, 3000);
+            }
+        }
+    });
+
+    video.addEventListener('play', function() {
+        isTrackingEnabled = true;
+    });
+
+    video.addEventListener('pause', function() {
+        if (isTrackingEnabled && !hasMarkedComplete) {
+            const currentTime = this.currentTime;
+            const duration = this.duration;
+            if (currentTime > 0 && duration > 0) {
+                trackProgress(currentTime, duration);
+            }
+        }
+    });
+
+    video.addEventListener('loadedmetadata', function() {
+        const duration = Math.floor(this.duration);
+        if (duration > 0) {
+            watchRuntime.textContent = formatRuntime(duration);
+        }
+    });
+
+    window.addEventListener('beforeunload', function() {
+        saveFinalProgress();
+    });
+
     // ===== Load Movie Data =====
     try {
         const response = await api.getUserMovie(movieId);
@@ -312,7 +425,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         isSeries = movieData.movie_type === 'series';
         isFirstTime = movieData.isFirstTime || false;
 
-        // Check if user has rated this movie
         if (movieData.rating) {
             userHasRated = movieData.rating.user_has_rated || false;
             userRatingData = movieData.rating.user_rating || null;
@@ -324,14 +436,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         watchYear.textContent = movieData.year || '2024';
         watchGenre.textContent = movieData.category || 'Action';
         
-        // ===== FORMAT AND DISPLAY RUNTIME PROPERLY =====
         const runtimeDisplay = formatRuntime(movieData.movie_time);
         watchRuntime.textContent = runtimeDisplay;
         
         watchLang.textContent = movieData.language || 'Kiswahili';
         watchCountry.textContent = countryMap[movieData.country] || movieData.country || 'N/A';
 
-        // Set type badge
         if (isSeries) {
             typeBadge.textContent = '📺 Series';
             typeBadge.className = 'type-badge-watch series';
@@ -340,39 +450,30 @@ document.addEventListener('DOMContentLoaded', async function() {
             typeBadge.className = 'type-badge-watch single';
         }
 
-        // ===== SET ACCESS BADGE =====
         if (canWatch) {
+            streamingBadge.style.display = 'inline-flex';
+            accessBadge.style.display = 'none';
+            
             if (accessType === 'subscription') {
                 streamingBadge.textContent = '▶ Premium Streaming';
-                streamingBadge.style.display = 'inline-flex';
-                accessBadge.style.display = 'none';
             } else if (accessType === 'free_trial') {
                 streamingBadge.textContent = '✅ Free Trial - First Time Watching';
-                streamingBadge.style.display = 'inline-flex';
-                accessBadge.style.display = 'none';
             } else if (accessType === 'paid_single') {
                 streamingBadge.textContent = '▶ Premium Streaming';
-                streamingBadge.style.display = 'inline-flex';
-                accessBadge.style.display = 'none';
             } else {
                 streamingBadge.textContent = '▶ Premium Streaming';
-                streamingBadge.style.display = 'inline-flex';
-                accessBadge.style.display = 'none';
             }
         } else {
             streamingBadge.style.display = 'none';
             accessBadge.style.display = 'none';
         }
 
-        // Set poster
         if (movieData.poster) {
             video.poster = movieData.poster;
         }
 
-        // Update rating display
         updateRatingDisplay();
 
-        // Handle access control
         if (!canWatch) {
             paywallOverlay.style.display = 'flex';
             seriesNav.style.display = 'none';
@@ -388,14 +489,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 paywallMessage.textContent = 'Unahitaji kujiandikisha au kununua filamu hii ili kuendelea kutazama. Jisajili sasa na upate ufikiaji wa filamu zote!';
             }
             
-            // Still load recommendations even if can't watch
             if (movieData.more_like_this && movieData.more_like_this.length > 0) {
                 renderRecommendations(movieData.more_like_this);
             }
             return;
         }
 
-        // If can watch, load video
         if (!isSeries) {
             if (movieData.video) {
                 source.src = movieData.video;
@@ -418,7 +517,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
 
-        // Access message
         if (movieData.accessMessage) {
             const msgEl = document.createElement('div');
             msgEl.style.cssText = `
@@ -438,7 +536,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             movieInfo.prepend(msgEl);
         }
 
-        // Recommendations
         if (movieData.more_like_this && movieData.more_like_this.length > 0) {
             renderRecommendations(movieData.more_like_this);
         }
@@ -454,11 +551,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         `;
     }
 
-    // ===== Render Recommendations =====
     function renderRecommendations(moreLikeThis) {
         const recRow = document.getElementById('recommendationRow');
         recRow.innerHTML = moreLikeThis.map(rec => {
-            // Format the runtime for each recommendation
             const recRuntime = formatRuntime(rec.movie_time);
             
             return `
@@ -477,7 +572,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // ===== Series Navigation Functions =====
     function renderSeriesNav(seasons) {
         if (!seasons || seasons.length === 0) return;
 
@@ -493,6 +587,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const season = parseInt(this.dataset.season);
                 currentSeason = season;
                 currentEpisode = 0;
+                hasMarkedComplete = false;
                 renderSeriesNav(seasons);
                 loadEpisode(seasons, season, 0);
             });
@@ -508,7 +603,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         episodeGrid.innerHTML = season.episodes.map((ep, index) => {
             const isActive = index === currentEpisode;
-            // Format episode duration
             const epDuration = formatRuntime(ep.duration);
             
             return `
@@ -526,6 +620,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const episode = parseInt(this.dataset.episode);
                 currentSeason = season;
                 currentEpisode = episode;
+                hasMarkedComplete = false;
                 renderSeriesNav(seasons);
                 loadEpisode(seasons, season, episode);
             });
@@ -543,16 +638,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         const ep = season.episodes[episodeIndex];
         if (!ep) return;
 
+        currentEpisodeId = ep.id;
+
         if (ep.video_url) {
             source.src = ep.video_url;
             video.load();
         }
 
+        hasMarkedComplete = false;
+        isTrackingEnabled = false;
+        lastProgressUpdate = 0;
+
         titleEl.textContent = `${movieData.title} - E${String(ep.episode_number || episodeIndex + 1).padStart(2, '0')}`;
         episodeCurrentLabel.textContent = `S${String(seasonNumber).padStart(2, '0')} E${String(ep.episode_number || episodeIndex + 1).padStart(2, '0')} - ${ep.episode_title || 'Episode'}`;
         descEl.textContent = `${movieData.description || ''} Episode ${ep.episode_number || episodeIndex + 1}: ${ep.episode_title || ''}`;
         
-        // Format episode duration
         const epDuration = formatRuntime(ep.duration);
         watchRuntime.textContent = epDuration;
 
@@ -563,7 +663,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             );
         });
 
-        video.play().catch(() => {});
+        setTimeout(() => {
+            video.play().catch(() => {});
+        }, 500);
         playBtn.textContent = '⏸ Pause';
     }
 
@@ -576,7 +678,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // ===== Video Handlers =====
     video.addEventListener('play', function() {
         playBtn.textContent = '⏸ Pause';
     });
@@ -587,32 +688,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     video.addEventListener('ended', function() {
         playBtn.textContent = '▶ Replay';
-        
-        if (isSeries && movieData && movieData.seasons) {
-            const season = movieData.seasons.find(s => s.season_number === currentSeason);
-            if (season && season.episodes && currentEpisode < season.episodes.length - 1) {
-                setTimeout(() => {
-                    currentEpisode++;
-                    renderSeriesNav(movieData.seasons);
-                    loadEpisode(movieData.seasons, currentSeason, currentEpisode);
-                }, 3000);
-            }
-        }
     });
 
-    // ===== Buy Movie Button with Bank Card Support =====
+    // ===== Buy Movie Button =====
     buyMovieBtn.addEventListener('click', async function() {
         try {
             this.textContent = '⏳ Inachakata...';
             this.disabled = true;
             
-            // Ask user if they want to pay with card or mobile money
             const useCard = confirm('Je, unataka kulipa kwa Kadi ya Benki?\n\n"OK" = Kadi ya Benki\n"Cancel" = M-Pesa/Airtel/Tigo');
             
             let method, phone, cardData = null;
             
             if (useCard) {
-                // ===== BANK CARD PAYMENT =====
                 method = 'bank_card';
                 
                 const cardNumber = prompt('Ingiza namba ya kadi (tarakimu 16, e.g., 4111111111111111):');
@@ -657,8 +745,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 phone = '';
                 
             } else {
-                // ===== MOBILE MONEY PAYMENT =====
-                const methodOptions = ['M-Pesa', 'Airtel Money', 'Tigo Pesa'];
                 const methodChoice = prompt(`Chagua njia ya malipo:\n1. M-Pesa\n2. Airtel Money\n3. Tigo Pesa\n\nIngiza namba (1-3):`);
                 
                 if (!methodChoice) {
@@ -684,7 +770,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }
             
-            // ===== SEND PURCHASE REQUEST =====
             const response = await api.createMoviePurchase(movieId, method, phone, cardData);
             
             if (response.success) {
@@ -694,9 +779,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 alert(msg);
                 
-                // ===== POLL FOR PAYMENT STATUS =====
                 let attempts = 0;
-                const maxAttempts = 36; // 3 minutes
+                const maxAttempts = 36;
                 
                 const checkStatus = setInterval(async () => {
                     attempts++;
@@ -722,7 +806,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                             this.disabled = false;
                         }
                     } catch (e) {
-                        console.warn('Status check failed:', e);
                         if (attempts >= maxAttempts) {
                             clearInterval(checkStatus);
                             alert('⏱️ Muda wa malipo umeisha. Tafadhali jaribu tena.');
@@ -732,7 +815,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
                 }, 5000);
                 
-                // Auto-cleanup
                 setTimeout(() => {
                     clearInterval(checkStatus);
                 }, maxAttempts * 5000 + 5000);
@@ -759,7 +841,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // ===== Add Rating Button to Movie Info =====
+    // ===== Add Rating Button =====
     const actionsContainer = document.querySelector('.movie-actions');
     if (actionsContainer) {
         const rateBtn = document.createElement('button');
@@ -774,8 +856,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
         actionsContainer.appendChild(rateBtn);
     }
-
-    console.log('✅ TanzaFlix watch page initialized');
 });
 
 // ===== About Modal Functions =====
