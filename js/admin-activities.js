@@ -839,6 +839,8 @@ async function viewUserProfile(userId) {
     }
 }
 
+// In admin-activities.js, replace the renderProfileTab function with:
+
 function renderProfileTab(tab) {
     if (!selectedUser) return;
     
@@ -852,9 +854,32 @@ function renderProfileTab(tab) {
         el.style.display = 'none';
     });
     
-    const tabContent = document.getElementById(`profile${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
-    if (tabContent) {
-        tabContent.style.display = 'block';
+    // Map tab names to correct container IDs
+    const tabIdMap = {
+        'basic': 'profileBasic',
+        'watch-summary': 'profileWatchSummary',
+        'watch-history': 'profileWatchHistory',
+        'subscriptions': 'profileSubscriptions',
+        'purchases': 'profilePurchases',
+        'payments': 'profilePayments',
+        'access-attempts': 'profileAccessAttempts'
+    };
+    
+    const containerId = tabIdMap[tab];
+    if (containerId) {
+        const tabContent = document.getElementById(containerId);
+        if (tabContent) {
+            tabContent.style.display = 'block';
+        }
+    }
+    
+    // Also handle direct match for any other tabs
+    const directId = `profile${tab.charAt(0).toUpperCase() + tab.slice(1)}`;
+    if (!tabIdMap[tab]) {
+        const tabContent = document.getElementById(directId);
+        if (tabContent) {
+            tabContent.style.display = 'block';
+        }
     }
     
     switch(tab) {
