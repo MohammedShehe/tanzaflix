@@ -3,21 +3,23 @@
 import api from './api.js';
 import auth from './auth.js';
 
+// ===== Global State =====
+let activities = [];
+let currentActivityPage = 1;
+let currentDetailPage = 1;
+const itemsPerPage = 50;
+let selectedUser = null;
+let usersData = [];
+let charts = {};
+
+// ===== Global Functions (for inline onclick) =====
+window.viewUserProfile = function(userId) {
+    viewUserProfile(userId);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // ===== Check Admin Session =====
     if (!auth.checkAuth() || !auth.checkAdmin()) return;
-
-    // ===== State =====
-    let activities = [];
-    let filteredActivities = [];
-    let currentActivityPage = 1;
-    let currentDetailPage = 1;
-    const itemsPerPage = 50;
-    let selectedUser = null;
-    let currentProfileTab = 'basic';
-    let charts = {};
-    let usersData = [];
-    let moviesData = [];
 
     // ===== Real-time Clock =====
     function updateClock() {
@@ -36,23 +38,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const adminProfile = document.getElementById('adminProfile');
     const profileDropdown = document.getElementById('profileDropdown');
 
-    adminProfile.addEventListener('click', function(e) {
-        e.stopPropagation();
-        profileDropdown.classList.toggle('active');
-    });
+    if (adminProfile) {
+        adminProfile.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('active');
+        });
+    }
 
     document.addEventListener('click', function(e) {
-        if (!adminProfile.contains(e.target)) {
+        if (adminProfile && !adminProfile.contains(e.target)) {
             profileDropdown.classList.remove('active');
         }
     });
 
     // ===== Logout =====
-    document.getElementById('logoutBtn').addEventListener('click', function() {
-        if (confirm('Je, una uhakika unataka kuondoka?')) {
-            auth.logout();
-        }
-    });
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            if (confirm('Je, una uhakika unataka kuondoka?')) {
+                auth.logout();
+            }
+        });
+    }
 
     // ===== Navigation =====
     const navItems = document.querySelectorAll('.nav-item');
@@ -68,449 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
-    // ===== Load Data from API =====
-    async function loadData() {
-        try {
-            // Load dashboard overview
-            const overview = await api.adminGetDashboardOverview();
-            if (overview.success && overview.stats) {
-                renderOverviewStats(overview.stats);
-            }
-
-            // Load recent activities
-            const recent = await api.adminGetRecentActivities(100);
-            if (recent.success && recent.activities) {
-                activities = recent.activities;
-                renderActivityFeed(1);
-                renderActivityDetails(1);
-            }
-
-            // Load user engagement metrics
-            const engagement = await api.adminGetUserEngagementMetrics();
-            if (engagement.success && engagement.metrics) {
-                renderUserEngagement(engagement.metrics);
-            }
-
-            // Load content performance
-            const content = await api.adminGetContentPerformance(30);
-            if (content.success && content.content_performance) {
-                renderContentPerformance(content.content_performance);
-            }
-
-            // Load revenue analytics
-            const revenue = await api.adminGetRevenueAnalytics(30);
-            if (revenue.success && revenue.revenue_analytics) {
-                renderRevenueAnalytics(revenue.revenue_analytics);
-            }
-
-            // Load drop-off analysis
-            const dropoff = await api.adminGetUserDropOffAnalysis();
-            if (dropoff.success && dropoff.drop_off_analysis) {
-                renderDropoffAnalysis(dropoff.drop_off_analysis);
-            }
-
-            // Load activity statistics
-            const stats = await api.adminGetActivityStatistics(7);
-            if (stats.success && stats.statistics) {
-                renderTopActiveUsers(stats.statistics);
-            }
-
-            // Load users for profile modal
-            const usersRes = await api.adminGetUsers();
-            if (usersRes.success && usersRes.users) {
-                usersData = usersRes.users;
-            }
-
-            // Initialize charts
-            initializeCharts();
-
-        } catch (error) {
-            console.error('Error loading dashboard data:', error);
-            showToast('Error loading data: ' + error.message);
-        }
-    }
-
-    // ===== Render Overview Stats =====
-    function renderOverviewStats(stats) {
-        document.getElementById('statTotalUsers').textContent = stats.total_users || 0;
-        document.getElementById('statActiveUsers').textContent = stats.active_users || 0;
-        document.getElementById('statNewUsers').textContent = stats.new_users || 0;
-        document.getElementById('statActiveSubscriptions').textContent = stats.active_subscriptions || 0;
-        document.getElementById('statRevenue').textContent = `TSh ${(stats.total_revenue || 0).toLocaleString()}`;
-        document.getElementById('statAvgWatchTime').textContent = `${stats.avg_watch_time || 0}m`;
-        document.getElementById('statCompletionRate').textContent = `${stats.completion_rate || 0}%`;
-        document.getElementById('statTotalViews').textContent = stats.total_views || 0;
-    }
-
-    // ===== Render Activity Feed =====
-    function renderActivityFeed(page = 1) {
-        const feed = document.getElementById('activityFeed');
-        const searchTerm = document.getElementById('activitySearch').value.toLowerCase();
-        const typeFilter = document.getElementById('activityTypeFilter').value;
-
-        let filtered = activities;
-        
-        if (searchTerm) {
-            filtered = filtered.filter(a => 
-                (a.user_name || '').toLowerCase().includes(searchTerm) || 
-                (a.email || '').toLowerCase().includes(searchTerm)
-            );
-        }
-        
-        if (typeFilter !== 'all') {
-            filtered = filtered.filter(a => a.access_type === typeFilter);
-        }
-
-        const start = (page - 1) * 10;
-        const end = start + 10;
-        const paginated = filtered.slice(start, end);
-
-        if (paginated.length === 0) {
-            feed.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>Hakuna shughuli zilizopatikana</p>
-                </div>
-            `;
-        } else {
-            feed.innerHTML = paginated.map(a => {
-                const typeLabel = getActivityLabel(a.access_type);
-                const icon = getActivityIcon(a.access_type);
-                const statusLabel = a.completed ? 'Imekamilika' : 'Haijakamilika';
-                const statusClass = a.completed ? 'completed' : 'incomplete';
-                const userName = a.full_name || a.user_name || 'Unknown';
-                
-                return `
-                    <div class="activity-item">
-                        <div class="activity-icon ${a.access_type || 'denied'}">
-                            <i class="fas ${icon}"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-text">
-                                <span class="user-name" onclick="window.viewUserProfile(${a.user_id})">${userName}</span>
-                                <span>alitazama</span>
-                                <span class="content-title">"${a.movie_title || 'Unknown'}"</span>
-                                <span class="activity-type ${a.access_type || 'denied'}">${typeLabel}</span>
-                                <span class="activity-status ${statusClass}">${statusLabel}</span>
-                            </div>
-                        </div>
-                        <div class="activity-time">${formatTimeAgo(a.created_at)}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        document.getElementById('activityCount').textContent = `${filtered.length} shughuli`;
-        
-        const totalPages = Math.ceil(filtered.length / 10);
-        document.getElementById('activityPageInfo').textContent = `Ukurasa ${page} wa ${totalPages || 1}`;
-        document.querySelectorAll('#activityPagination .pagination-btn').forEach(btn => {
-            if (btn.dataset.page === 'prev') {
-                btn.disabled = page <= 1;
-            } else if (btn.dataset.page === 'next') {
-                btn.disabled = page >= totalPages;
-            }
-        });
-        
-        currentActivityPage = page;
-    }
-
-    // ===== Render Activity Details =====
-    function renderActivityDetails(page = 1) {
-        const tbody = document.getElementById('activityDetailsBody');
-        const searchTerm = document.getElementById('detailSearch').value.toLowerCase();
-        const typeFilter = document.getElementById('detailTypeFilter').value;
-
-        let filtered = activities;
-        
-        if (searchTerm) {
-            filtered = filtered.filter(a => 
-                (a.full_name || '').toLowerCase().includes(searchTerm) || 
-                (a.email || '').toLowerCase().includes(searchTerm)
-            );
-        }
-        
-        if (typeFilter !== 'all') {
-            filtered = filtered.filter(a => a.access_type === typeFilter);
-        }
-
-        const start = (page - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const paginated = filtered.slice(start, end);
-
-        if (paginated.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="8" class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <p>Hakuna shughuli zilizopatikana</p>
-                    </td>
-                </tr>
-            `;
-        } else {
-            tbody.innerHTML = paginated.map(a => {
-                const avatarColor = getRandomColor(a.user_id);
-                const userName = a.full_name || a.user_name || 'Unknown';
-                const typeLabel = getActivityLabel(a.access_type);
-                const statusLabel = a.completed ? 'Imekamilika' : 'Haijakamilika';
-                const contentType = a.movie_type || 'single';
-                
-                return `
-                    <tr onclick="window.viewUserProfile(${a.user_id})">
-                        <td>
-                            <div class="user-cell">
-                                <div class="user-avatar" style="background:${avatarColor};">${getUserInitials(userName)}</div>
-                                <span>${userName}</span>
-                            </div>
-                        </td>
-                        <td>${a.email || '-'}</td>
-                        <td>${a.movie_title || '-'}</td>
-                        <td><span class="content-type-badge ${contentType}">${contentType === 'series' ? 'Series' : 'Single'}</span></td>
-                        <td><span class="access-type ${a.access_type || 'denied'}">${typeLabel}</span></td>
-                        <td>${formatDuration(a.watched_duration || 0)}</td>
-                        <td><span class="status-badge ${a.completed ? 'status-confirmed' : 'status-incomplete'}">${statusLabel}</span></td>
-                        <td>${new Date(a.created_at).toLocaleString('sw')}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        const totalPages = Math.ceil(filtered.length / itemsPerPage);
-        document.getElementById('detailPageInfo').textContent = `Ukurasa ${page} wa ${totalPages || 1}`;
-        document.querySelectorAll('#detailPagination .pagination-btn').forEach(btn => {
-            if (btn.dataset.page === 'prev') {
-                btn.disabled = page <= 1;
-            } else if (btn.dataset.page === 'next') {
-                btn.disabled = page >= totalPages;
-            }
-        });
-        
-        currentDetailPage = page;
-    }
-
-    // ===== Render User Engagement =====
-    function renderUserEngagement(metrics) {
-        // Conversion metrics
-        const conversion = metrics.conversion || {};
-        document.getElementById('metricFirstTimeWatchers').textContent = conversion.first_time_watchers || 0;
-        document.getElementById('metricCompletedTrials').textContent = conversion.completed_free_trial || 0;
-        document.getElementById('metricConvertedToSub').textContent = conversion.converted_to_subscription || 0;
-        document.getElementById('metricConversionRate').textContent = `${conversion.trial_to_subscription_rate || 0}%`;
-
-        // User segments
-        const segments = metrics.user_segments || [];
-        segments.forEach(segment => {
-            const label = segment.segment || '';
-            const count = segment.count || 0;
-            if (label === 'Active Users') document.getElementById('segmentActive').textContent = count;
-            else if (label === 'At-Risk Users') document.getElementById('segmentAtRisk').textContent = count;
-            else if (label === 'High-Value Users') document.getElementById('segmentHighValue').textContent = count;
-            else if (label === 'Never Watched') document.getElementById('segmentNeverWatched').textContent = count;
-            else if (label === 'Trial Users Not Converted') document.getElementById('segmentTrialNotConverted').textContent = count;
-        });
-
-        // Click handlers for segments
-        document.querySelectorAll('.segment-item').forEach(el => {
-            el.addEventListener('click', function() {
-                const segment = this.dataset.segment;
-                const segmentMap = {
-                    'active': 'Active Users',
-                    'at-risk': 'At-Risk Users',
-                    'high-value': 'High-Value Users',
-                    'never-watched': 'Never Watched',
-                    'trial-not-converted': 'Trial Users Not Converted'
-                };
-                const label = segmentMap[segment] || segment;
-                const count = segments.find(s => s.segment === label)?.count || 0;
-                alert(`Watumizi katika kundi "${label}": ${count}`);
-            });
-        });
-    }
-
-    // ===== Render Content Performance =====
-    function renderContentPerformance(performance) {
-        const sortBy = document.getElementById('contentSortFilter').value;
-        
-        // Most watched
-        const mostWatched = performance.most_watched || [];
-        const topContentList = document.getElementById('topContentList');
-        
-        if (mostWatched.length === 0) {
-            topContentList.innerHTML = '<div class="empty-state">Hakuna data</div>';
-        } else {
-            const sorted = [...mostWatched];
-            if (sortBy === 'views') sorted.sort((a, b) => b.total_views - a.total_views);
-            else if (sortBy === 'completion') sorted.sort((a, b) => (b.completion_rate || 0) - (a.completion_rate || 0));
-            else if (sortBy === 'unique') sorted.sort((a, b) => b.unique_viewers - a.unique_viewers);
-            
-            const maxViews = sorted[0]?.total_views || 1;
-            
-            topContentList.innerHTML = sorted.slice(0, 10).map((item, index) => {
-                const barWidth = (item.total_views / maxViews) * 100;
-                const completionRate = item.completion_rate || 0;
-                return `
-                    <div class="content-item">
-                        <span class="content-rank">#${index + 1}</span>
-                        <div class="content-info">
-                            <div class="content-title">${item.title || 'Unknown'}</div>
-                            <div class="content-meta">${item.category || ''} • ${item.country || ''} • ${item.movie_type || 'single'}</div>
-                            <div class="content-bar">
-                                <div class="content-bar-fill" style="width:${barWidth}%;"></div>
-                            </div>
-                        </div>
-                        <div class="content-stats">
-                            <div class="content-views">${(item.total_views || 0).toLocaleString()}</div>
-                            <div class="content-completion">${Math.round(completionRate)}% ikamilika</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Series performance
-        const seriesList = document.getElementById('seriesList');
-        const seriesPerformance = performance.series_performance || [];
-        
-        if (seriesPerformance.length === 0) {
-            seriesList.innerHTML = '<div class="empty-state">Hakuna series</div>';
-        } else {
-            seriesList.innerHTML = seriesPerformance.slice(0, 10).map(s => `
-                <div class="series-item">
-                    <div class="series-info">
-                        <div class="series-name">${s.title || 'Unknown'}</div>
-                        <div class="series-detail">${s.total_seasons || 0} seasons • ${s.total_episodes || 0} episodes</div>
-                    </div>
-                    <div class="series-views">${(s.total_views || 0).toLocaleString()} views</div>
-                </div>
-            `).join('');
-        }
-
-        // Drop-off analysis
-        const dropoffList = document.getElementById('dropoffList');
-        const dropoffItems = performance.drop_off_points || [];
-        
-        if (dropoffItems.length === 0) {
-            dropoffList.innerHTML = '<div class="empty-state">Hakuna data ya kutosha</div>';
-        } else {
-            dropoffList.innerHTML = dropoffItems.slice(0, 10).map(item => {
-                const rate = 100 - (item.watch_percentage || 0);
-                const rateClass = rate > 70 ? 'high' : rate > 40 ? 'medium' : 'low';
-                return `
-                    <div class="dropoff-item">
-                        <span class="dropoff-title">${item.title || 'Unknown'}</span>
-                        <span class="dropoff-rate ${rateClass}">${Math.round(rate)}%</span>
-                    </div>
-                `;
-            }).join('');
-        }
-    }
-
-    // ===== Render Revenue Analytics =====
-    function renderRevenueAnalytics(analytics) {
-        const period = analytics.period || '30 days';
-        
-        document.getElementById('revTotalRevenue').textContent = `TSh ${(analytics.arpu?.total_revenue || 0).toLocaleString()}`;
-        document.getElementById('revPayingUsers').textContent = analytics.arpu?.paying_users || 0;
-        document.getElementById('revArpu').textContent = `TSh ${(analytics.arpu?.arpu || 0).toLocaleString()}`;
-        document.getElementById('revTotalTransactions').textContent = analytics.revenue_breakdown?.reduce((sum, item) => sum + (item.transactions || 0), 0) || 0;
-        document.getElementById('revFailedPayments').textContent = analytics.failed_payments?.length || 0;
-
-        // Renewal rate
-        const renewal = analytics.subscription_renewal || {};
-        document.getElementById('renewalExpired').textContent = renewal.total_expired || 0;
-        document.getElementById('renewalRenewed').textContent = renewal.renewed || 0;
-        document.getElementById('renewalRate').textContent = `${renewal.renewal_rate || 0}%`;
-
-        // Failed payments list
-        const failedPaymentsList = document.getElementById('failedPaymentsList');
-        const failedItems = analytics.failed_payments || [];
-        
-        if (failedItems.length === 0) {
-            failedPaymentsList.innerHTML = '<div class="empty-state">Hakuna malipo yaliyoshindwa</div>';
-        } else {
-            failedPaymentsList.innerHTML = failedItems.slice(0, 10).map(p => `
-                <div class="failed-payment-item">
-                    <span>${new Date(p.date).toLocaleDateString('sw')}</span>
-                    <span>${p.payment_method || 'Unknown'}</span>
-                    <span>${p.failed_count || 0} failed</span>
-                    <span>TSh ${(p.total_amount || 0).toLocaleString()}</span>
-                </div>
-            `).join('');
-        }
-    }
-
-    // ===== Render Drop-Off Analysis =====
-    function renderDropoffAnalysis(analysis) {
-        // At-risk users
-        const atRiskUsersList = document.getElementById('atRiskUsersList');
-        const atRiskUsers = analysis.users_at_risk || [];
-        
-        if (atRiskUsers.length === 0) {
-            atRiskUsersList.innerHTML = '<div class="empty-state">Hakuna watumizi walio hatarini</div>';
-        } else {
-            atRiskUsersList.innerHTML = atRiskUsers.slice(0, 10).map(u => {
-                const totalStarts = u.total_starts || 0;
-                const completions = u.completions || 0;
-                const daysInactive = u.days_inactive || 0;
-                return `
-                    <div class="dropoff-user-item">
-                        <span>${u.full_name || u.name || 'Unknown'}</span>
-                        <span>${totalStarts} views, ${completions} completed</span>
-                        <span>${daysInactive} days inactive</span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Movies with high drop-off
-        const highDropoffMovies = document.getElementById('highDropoffMovies');
-        const dropoffMovies = analysis.movies_with_high_dropoff || [];
-        
-        if (dropoffMovies.length === 0) {
-            highDropoffMovies.innerHTML = '<div class="empty-state">Hakuna data ya kutosha</div>';
-        } else {
-            highDropoffMovies.innerHTML = dropoffMovies.slice(0, 10).map(m => ({
-                ...m,
-                dropoffRate: m.drop_off_rate || 0
-            })).sort((a, b) => b.dropoffRate - a.dropoffRate).map(m => `
-                <div class="dropoff-movie-item">
-                    <span>${m.title || 'Unknown'}</span>
-                    <span>${m.total_views || 0} views</span>
-                    <span class="dropoff-rate ${m.dropoffRate > 70 ? 'high' : m.dropoffRate > 40 ? 'medium' : 'low'}">${Math.round(m.dropoffRate)}%</span>
-                </div>
-            `).join('');
-        }
-    }
-
-    // ===== Render Top Active Users =====
-    function renderTopActiveUsers(stats) {
-        const topUsersList = document.getElementById('topActiveUsersList');
-        const topUsers = stats.top_active_users || [];
-        
-        if (topUsers.length === 0) {
-            topUsersList.innerHTML = '<div class="empty-state">Hakuna watumizi</div>';
-        } else {
-            topUsersList.innerHTML = topUsers.map((u, index) => {
-                const totalWatchTime = u.total_watch_time || 0;
-                const hours = Math.floor(totalWatchTime / 60);
-                const mins = totalWatchTime % 60;
-                return `
-                    <div class="top-user-item">
-                        <span class="top-user-rank">#${index + 1}</span>
-                        <div class="top-user-info">
-                            <div class="top-user-name">${u.full_name || u.name || 'Unknown'}</div>
-                            <div class="top-user-detail">${u.email || ''}</div>
-                        </div>
-                        <div class="top-user-stats">
-                            <div class="top-user-activity">${u.activity_count || 0} shughuli</div>
-                            <div style="font-size:0.7rem;color:var(--text-secondary);">${u.completions || 0} completed • ${hours}h ${mins}m</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-    }
 
     // ===== Helper Functions =====
     function formatTimeAgo(dateString) {
@@ -566,8 +130,420 @@ document.addEventListener('DOMContentLoaded', function() {
         return colors[Math.abs(seed || 0) % colors.length];
     }
 
+    // ===== Render Overview Stats =====
+    function renderOverviewStats(stats) {
+        const elements = {
+            'statTotalUsers': stats.total_users || 0,
+            'statActiveUsers': stats.active_users || 0,
+            'statNewUsers': stats.new_users || 0,
+            'statActiveSubscriptions': stats.active_subscriptions || 0,
+            'statRevenue': `TSh ${(stats.total_revenue || 0).toLocaleString()}`,
+            'statAvgWatchTime': `${stats.avg_watch_time || 0}m`,
+            'statCompletionRate': `${stats.completion_rate || 0}%`,
+            'statTotalViews': stats.total_views || 0
+        };
+        
+        Object.keys(elements).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = elements[id];
+        });
+    }
+
+    // ===== Render Activity Feed =====
+    function renderActivityFeed(page = 1) {
+        const feed = document.getElementById('activityFeed');
+        const searchTerm = document.getElementById('activitySearch')?.value?.toLowerCase() || '';
+        const typeFilter = document.getElementById('activityTypeFilter')?.value || 'all';
+
+        let filtered = activities || [];
+        
+        if (searchTerm) {
+            filtered = filtered.filter(a => 
+                (a.full_name || a.user_name || '').toLowerCase().includes(searchTerm) || 
+                (a.email || '').toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        if (typeFilter !== 'all') {
+            filtered = filtered.filter(a => a.access_type === typeFilter);
+        }
+
+        const totalItems = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / 10));
+        const start = (page - 1) * 10;
+        const end = Math.min(start + 10, totalItems);
+        const paginated = filtered.slice(start, end);
+
+        if (!feed) return;
+
+        if (paginated.length === 0) {
+            feed.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>Hakuna shughuli zilizopatikana</p>
+                </div>
+            `;
+        } else {
+            feed.innerHTML = paginated.map(a => {
+                const typeLabel = getActivityLabel(a.access_type);
+                const icon = getActivityIcon(a.access_type);
+                const statusLabel = a.completed ? 'Imekamilika' : 'Haijakamilika';
+                const statusClass = a.completed ? 'completed' : 'incomplete';
+                const userName = a.full_name || a.user_name || 'Unknown';
+                
+                return `
+                    <div class="activity-item">
+                        <div class="activity-icon ${a.access_type || 'denied'}">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <span class="user-name" onclick="window.viewUserProfile(${a.user_id})">${userName}</span>
+                                <span>alitazama</span>
+                                <span class="content-title">"${a.movie_title || 'Unknown'}"</span>
+                                <span class="activity-type ${a.access_type || 'denied'}">${typeLabel}</span>
+                                <span class="activity-status ${statusClass}">${statusLabel}</span>
+                            </div>
+                        </div>
+                        <div class="activity-time">${formatTimeAgo(a.created_at)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        const countEl = document.getElementById('activityCount');
+        if (countEl) countEl.textContent = `${totalItems} shughuli`;
+        
+        const pageInfo = document.getElementById('activityPageInfo');
+        if (pageInfo) pageInfo.textContent = `Ukurasa ${page} wa ${totalPages || 1}`;
+        
+        document.querySelectorAll('#activityPagination .pagination-btn').forEach(btn => {
+            if (btn.dataset.page === 'prev') {
+                btn.disabled = page <= 1;
+            } else if (btn.dataset.page === 'next') {
+                btn.disabled = page >= totalPages;
+            }
+        });
+        
+        currentActivityPage = page;
+    }
+
+    // ===== Render Activity Details =====
+    function renderActivityDetails(page = 1) {
+        const tbody = document.getElementById('activityDetailsBody');
+        const searchTerm = document.getElementById('detailSearch')?.value?.toLowerCase() || '';
+        const typeFilter = document.getElementById('detailTypeFilter')?.value || 'all';
+
+        let filtered = activities || [];
+        
+        if (searchTerm) {
+            filtered = filtered.filter(a => 
+                (a.full_name || a.user_name || '').toLowerCase().includes(searchTerm) || 
+                (a.email || '').toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        if (typeFilter !== 'all') {
+            filtered = filtered.filter(a => a.access_type === typeFilter);
+        }
+
+        const totalItems = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+        const start = (page - 1) * itemsPerPage;
+        const end = Math.min(start + itemsPerPage, totalItems);
+        const paginated = filtered.slice(start, end);
+
+        if (!tbody) return;
+
+        if (paginated.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Hakuna shughuli zilizopatikana</p>
+                    </td>
+                </tr>
+            `;
+        } else {
+            tbody.innerHTML = paginated.map(a => {
+                const avatarColor = getRandomColor(a.user_id);
+                const userName = a.full_name || a.user_name || 'Unknown';
+                const typeLabel = getActivityLabel(a.access_type);
+                const statusLabel = a.completed ? 'Imekamilika' : 'Haijakamilika';
+                const contentType = a.movie_type || 'single';
+                
+                return `
+                    <tr onclick="window.viewUserProfile(${a.user_id})" style="cursor:pointer;">
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar" style="background:${avatarColor};">${getUserInitials(userName)}</div>
+                                <span>${userName}</span>
+                            </div>
+                        </td>
+                        <td>${a.email || '-'}</td>
+                        <td>${a.movie_title || '-'}</td>
+                        <td><span class="content-type-badge ${contentType}">${contentType === 'series' ? 'Series' : 'Single'}</span></td>
+                        <td><span class="access-type ${a.access_type || 'denied'}">${typeLabel}</span></td>
+                        <td>${formatDuration(a.watched_duration || 0)}</td>
+                        <td><span class="status-badge ${a.completed ? 'status-confirmed' : 'status-incomplete'}">${statusLabel}</span></td>
+                        <td>${new Date(a.created_at).toLocaleString('sw')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        const pageInfo = document.getElementById('detailPageInfo');
+        if (pageInfo) pageInfo.textContent = `Ukurasa ${page} wa ${totalPages || 1}`;
+        
+        document.querySelectorAll('#detailPagination .pagination-btn').forEach(btn => {
+            if (btn.dataset.page === 'prev') {
+                btn.disabled = page <= 1;
+            } else if (btn.dataset.page === 'next') {
+                btn.disabled = page >= totalPages;
+            }
+        });
+        
+        currentDetailPage = page;
+    }
+
+    // ===== Render User Engagement =====
+    function renderUserEngagement(metrics) {
+        const conversion = metrics.conversion || {};
+        document.getElementById('metricFirstTimeWatchers').textContent = conversion.first_time_watchers || 0;
+        document.getElementById('metricCompletedTrials').textContent = conversion.completed_free_trial || 0;
+        document.getElementById('metricConvertedToSub').textContent = conversion.converted_to_subscription || 0;
+        document.getElementById('metricConversionRate').textContent = `${conversion.trial_to_subscription_rate || 0}%`;
+
+        const segments = metrics.user_segments || [];
+        const segmentMap = {
+            'Active Users': 'segmentActive',
+            'At-Risk Users': 'segmentAtRisk',
+            'High-Value Users': 'segmentHighValue',
+            'Never Watched': 'segmentNeverWatched',
+            'Trial Users Not Converted': 'segmentTrialNotConverted'
+        };
+        
+        segments.forEach(segment => {
+            const label = segment.segment || '';
+            const count = segment.count || 0;
+            const elId = segmentMap[label];
+            if (elId) {
+                const el = document.getElementById(elId);
+                if (el) el.textContent = count;
+            }
+        });
+
+        // Click handlers for segments
+        document.querySelectorAll('.segment-item').forEach(el => {
+            el.addEventListener('click', function() {
+                const segment = this.dataset.segment;
+                const labelMap = {
+                    'active': 'Active Users',
+                    'at-risk': 'At-Risk Users',
+                    'high-value': 'High-Value Users',
+                    'never-watched': 'Never Watched',
+                    'trial-not-converted': 'Trial Users Not Converted'
+                };
+                const label = labelMap[segment] || segment;
+                const count = segments.find(s => s.segment === label)?.count || 0;
+                alert(`Watumizi katika kundi "${label}": ${count}`);
+            });
+        });
+    }
+
+    // ===== Render Content Performance =====
+    function renderContentPerformance(performance) {
+        const sortBy = document.getElementById('contentSortFilter')?.value || 'views';
+        
+        const mostWatched = performance.most_watched || [];
+        const topContentList = document.getElementById('topContentList');
+        
+        if (topContentList) {
+            if (mostWatched.length === 0) {
+                topContentList.innerHTML = '<div class="empty-state">Hakuna data</div>';
+            } else {
+                const sorted = [...mostWatched];
+                if (sortBy === 'views') sorted.sort((a, b) => (b.total_views || 0) - (a.total_views || 0));
+                else if (sortBy === 'completion') sorted.sort((a, b) => (b.completion_rate || 0) - (a.completion_rate || 0));
+                else if (sortBy === 'unique') sorted.sort((a, b) => (b.unique_viewers || 0) - (a.unique_viewers || 0));
+                
+                const maxViews = sorted[0]?.total_views || 1;
+                
+                topContentList.innerHTML = sorted.slice(0, 10).map((item, index) => {
+                    const barWidth = Math.min((item.total_views / maxViews) * 100, 100);
+                    const completionRate = item.completion_rate || 0;
+                    return `
+                        <div class="content-item">
+                            <span class="content-rank">#${index + 1}</span>
+                            <div class="content-info">
+                                <div class="content-title">${item.title || 'Unknown'}</div>
+                                <div class="content-meta">${item.category || ''} • ${item.country || ''} • ${item.movie_type || 'single'}</div>
+                                <div class="content-bar">
+                                    <div class="content-bar-fill" style="width:${barWidth}%;"></div>
+                                </div>
+                            </div>
+                            <div class="content-stats">
+                                <div class="content-views">${(item.total_views || 0).toLocaleString()}</div>
+                                <div class="content-completion">${Math.round(completionRate)}%</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Series performance
+        const seriesList = document.getElementById('seriesList');
+        const seriesPerformance = performance.series_performance || [];
+        
+        if (seriesList) {
+            if (seriesPerformance.length === 0) {
+                seriesList.innerHTML = '<div class="empty-state">Hakuna series</div>';
+            } else {
+                seriesList.innerHTML = seriesPerformance.slice(0, 10).map(s => `
+                    <div class="series-item">
+                        <div class="series-info">
+                            <div class="series-name">${s.title || 'Unknown'}</div>
+                            <div class="series-detail">${s.total_seasons || 0} seasons • ${s.total_episodes || 0} episodes</div>
+                        </div>
+                        <div class="series-views">${(s.total_views || 0).toLocaleString()} views</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Drop-off analysis
+        const dropoffList = document.getElementById('dropoffList');
+        const dropoffItems = performance.drop_off_points || [];
+        
+        if (dropoffList) {
+            if (dropoffItems.length === 0) {
+                dropoffList.innerHTML = '<div class="empty-state">Hakuna data ya kutosha</div>';
+            } else {
+                dropoffList.innerHTML = dropoffItems.slice(0, 10).map(item => {
+                    const rate = 100 - (item.watch_percentage || 0);
+                    const rateClass = rate > 70 ? 'high' : rate > 40 ? 'medium' : 'low';
+                    return `
+                        <div class="dropoff-item">
+                            <span class="dropoff-title">${item.title || 'Unknown'}</span>
+                            <span class="dropoff-rate ${rateClass}">${Math.round(rate)}%</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+    }
+
+    // ===== Render Revenue Analytics =====
+    function renderRevenueAnalytics(analytics) {
+        document.getElementById('revTotalRevenue').textContent = `TSh ${(analytics.arpu?.total_revenue || 0).toLocaleString()}`;
+        document.getElementById('revPayingUsers').textContent = analytics.arpu?.paying_users || 0;
+        document.getElementById('revArpu').textContent = `TSh ${(analytics.arpu?.arpu || 0).toLocaleString()}`;
+        document.getElementById('revTotalTransactions').textContent = analytics.revenue_breakdown?.reduce((sum, item) => sum + (item.transactions || 0), 0) || 0;
+        document.getElementById('revFailedPayments').textContent = analytics.failed_payments?.length || 0;
+
+        const renewal = analytics.subscription_renewal || {};
+        document.getElementById('renewalExpired').textContent = renewal.total_expired || 0;
+        document.getElementById('renewalRenewed').textContent = renewal.renewed || 0;
+        document.getElementById('renewalRate').textContent = `${renewal.renewal_rate || 0}%`;
+
+        const failedPaymentsList = document.getElementById('failedPaymentsList');
+        const failedItems = analytics.failed_payments || [];
+        
+        if (failedPaymentsList) {
+            if (failedItems.length === 0) {
+                failedPaymentsList.innerHTML = '<div class="empty-state">Hakuna malipo yaliyoshindwa</div>';
+            } else {
+                failedPaymentsList.innerHTML = failedItems.slice(0, 10).map(p => `
+                    <div class="failed-payment-item">
+                        <span>${new Date(p.date).toLocaleDateString('sw')}</span>
+                        <span>${p.payment_method || 'Unknown'}</span>
+                        <span>${p.failed_count || 0} failed</span>
+                        <span>TSh ${(p.total_amount || 0).toLocaleString()}</span>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+
+    // ===== Render Drop-Off Analysis =====
+    function renderDropoffAnalysis(analysis) {
+        const atRiskUsersList = document.getElementById('atRiskUsersList');
+        const atRiskUsers = analysis.users_at_risk || [];
+        
+        if (atRiskUsersList) {
+            if (atRiskUsers.length === 0) {
+                atRiskUsersList.innerHTML = '<div class="empty-state">Hakuna watumizi walio hatarini</div>';
+            } else {
+                atRiskUsersList.innerHTML = atRiskUsers.slice(0, 10).map(u => {
+                    const totalStarts = u.total_starts || 0;
+                    const completions = u.completions || 0;
+                    const daysInactive = u.days_inactive || 0;
+                    return `
+                        <div class="dropoff-user-item">
+                            <span>${u.full_name || u.name || 'Unknown'}</span>
+                            <span>${totalStarts} views, ${completions} completed</span>
+                            <span>${daysInactive} days inactive</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        const highDropoffMovies = document.getElementById('highDropoffMovies');
+        const dropoffMovies = analysis.movies_with_high_dropoff || [];
+        
+        if (highDropoffMovies) {
+            if (dropoffMovies.length === 0) {
+                highDropoffMovies.innerHTML = '<div class="empty-state">Hakuna data ya kutosha</div>';
+            } else {
+                highDropoffMovies.innerHTML = dropoffMovies.slice(0, 10).map(m => ({
+                    ...m,
+                    dropoffRate: m.drop_off_rate || 0
+                })).sort((a, b) => b.dropoffRate - a.dropoffRate).map(m => `
+                    <div class="dropoff-movie-item">
+                        <span>${m.title || 'Unknown'}</span>
+                        <span>${m.total_views || 0} views</span>
+                        <span class="dropoff-rate ${m.dropoffRate > 70 ? 'high' : m.dropoffRate > 40 ? 'medium' : 'low'}">${Math.round(m.dropoffRate)}%</span>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+
+    // ===== Render Top Active Users =====
+    function renderTopActiveUsers(stats) {
+        const topUsersList = document.getElementById('topActiveUsersList');
+        const topUsers = stats.top_active_users || [];
+        
+        if (topUsersList) {
+            if (topUsers.length === 0) {
+                topUsersList.innerHTML = '<div class="empty-state">Hakuna watumizi</div>';
+            } else {
+                topUsersList.innerHTML = topUsers.map((u, index) => {
+                    const totalWatchTime = u.total_watch_time || 0;
+                    const hours = Math.floor(totalWatchTime / 60);
+                    const mins = totalWatchTime % 60;
+                    return `
+                        <div class="top-user-item">
+                            <span class="top-user-rank">#${index + 1}</span>
+                            <div class="top-user-info">
+                                <div class="top-user-name">${u.full_name || u.name || 'Unknown'}</div>
+                                <div class="top-user-detail">${u.email || ''}</div>
+                            </div>
+                            <div class="top-user-stats">
+                                <div class="top-user-activity">${u.activity_count || 0} shughuli</div>
+                                <div style="font-size:0.7rem;color:var(--text-secondary);">${u.completions || 0} completed • ${hours}h ${mins}m</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+    }
+
     // ===== User Profile Modal =====
-    window.viewUserProfile = async function(userId) {
+    async function viewUserProfile(userId) {
         try {
             const response = await api.adminGetUserDetails(userId);
             if (response.success && response.user) {
@@ -583,30 +559,26 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error loading user details:', error);
             alert('Error loading user details: ' + error.message);
         }
-    };
+    }
 
     function renderProfileTab(tab) {
         if (!selectedUser) return;
         
         const user = selectedUser;
         
-        // Update tab buttons
         document.querySelectorAll('.profile-tab').forEach(t => {
             t.classList.toggle('active', t.dataset.tab === tab);
         });
         
-        // Hide all tab contents
         document.querySelectorAll('.profile-tab-content').forEach(el => {
             el.style.display = 'none';
         });
         
-        // Show selected tab
         const tabContent = document.getElementById(`profile${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
         if (tabContent) {
             tabContent.style.display = 'block';
         }
         
-        // Render content based on tab
         switch(tab) {
             case 'basic':
                 renderProfileBasic(user);
@@ -634,94 +606,98 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderProfileBasic(user) {
         const container = document.getElementById('profileBasic');
+        if (!container) return;
+        
         const avatarColor = getRandomColor(user.id);
         const registered = new Date(user.created_at).toLocaleString('sw');
         const firstWatch = user.first_watch_at ? new Date(user.first_watch_at).toLocaleString('sw') : 'Bado hajatazama';
         
         container.innerHTML = `
             <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem;">
-                <div class="profile-avatar-large" style="background:${avatarColor}">
+                <div class="profile-avatar-large" style="background:${avatarColor}; width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#fff;">
                     ${user.profile_image ? 
                         `<img src="${user.profile_image}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />` : 
                         getUserInitials(user.full_name)
                     }
                 </div>
                 <div>
-                    <h3 style="font-size:1.3rem;">${user.full_name || 'Unknown'}</h3>
-                    <p style="color:var(--text-secondary);">${user.email || 'No email'}</p>
-                    <p style="color:var(--text-secondary);">${user.phone || 'N/A'}</p>
+                    <h3 style="font-size:1.3rem;margin:0;">${user.full_name || 'Unknown'}</h3>
+                    <p style="color:var(--text-secondary);margin:0.2rem 0;">${user.email || 'No email'}</p>
+                    <p style="color:var(--text-secondary);margin:0;">${user.phone || 'N/A'}</p>
                 </div>
             </div>
-            <div class="profile-info-grid">
+            <div class="profile-info-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Nchi</span>
-                    <span class="profile-info-value">${user.country || 'N/A'}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Nchi</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${user.country || 'N/A'}</span>
                 </div>
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Eneo</span>
-                    <span class="profile-info-value">${user.region || 'N/A'}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Eneo</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${user.region || 'N/A'}</span>
                 </div>
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Tarehe ya Usajili</span>
-                    <span class="profile-info-value">${registered}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Tarehe ya Usajili</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${registered}</span>
                 </div>
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Tarehe ya Kutazama Kwanza</span>
-                    <span class="profile-info-value">${firstWatch}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Tarehe ya Kutazama Kwanza</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${firstWatch}</span>
                 </div>
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Ameangalia</span>
-                    <span class="profile-info-value">${user.has_watched_before ? 'Ndiyo' : 'Hapana'}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Ameangalia</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${user.has_watched_before ? 'Ndiyo' : 'Hapana'}</span>
                 </div>
             </div>
         `;
     }
 
     function renderProfileWatchSummary(user) {
-        const summary = user.watch_summary || {};
         const container = document.getElementById('profileWatchSummary');
+        if (!container) return;
         
+        const summary = user.watch_summary || {};
         container.innerHTML = `
-            <div class="profile-info-grid">
+            <div class="profile-info-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Jumla ya Kutazama</span>
-                    <span class="profile-info-value">${summary.total_views || 0}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Jumla ya Kutazama</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${summary.total_views || 0}</span>
                 </div>
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Zilizokamilika</span>
-                    <span class="profile-info-value">${summary.completed_views || 0}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Zilizokamilika</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${summary.completed_views || 0}</span>
                 </div>
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Jumla ya Muda</span>
-                    <span class="profile-info-value">${summary.total_watch_time_minutes || 0}m</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Jumla ya Muda</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${summary.total_watch_time_minutes || 0}m</span>
                 </div>
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Wastani wa Muda</span>
-                    <span class="profile-info-value">${summary.avg_watch_time_minutes || 0}m</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Wastani wa Muda</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${summary.avg_watch_time_minutes || 0}m</span>
                 </div>
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Movie Pekee</span>
-                    <span class="profile-info-value">${summary.unique_movies_watched || 0}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Movie Pekee</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${summary.unique_movies_watched || 0}</span>
                 </div>
             </div>
         `;
     }
 
     function renderProfileWatchHistory(user) {
-        const history = user.watch_history || [];
         const container = document.getElementById('profileWatchHistory');
+        if (!container) return;
         
+        const history = user.watch_history || [];
         if (history.length === 0) {
             container.innerHTML = '<div class="empty-state">Hakuna historia ya kutazama</div>';
         } else {
             container.innerHTML = `
-                <div class="watch-history-list">
+                <div class="watch-history-list" style="display:grid;gap:0.5rem;max-height:300px;overflow-y:auto;">
                     ${history.slice(0, 50).map(a => `
-                        <div class="watch-history-item">
+                        <div class="watch-history-item" style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.04);">
                             <span>${a.movie_title || 'Unknown'}</span>
-                            <span>${formatDuration(a.watched_duration || 0)}</span>
-                            <span class="status-badge ${a.completed ? 'status-confirmed' : 'status-incomplete'}">${a.completed ? 'Imekamilika' : 'Haijakamilika'}</span>
-                            <span style="font-size:0.75rem;color:var(--text-muted);">${new Date(a.created_at).toLocaleString('sw')}</span>
+                            <span style="font-size:0.85rem;color:var(--text-secondary);">${formatDuration(a.watched_duration || 0)}</span>
+                            <span class="status-badge ${a.completed ? 'status-confirmed' : 'status-incomplete'}" style="font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:999px;">${a.completed ? 'Imekamilika' : 'Haijakamilika'}</span>
+                            <span style="font-size:0.7rem;color:var(--text-muted);">${new Date(a.created_at).toLocaleString('sw')}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -730,20 +706,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderProfileSubscriptions(user) {
-        const subscriptions = user.subscriptions || [];
         const container = document.getElementById('profileSubscriptions');
+        if (!container) return;
         
+        const subscriptions = user.subscriptions || [];
         if (subscriptions.length === 0) {
             container.innerHTML = '<div class="empty-state">Hakuna usajili</div>';
         } else {
             container.innerHTML = `
-                <div class="watch-history-list">
+                <div class="watch-history-list" style="display:grid;gap:0.5rem;max-height:300px;overflow-y:auto;">
                     ${subscriptions.map(s => `
-                        <div class="watch-history-item">
+                        <div class="watch-history-item" style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.04);">
                             <span>${s.plan_name || 'Plan'}</span>
-                            <span>TSh ${(s.price || 0).toLocaleString()}</span>
-                            <span class="status-badge ${s.status === 'active' ? 'status-active' : 'status-inactive'}">${s.status === 'active' ? 'Inatumika' : 'Imekwisha'}</span>
-                            <span style="font-size:0.75rem;color:var(--text-muted);">${new Date(s.created_at).toLocaleDateString('sw')} - ${new Date(s.expires_at).toLocaleDateString('sw')}</span>
+                            <span style="font-size:0.85rem;color:var(--text-secondary);">TSh ${(s.price || 0).toLocaleString()}</span>
+                            <span class="status-badge ${s.status === 'active' ? 'status-confirmed' : 'status-incomplete'}" style="font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:999px;">${s.status === 'active' ? 'Inatumika' : 'Imekwisha'}</span>
+                            <span style="font-size:0.7rem;color:var(--text-muted);">${new Date(s.created_at).toLocaleDateString('sw')} - ${new Date(s.expires_at).toLocaleDateString('sw')}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -752,20 +729,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderProfilePurchases(user) {
-        const purchases = user.purchases || [];
         const container = document.getElementById('profilePurchases');
+        if (!container) return;
         
+        const purchases = user.purchases || [];
         if (purchases.length === 0) {
             container.innerHTML = '<div class="empty-state">Hakuna manunuzi</div>';
         } else {
             container.innerHTML = `
-                <div class="watch-history-list">
+                <div class="watch-history-list" style="display:grid;gap:0.5rem;max-height:300px;overflow-y:auto;">
                     ${purchases.map(p => `
-                        <div class="watch-history-item">
+                        <div class="watch-history-item" style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.04);">
                             <span>${p.movie_title || 'Movie'}</span>
-                            <span>TSh ${(p.amount || 0).toLocaleString()}</span>
-                            <span class="status-badge ${p.status === 'completed' ? 'status-confirmed' : 'status-incomplete'}">${p.status === 'completed' ? 'Imekamilika' : 'Inasubiri'}</span>
-                            <span style="font-size:0.75rem;color:var(--text-muted);">${new Date(p.created_at).toLocaleString('sw')}</span>
+                            <span style="font-size:0.85rem;color:var(--text-secondary);">TSh ${(p.amount || 0).toLocaleString()}</span>
+                            <span class="status-badge ${p.status === 'completed' ? 'status-confirmed' : 'status-incomplete'}" style="font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:999px;">${p.status === 'completed' ? 'Imekamilika' : 'Inasubiri'}</span>
+                            <span style="font-size:0.7rem;color:var(--text-muted);">${new Date(p.created_at).toLocaleString('sw')}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -774,21 +752,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderProfilePayments(user) {
-        const payments = user.payments || [];
         const container = document.getElementById('profilePayments');
+        if (!container) return;
         
+        const payments = user.payments || [];
         if (payments.length === 0) {
             container.innerHTML = '<div class="empty-state">Hakuna historia ya malipo</div>';
         } else {
             container.innerHTML = `
-                <div class="watch-history-list">
+                <div class="watch-history-list" style="display:grid;gap:0.5rem;max-height:300px;overflow-y:auto;">
                     ${payments.map(p => `
-                        <div class="watch-history-item">
+                        <div class="watch-history-item" style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0.75rem;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.04);">
                             <span>${p.payment_reference || 'N/A'}</span>
-                            <span>TSh ${(p.amount || 0).toLocaleString()}</span>
-                            <span>${p.payment_method || 'Unknown'}</span>
-                            <span class="status-badge ${p.status === 'paid' ? 'status-confirmed' : 'status-incomplete'}">${p.status === 'paid' ? 'Imekamilika' : p.status}</span>
-                            <span style="font-size:0.75rem;color:var(--text-muted);">${new Date(p.created_at).toLocaleString('sw')}</span>
+                            <span style="font-size:0.85rem;color:var(--text-secondary);">TSh ${(p.amount || 0).toLocaleString()}</span>
+                            <span style="font-size:0.7rem;color:var(--text-secondary);">${p.payment_method || 'Unknown'}</span>
+                            <span class="status-badge ${p.status === 'paid' ? 'status-confirmed' : 'status-incomplete'}" style="font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:999px;">${p.status === 'paid' ? 'Imekamilika' : p.status}</span>
+                            <span style="font-size:0.7rem;color:var(--text-muted);">${new Date(p.created_at).toLocaleString('sw')}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -797,18 +776,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function renderProfileAccessAttempts(user) {
-        const attempts = user.access_attempts || {};
         const container = document.getElementById('profileAccessAttempts');
+        if (!container) return;
         
+        const attempts = user.access_attempts || {};
         container.innerHTML = `
-            <div class="profile-info-grid">
+            <div class="profile-info-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Majaribio yaliyokataliwa</span>
-                    <span class="profile-info-value">${attempts.total_denied || 0}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Majaribio yaliyokataliwa</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${attempts.total_denied || 0}</span>
                 </div>
                 <div class="profile-info-item">
-                    <span class="profile-info-label">Movie pekee zilizokataliwa</span>
-                    <span class="profile-info-value">${attempts.unique_movies_denied || 0}</span>
+                    <span class="profile-info-label" style="font-size:0.75rem;color:var(--text-secondary);display:block;">Movie pekee zilizokataliwa</span>
+                    <span class="profile-info-value" style="color:var(--text-primary);">${attempts.unique_movies_denied || 0}</span>
                 </div>
             </div>
         `;
@@ -838,70 +818,100 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ===== View User Details Button =====
-    document.getElementById('viewUserDetailsBtn').addEventListener('click', function() {
-        const selectedRow = document.querySelector('#activityDetailsBody tr:hover');
-        if (selectedRow) {
-            const onclick = selectedRow.getAttribute('onclick');
-            if (onclick) {
-                const match = onclick.match(/viewUserProfile\((\d+)\)/);
-                if (match) {
-                    window.viewUserProfile(parseInt(match[1]));
+    const viewUserDetailsBtn = document.getElementById('viewUserDetailsBtn');
+    if (viewUserDetailsBtn) {
+        viewUserDetailsBtn.addEventListener('click', function() {
+            const selectedRow = document.querySelector('#activityDetailsBody tr:hover');
+            if (selectedRow) {
+                const onclick = selectedRow.getAttribute('onclick');
+                if (onclick) {
+                    const match = onclick.match(/viewUserProfile\((\d+)\)/);
+                    if (match) {
+                        viewUserProfile(parseInt(match[1]));
+                    }
                 }
+            } else {
+                alert('Tafadhali chagua mtumiaji kutoka kwenye orodha');
             }
-        } else {
-            alert('Tafadhali chagua mtumiaji kutoka kwenye orodha');
-        }
-    });
+        });
+    }
 
     // ===== Event Listeners =====
-    document.getElementById('activitySearch').addEventListener('input', function() {
-        renderActivityFeed(1);
-    });
+    const activitySearch = document.getElementById('activitySearch');
+    if (activitySearch) {
+        activitySearch.addEventListener('input', function() {
+            renderActivityFeed(1);
+        });
+    }
 
-    document.getElementById('activityTypeFilter').addEventListener('change', function() {
-        renderActivityFeed(1);
-    });
+    const activityTypeFilter = document.getElementById('activityTypeFilter');
+    if (activityTypeFilter) {
+        activityTypeFilter.addEventListener('change', function() {
+            renderActivityFeed(1);
+        });
+    }
 
     document.querySelectorAll('#activityPagination .pagination-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             if (this.dataset.page === 'prev') {
-                renderActivityFeed(currentActivityPage - 1);
+                renderActivityFeed(Math.max(1, currentActivityPage - 1));
             } else if (this.dataset.page === 'next') {
                 renderActivityFeed(currentActivityPage + 1);
             }
         });
     });
 
-    document.getElementById('detailSearch').addEventListener('input', function() {
-        renderActivityDetails(1);
-    });
+    const detailSearch = document.getElementById('detailSearch');
+    if (detailSearch) {
+        detailSearch.addEventListener('input', function() {
+            renderActivityDetails(1);
+        });
+    }
 
-    document.getElementById('detailTypeFilter').addEventListener('change', function() {
-        renderActivityDetails(1);
-    });
+    const detailTypeFilter = document.getElementById('detailTypeFilter');
+    if (detailTypeFilter) {
+        detailTypeFilter.addEventListener('change', function() {
+            renderActivityDetails(1);
+        });
+    }
 
     document.querySelectorAll('#detailPagination .pagination-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             if (this.dataset.page === 'prev') {
-                renderActivityDetails(currentDetailPage - 1);
+                renderActivityDetails(Math.max(1, currentDetailPage - 1));
             } else if (this.dataset.page === 'next') {
                 renderActivityDetails(currentDetailPage + 1);
             }
         });
     });
 
-    document.getElementById('contentSortFilter').addEventListener('change', function() {
-        // Re-render content performance with new sort
-        loadData();
-    });
-
-    document.getElementById('refreshBtn').addEventListener('click', function() {
-        const icon = this.querySelector('i');
-        icon.classList.add('fa-spin');
-        loadData().finally(() => {
-            icon.classList.remove('fa-spin');
+    const contentSortFilter = document.getElementById('contentSortFilter');
+    if (contentSortFilter) {
+        contentSortFilter.addEventListener('change', function() {
+            loadData();
         });
-    });
+    }
+
+    // ===== REFRESH BUTTON - FIXED =====
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.add('fa-spin');
+            }
+            this.disabled = true;
+            this.textContent = '⏳ Inapakia...';
+            
+            loadData().finally(() => {
+                if (icon) {
+                    icon.classList.remove('fa-spin');
+                }
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-sync-alt"></i><span>Refresh</span>';
+            });
+        });
+    }
 
     // ===== Initialize Charts =====
     function initializeCharts() {
@@ -1224,8 +1234,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Watch Time Distribution Chart
             const distributionCtx = document.getElementById('watchTimeDistributionChart');
-            if (distributionCtx && stats.success && stats.statistics.activity_by_type) {
-                const types = stats.statistics.activity_by_type || [];
+            if (distributionCtx) {
+                // Try to get data from stats if available
                 const distribution = {
                     '0-1m': 0,
                     '1-5m': 0,
@@ -1235,15 +1245,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     '60+m': 0
                 };
                 
-                types.forEach(t => {
-                    const avg = t.avg_duration || 0;
-                    if (avg <= 1) distribution['0-1m'] += t.total || 0;
-                    else if (avg <= 5) distribution['1-5m'] += t.total || 0;
-                    else if (avg <= 10) distribution['5-10m'] += t.total || 0;
-                    else if (avg <= 30) distribution['10-30m'] += t.total || 0;
-                    else if (avg <= 60) distribution['30-60m'] += t.total || 0;
-                    else distribution['60+m'] += t.total || 0;
-                });
+                if (stats.success && stats.statistics.activity_by_type) {
+                    const types = stats.statistics.activity_by_type || [];
+                    types.forEach(t => {
+                        const avg = t.avg_duration || 0;
+                        const count = t.total || 0;
+                        if (avg <= 1) distribution['0-1m'] += count;
+                        else if (avg <= 5) distribution['1-5m'] += count;
+                        else if (avg <= 10) distribution['5-10m'] += count;
+                        else if (avg <= 30) distribution['10-30m'] += count;
+                        else if (avg <= 60) distribution['30-60m'] += count;
+                        else distribution['60+m'] += count;
+                    });
+                }
                 
                 charts.distribution = new Chart(distributionCtx, {
                     type: 'bar',
@@ -1271,6 +1285,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }).catch(error => {
             console.warn('Error initializing charts:', error);
         });
+    }
+
+    // ===== MAIN LOAD DATA FUNCTION =====
+    async function loadData() {
+        try {
+            // Load dashboard overview
+            const overview = await api.adminGetDashboardOverview();
+            if (overview.success && overview.stats) {
+                renderOverviewStats(overview.stats);
+            }
+
+            // Load recent activities
+            const recent = await api.adminGetRecentActivities(100);
+            if (recent.success && recent.activities) {
+                activities = recent.activities;
+                renderActivityFeed(currentActivityPage);
+                renderActivityDetails(currentDetailPage);
+            }
+
+            // Load user engagement metrics
+            const engagement = await api.adminGetUserEngagementMetrics();
+            if (engagement.success && engagement.metrics) {
+                renderUserEngagement(engagement.metrics);
+            }
+
+            // Load content performance
+            const content = await api.adminGetContentPerformance(30);
+            if (content.success && content.content_performance) {
+                renderContentPerformance(content.content_performance);
+            }
+
+            // Load revenue analytics
+            const revenue = await api.adminGetRevenueAnalytics(30);
+            if (revenue.success && revenue.revenue_analytics) {
+                renderRevenueAnalytics(revenue.revenue_analytics);
+            }
+
+            // Load drop-off analysis
+            const dropoff = await api.adminGetUserDropOffAnalysis();
+            if (dropoff.success && dropoff.drop_off_analysis) {
+                renderDropoffAnalysis(dropoff.drop_off_analysis);
+            }
+
+            // Load activity statistics
+            const stats = await api.adminGetActivityStatistics(7);
+            if (stats.success && stats.statistics) {
+                renderTopActiveUsers(stats.statistics);
+            }
+
+            // Load users for profile modal
+            const usersRes = await api.adminGetUsers();
+            if (usersRes.success && usersRes.users) {
+                usersData = usersRes.users;
+            }
+
+            // Initialize charts
+            initializeCharts();
+
+            showToast('✅ Data imeboreshwa!');
+
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+            showToast('❌ Error loading data: ' + error.message);
+        }
     }
 
     // ===== Toast Notification =====
@@ -1307,8 +1385,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const thirtyDaysAgo = new Date(now);
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         
-        document.getElementById('dateFrom').value = thirtyDaysAgo.toISOString().split('T')[0];
-        document.getElementById('dateTo').value = now.toISOString().split('T')[0];
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        if (dateFrom) dateFrom.value = thirtyDaysAgo.toISOString().split('T')[0];
+        if (dateTo) dateTo.value = now.toISOString().split('T')[0];
     }
 
     // ===== Initialize =====
@@ -1319,7 +1399,8 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         const user = auth.getUser();
         if (user && user.email) {
-            document.getElementById('adminEmail').textContent = user.email;
+            const emailEl = document.getElementById('adminEmail');
+            if (emailEl) emailEl.textContent = user.email;
         }
     } catch (e) {}
 
