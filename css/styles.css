@@ -390,6 +390,7 @@ input::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }
 
+/* Fixed dropdown styles - making options visible */
 select {
   -webkit-appearance: none;
   appearance: none;
@@ -397,8 +398,24 @@ select {
   background-position: right 1rem center;
   padding-right: 2.6rem;
   color: var(--ink-1);
-  background-color: var(--surface-1);
+  background-color: #1a1f2c;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='10' viewBox='0 0 14 10'><polyline points='1,1 7,7 13,1' stroke='%23ffffff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+
+/* Style for dropdown options to ensure visibility */
+select option {
+  background-color: #1a1f2c;
+  color: #ffffff;
+  padding: 8px 12px;
+}
+
+select option:hover {
+  background-color: #2a2f4c;
+}
+
+/* Style for select when it's focused or has a value */
+select:not([value=""]) {
+  color: #ffffff;
 }
 
 input:focus-visible,
