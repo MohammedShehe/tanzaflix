@@ -463,6 +463,31 @@ class ApiService {
     async adminGetActivityStatistics(period = 7) {
         return this.request(`/admin/activities/statistics?period=${period}`);
     }
+
+
+    // ==================== CONTINUE WATCHING ====================
+    async getContinueWatching(limit = 10) {
+        return this.request(`/user/movies/continue-watching?limit=${limit}`);
+    }
+
+    async updateProgress(movieId, episodeId, watchedDuration, totalDuration) {
+        return this.request('/user/movies/progress', {
+            method: 'POST',
+            body: JSON.stringify({ 
+                movieId, 
+                episodeId, 
+                watchedDuration, 
+                totalDuration 
+            }),
+        });
+    }
+
+    async markCompleted(movieId, episodeId = null) {
+        return this.request('/user/movies/mark-completed', {
+            method: 'POST',
+            body: JSON.stringify({ movieId, episodeId }),
+        });
+    }
 }
 
 const api = new ApiService();

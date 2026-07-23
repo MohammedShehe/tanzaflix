@@ -1,4 +1,4 @@
-// js/dashboard.js - Dashboard Page with Professional Watch History
+// js/dashboard.js - Dashboard Page with Continue Watching
 
 import api from './api.js';
 import auth from './auth.js';
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const userNameEl = document.getElementById('userName');
     const accountStatusEl = document.getElementById('accountStatusMessage');
     const watchHistoryContainer = document.getElementById('watchHistoryContainer');
+    const continueWatchingContainer = document.getElementById('continueWatchingContainer');
 
     // ===== Logout Button =====
     document.getElementById('logoutBtnHeader').addEventListener('click', function() {
@@ -80,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     function handleSubscribeClick(e) {
         const btn = e.currentTarget;
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;"></span> Inaelekeza...';
+        btn.innerHTML = '<span class="spinner"></span> Inaelekeza...';
         btn.disabled = true;
         btn.style.cursor = 'wait';
         btn.style.opacity = '0.7';
@@ -90,13 +91,87 @@ document.addEventListener('DOMContentLoaded', async function() {
         }, 500);
     }
 
+    // ===== Render Continue Watching =====
+    function renderContinueWatching(items) {
+        if (!continueWatchingContainer) return;
+        
+        if (!items || items.length === 0) {
+            continueWatchingContainer.innerHTML = `
+                <div class="dash-continue-empty">
+                    🎬 Hakuna movie unayoendelea. <a href="movies.html">Anza kutazama</a>
+                </div>
+            `;
+            return;
+        }
+
+        // Show only first 4 items
+        const recent = items.slice(0, 4);
+
+        continueWatchingContainer.innerHTML = `
+            <div class="dash-continue-grid">
+                ${recent.map(item => {
+                    const progress = Math.round(item.percentage || 0);
+                    const title = item.display_title || item.movie_title;
+                    const timeAgo = formatTimeAgo(item.last_updated);
+                    const isClickable = item.canWatch;
+
+                    // Get badge
+                    let badgeLabel = '📺 Akaunti';
+                    if (item.accessType === 'paid_single') {
+                        badgeLabel = '💳 Imenunuliwa';
+                    } else if (item.accessType === 'free_trial_possible') {
+                        badgeLabel = '🎁 Majaribio';
+                    } else if (!isClickable) {
+                        badgeLabel = '🔒 Imefungwa';
+                    }
+
+                    const thumbnailHtml = item.poster
+                        ? `<img src="${item.poster}" alt="${title}" loading="lazy" />`
+                        : `<div class="thumb-placeholder">🎬</div>`;
+
+                    const onClickAttr = isClickable
+                        ? `onclick="window.location.href='player.html?movie=${item.movie_id}${item.episode_id ? '&episode=' + item.episode_id : ''}&resume=${item.resume_at || 0}'"`
+                        : '';
+
+                    return `
+                        <div class="dash-continue-item ${isClickable ? 'is-clickable' : 'is-locked'}" ${onClickAttr}>
+                            <div class="dash-continue-thumb">
+                                ${thumbnailHtml}
+                                <div class="dash-continue-progress">
+                                    <div class="dash-continue-progress-fill" style="width: ${Math.min(100, progress)}%;"></div>
+                                </div>
+                                ${isClickable ? `
+                                    <div class="dash-continue-overlay">
+                                        <div class="play-icon">▶</div>
+                                    </div>
+                                ` : `
+                                    <div class="dash-continue-lock">
+                                        <span>🔒</span>
+                                    </div>
+                                `}
+                            </div>
+                            <div class="dash-continue-body">
+                                <div class="dash-continue-title">${title}</div>
+                                <div class="dash-continue-meta">
+                                    <span class="percentage">${progress}%</span>
+                                    <span>${timeAgo}</span>
+                                    <span class="dash-continue-badge">${badgeLabel}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
     // ===== Render Watch History =====
     function renderWatchHistory(history) {
         if (!history || history.length === 0) {
             watchHistoryContainer.innerHTML = `
                 <div class="watch-history-empty">
                     <p>📭 Bado haujatazama movie yoyote.</p>
-                    <p style="font-size:0.85rem;color:#818cf8;margin-top:0.3rem;">
+                    <p style="font-size:0.85rem;color:#818cf8;">
                         Nenda kwenye <a href="movies.html" style="color:#818cf8;text-decoration:underline;">Filamu</a> uanze kutazama!
                     </p>
                 </div>
@@ -104,7 +179,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        // Get last 5 entries
         const recent = history.slice(0, 5);
 
         watchHistoryContainer.innerHTML = `
@@ -129,7 +203,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                             <div class="history-info">
                                 <div class="history-title">${title}${episodeInfo}</div>
                                 <div class="history-meta">
-                                    ${formatTimeAgo(item.created_at)}${durationHtml}
+                                    <span>${formatTimeAgo(item.created_at)}${durationHtml}</span>
                                     <span class="history-badge ${statusClass}">${statusLabel}</span>
                                     <span class="history-badge ${badgeClass}">${typeLabel}</span>
                                 </div>
@@ -154,31 +228,29 @@ document.addEventListener('DOMContentLoaded', async function() {
         const planName = profileData?.planName || user?.planName || '';
         const planPrice = profileData?.planPrice || user?.planPrice || '';
 
-        // Set user name for account card
         userNameEl.textContent = fullName;
 
-        // Determine account status message
         let statusMessage = '';
         if (isSubscribed) {
             const priceDisplay = planPrice ? ` (${planPrice})` : '';
             statusMessage = `
                 <p><strong>✅ Mwanachama (Subscriber):</strong> Karibu tena, ${fullName}!</p>
-                <p style="color: #4ade80; font-size: 0.9rem; margin-top: 0.3rem;">
+                <p style="color: #4ade80; font-size: 0.9rem;">
                     <strong>Mpango:</strong> ${planName || 'Active Subscription'} ${priceDisplay}
                 </p>
-                <p style="color: #9aa2d7; font-size: 0.9rem; margin-top: 0.5rem;">
+                <p style="color: #9aa2d7; font-size: 0.9rem;">
                     Endelea na Sehemu ulipoishia jana, au gundua tamthilia mpya zilizoongezwa wiki hii.
                 </p>
             `;
         } else {
             statusMessage = `
                 <p><strong>👤 Mgeni (Guest):</strong> Karibu TanzaFlix! Jiunge leo uanze kufuatilia michezo ya filamu inayovuma zaidi Tanzania.</p>
-                <p style="color: #fbbf24; font-size: 0.9rem; margin: 0.3rem 0 0.5rem;">
+                <p style="color: #fbbf24; font-size: 0.9rem;">
                     ⭐ <strong>Tazama sehemu ya kwanza (Episode 1) ya tamthilia yoyote bure kabisa!</strong>
                 </p>
                 <a href="subscription.html" class="subscribe-btn-dashboard" style="display: inline-block; margin-top: 0.3rem; padding: 0.5rem 1.2rem; 
                     background: linear-gradient(135deg, #6c63ff, #ff4eb0); border-radius: 999px; color: #fff; 
-                    text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: transform 0.2s ease, opacity 0.2s ease;
+                    text-decoration: none; font-weight: 600; font-size: 0.85rem;
                     border: none; cursor: pointer; font-family: inherit;">
                     ⭐ Jisajili Sasa
                 </a>
@@ -186,13 +258,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         accountStatusEl.innerHTML = statusMessage;
 
-        // Add click handler to subscribe button
         const subscribeBtn = document.querySelector('.subscribe-btn-dashboard');
         if (subscribeBtn) {
             subscribeBtn.addEventListener('click', handleSubscribeClick);
         }
 
-        // Render profile card
         const initial = getUserInitials(fullName);
         const avatarHtml = profileImage 
             ? `<img class="profile-avatar" src="${profileImage}" alt="${fullName}" />`
@@ -252,6 +322,24 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    // ===== Load Continue Watching =====
+    async function loadContinueWatching() {
+        try {
+            const response = await api.getContinueWatching(10);
+            if (response.success && response.data && response.data.items) {
+                renderContinueWatching(response.data.items);
+                return response.data.items;
+            } else {
+                renderContinueWatching([]);
+                return [];
+            }
+        } catch (error) {
+            console.warn('Could not load continue watching:', error);
+            renderContinueWatching([]);
+            return [];
+        }
+    }
+
     // ===== Load Subscription Status =====
     async function loadSubscriptionStatus() {
         try {
@@ -264,7 +352,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 currentUser.planPrice = sub.price || sub.planPrice || '';
                 localStorage.setItem('tanzaflix_user', JSON.stringify(currentUser));
                 
-                // Re-render profile with updated data
                 const profileData = await api.getProfile();
                 if (profileData.success && profileData.user) {
                     renderProfile(profileData.user);
@@ -282,6 +369,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ===== Load Everything =====
     await loadProfile();
+    await loadContinueWatching();
     await loadWatchHistory();
     await loadSubscriptionStatus();
 
@@ -311,7 +399,6 @@ function closeModals() {
     });
 }
 
-// Navigation click handlers
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
@@ -328,7 +415,6 @@ document.querySelectorAll('.nav-link').forEach(link => {
     });
 });
 
-// Modal close handlers
 document.querySelectorAll('.modal-close').forEach(btn => {
     btn.addEventListener('click', closeModals);
 });

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TanzaFlix | Player</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+        .player-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 3rem;
+            background: #0a0a1a;
+            min-height: 100vh;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .video-wrapper video {
+            width: 100%;
+            display: block;
+            max-height: 80vh;
+            background: #000;
+        }
+
+        .player-info h1 {
+            font-size: 1.4rem;
+            margin: 0 0 0.35rem;
+            color: #f0f3ff;
+            line-height: 1.3;
+        }
+
+        .player-info .meta {
+            color: #9aa2d7;
+            font-size: 0.9rem;
+        }
+
+        .player-controls {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 1.1rem;
+        }
+
+        .resume-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 1rem;
+            background: rgba(108, 99, 255, 0.15);
+            border: 1px solid rgba(108, 99, 255, 0.25);
+            border-radius: 999px;
+            color: #818cf8;
+            font-size: 0.82rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .resume-badge .time {
+            color: #f0f3ff;
+        }
+
+        .video-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: #f0f3ff;
+            z-index: 10;
+            font-size: 1.1rem;
+        }
+
+        .video-loading .spinner {
+            width: 46px;
+            height: 46px;
+            border: 3px solid rgba(108, 99, 255, 0.2);
+            border-top-color: #6c63ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .video-loading.hidden {
+            display: none;
+        }
+
+        .progress-saved {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 0.6rem 1.3rem;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 999px;
+            color: #4ade80;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .progress-saved.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .player-container { padding: 0.75rem 0.75rem 2.5rem; }
+            .player-info h1 { font-size: 1.15rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="video-wrapper">
+            <div id="loadingOverlay" class="video-loading">
+                <div style="text-align:center;">
+                    <div class="spinner"></div>
+                    <p>Inapakia video...</p>
+                </div>
+            </div>
+            
+            <video id="videoPlayer" controls autoplay preload="auto">
+                <p>Browser yako haisaidii video.</p>
+            </video>
+        </div>
+
+        <div class="player-panel player-info">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem;">
+                <div>
+                    <h1 id="movieTitle">Inapakia...</h1>
+                    <div class="meta" id="movieMeta">Loading details...</div>
+                </div>
+                <div id="resumeBadgeContainer"></div>
+            </div>
+            <div class="player-controls">
+                <a href="dashboard.html" class="btn-nav">← Rudi Dashibodi</a>
+                <a href="movies.html" class="btn-nav">📂 Filamu Zote</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="progressToast" class="progress-saved">✅ Progress imehifadhiwa</div>
+
+    <script type="module">
+        import api from './js/api.js';
+        import auth from './js/auth.js';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!auth.checkAuth()) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('movie');
+            const episodeId = urlParams.get('episode');
+            const resumeTime = parseFloat(urlParams.get('resume')) || 0;
+
+            const video = document.getElementById('videoPlayer');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const movieTitle = document.getElementById('movieTitle');
+            const movieMeta = document.getElementById('movieMeta');
+            const resumeBadgeContainer = document.getElementById('resumeBadgeContainer');
+            const progressToast = document.getElementById('progressToast');
+
+            let lastSavedTime = 0;
+            let saveInterval = null;
+            let isSeeking = false;
+            let totalDuration = 0;
+            let progressSaveTimeout = null;
+
+            function formatTime(seconds) {
+                if (!seconds || seconds < 0) return '0:00';
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = Math.floor(seconds % 60);
+                if (h > 0) {
+                    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                }
+                return `${m}:${String(s).padStart(2, '0')}`;
+            }
+
+            function showProgressSaved() {
+                progressToast.classList.add('show');
+                clearTimeout(progressSaveTimeout);
+                progressSaveTimeout = setTimeout(() => {
+                    progressToast.classList.remove('show');
+                }, 2000);
+            }
+
+            async function saveProgress(watchedDuration, totalDuration) {
+                if (isSeeking) return;
+                
+                const currentTime = Math.floor(watchedDuration);
+                if (currentTime - lastSavedTime < 5) return;
+                lastSavedTime = currentTime;
+
+                try {
+                    await api.updateProgress(
+                        movieId,
+                        episodeId || null,
+                        currentTime,
+                        totalDuration || null
+                    );
+                    showProgressSaved();
+                    console.log(`✅ Progress saved: ${formatTime(currentTime)} / ${formatTime(totalDuration)}`);
+                } catch (error) {
+                    console.warn('Failed to save progress:', error);
+                }
+            }
+
+            async function loadContent() {
+                try {
+                    const response = await api.getUserMovie(movieId);
+                    
+                    if (!response.success) {
+                        throw new Error(response.message || 'Failed to load movie');
+                    }
+
+                    const movie = response.movie;
+                    movieTitle.textContent = movie.title || 'Movie';
+
+                    let metaParts = [];
+                    if (movie.movie_type) metaParts.push(movie.movie_type);
+                    if (movie.category) metaParts.push(movie.category);
+                    if (movie.year) metaParts.push(movie.year);
+                    if (movie.country) metaParts.push(movie.country);
+                    if (movie.language) metaParts.push(movie.language);
+                    movieMeta.textContent = metaParts.join(' • ') || 'TanzaFlix';
+
+                    let videoUrl = null;
+                    let episodeInfo = '';
+
+                    if (episodeId && movie.seasons) {
+                        for (const season of movie.seasons) {
+                            for (const episode of season.episodes) {
+                                if (episode.id == episodeId) {
+                                    videoUrl = episode.video_url;
+                                    episodeInfo = ` - S${season.season_number}E${episode.episode_number}: ${episode.episode_title || 'Episode'}`;
+                                    totalDuration = parseEpisodeDuration(episode.duration);
+                                    break;
+                                }
+                            }
+                            if (videoUrl) break;
+                        }
+                        if (videoUrl) {
+                            movieTitle.textContent = `${movie.title}${episodeInfo}`;
+                        }
+                    }
+
+                    if (!videoUrl) {
+                        videoUrl = movie.video;
+                        totalDuration = parseMovieTime(movie.movie_time);
+                    }
+
+                    if (!videoUrl) {
+                        throw new Error('Video URL not found for this content');
+                    }
+
+                    video.src = videoUrl;
+                    video.load();
+
+                    // Handle resume
+                    if (resumeTime > 0) {
+                        resumeBadgeContainer.innerHTML = `
+                            <div class="resume-badge">
+                                ▶️ Endelea kutoka <span class="time">${formatTime(resumeTime)}</span>
+                            </div>
+                        `;
+
+                        video.addEventListener('loadedmetadata', function onLoaded() {
+                            video.removeEventListener('loadedmetadata', onLoaded);
+                            
+                            if (resumeTime < video.duration) {
+                                video.currentTime = resumeTime;
+                                console.log(`⏩ Resumed at ${formatTime(resumeTime)}`);
+                            } else {
+                                console.log('⚠️ Resume time exceeds duration, starting from beginning');
+                            }
+                            
+                            loadingOverlay.classList.add('hidden');
+                        });
+
+                        if (video.readyState >= 1) {
+                            if (resumeTime < video.duration) {
+                                video.currentTime = resumeTime;
+                            }
+                            loadingOverlay.classList.add('hidden');
+                        }
+                    } else {
+                        video.addEventListener('loadedmetadata', function() {
+                            loadingOverlay.classList.add('hidden');
+                        });
+                        if (video.readyState >= 1) {
+                            loadingOverlay.classList.add('hidden');
+                        }
+                    }
+
+                    // Progress saving
+                    video.addEventListener('timeupdate', function() {
+                        if (!video.paused && !isSeeking) {
+                            saveProgress(video.currentTime, video.duration || totalDuration);
+                        }
+                    });
+
+                    video.addEventListener('pause', function() {
+                        saveProgress(video.currentTime, video.duration || totalDuration);
+                    });
+
+                    video.addEventListener('seeking', function() {
+                        isSeeking = true;
+                    });
+
+                    video.addEventListener('seeked', function() {
+                        isSeeking = false;
+                        saveProgress(video.currentTime, video.duration || totalDuration);
+                    });
+
+                    document.addEventListener('visibilitychange', function() {
+                        if (document.hidden && !video.paused) {
+                            saveProgress(video.currentTime, video.duration || totalDuration);
+                        }
+                    });
+
+                    window.addEventListener('beforeunload', function() {
+                        if (!video.paused) {
+                            saveProgress(video.currentTime, video.duration || totalDuration);
+                        }
+                    });
+
+                    saveInterval = setInterval(() => {
+                        if (!video.paused && !isSeeking) {
+                            saveProgress(video.currentTime, video.duration || totalDuration);
+                        }
+                    }, 10000);
+
+                    video.addEventListener('ended', async function() {
+                        try {
+                            await api.markCompleted(movieId, episodeId || null);
+                            console.log('🎉 Movie marked as completed!');
+                            const badge = document.createElement('div');
+                            badge.className = 'resume-badge';
+                            badge.style.background = 'rgba(34, 197, 94, 0.15)';
+                            badge.style.borderColor = 'rgba(34, 197, 94, 0.25)';
+                            badge.style.color = '#4ade80';
+                            badge.innerHTML = '✅ Imekamilika!';
+                            resumeBadgeContainer.appendChild(badge);
+                        } catch (error) {
+                            console.warn('Failed to mark as completed:', error);
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Error loading content:', error);
+                    loadingOverlay.classList.add('hidden');
+                    movieTitle.textContent = '⚠️ Hitilafu';
+                    movieMeta.textContent = error.message || 'Imeshindwa kupakia video';
+                }
+            }
+
+            function parseEpisodeDuration(duration) {
+                if (!duration) return 0;
+                const match = duration.match(/(\d+)\s*(h|m|s)/i);
+                if (match) {
+                    const value = parseInt(match[1]);
+                    const unit = match[2].toLowerCase();
+                    if (unit === 'h') return value * 3600;
+                    if (unit === 'm') return value * 60;
+                    return value;
+                }
+                return parseInt(duration) || 0;
+            }
+
+            function parseMovieTime(movieTime) {
+                if (!movieTime) return 0;
+                let total = 0;
+                const hours = movieTime.match(/(\d+)\s*h/);
+                const mins = movieTime.match(/(\d+)\s*m/);
+                if (hours) total += parseInt(hours[1]) * 3600;
+                if (mins) total += parseInt(mins[1]) * 60;
+                return total || parseInt(movieTime) || 0;
+            }
+
+            window.addEventListener('beforeunload', function() {
+                if (saveInterval) {
+                    clearInterval(saveInterval);
+                }
+            });
+
+            await loadContent();
+        });
+    </script>
+</body>
+</html>

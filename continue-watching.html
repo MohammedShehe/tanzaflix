@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Endelea Kutazama - TanzaFlix</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+        .continue-watching-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            border-radius: var(--radius-xl);
+            background: var(--surface-2);
+            border: 1px solid var(--line-soft);
+            backdrop-filter: blur(18px);
+        }
+
+        .page-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #f0f3ff;
+            margin: 0;
+        }
+
+        .page-header .subtitle {
+            color: #9aa2d7;
+            font-size: 0.95rem;
+            margin: 0.3rem 0 0;
+        }
+
+        .continue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .continue-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .continue-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(108, 99, 255, 0.3);
+        }
+
+        .continue-card .thumbnail {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background: #1a1a2e;
+            overflow: hidden;
+        }
+
+        .continue-card .thumbnail img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .continue-card .thumbnail .placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            font-size: 3rem;
+            color: #6c63ff;
+            background: linear-gradient(135deg, #1a1a2e, #2d2b4e);
+        }
+
+        .progress-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6c63ff, #ff4eb0);
+            transition: width 0.5s ease;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .continue-card:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .play-overlay .play-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(108, 99, 255, 0.85);
+            display: grid;
+            place-items: center;
+            font-size: 1.8rem;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(108, 99, 255, 0.4);
+            backdrop-filter: blur(4px);
+            transition: transform 0.3s ease;
+        }
+
+        .continue-card:hover .play-overlay .play-icon {
+            transform: scale(1.1);
+        }
+
+        .lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: #f87171;
+            font-size: 0.85rem;
+            font-weight: 600;
+            backdrop-filter: blur(2px);
+        }
+
+        .lock-overlay span {
+            background: rgba(239, 68, 68, 0.2);
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .continue-card .card-content {
+            padding: 1rem 1.2rem 1.2rem;
+        }
+
+        .continue-card .card-title {
+            font-weight: 600;
+            color: #f0f3ff;
+            font-size: 0.95rem;
+            margin: 0 0 0.5rem;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .continue-card .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .continue-card .card-meta .percentage {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #6c63ff;
+        }
+
+        .continue-card .card-meta .time-ago {
+            font-size: 0.75rem;
+            color: #9aa2d7;
+        }
+
+        .badge {
+            font-size: 0.65rem;
+            padding: 0.18rem 0.6rem;
+            border-radius: 999px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-subscription {
+            background: rgba(108, 99, 255, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(108, 99, 255, 0.1);
+        }
+
+        .badge-purchased {
+            background: rgba(251, 146, 60, 0.15);
+            color: #fb923c;
+            border: 1px solid rgba(251, 146, 60, 0.1);
+        }
+
+        .badge-free-trial {
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.1);
+        }
+
+        .badge-denied {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.1);
+        }
+
+        .badge-completed {
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #9aa2d7;
+            border-radius: var(--radius-xl);
+            background: var(--surface-1);
+            border: 1px solid var(--line-soft);
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            color: #f0f3ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            max-width: 400px;
+            margin: 0 auto 1.5rem;
+            color: #9aa2d7;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 0.7rem 2rem;
+            background: linear-gradient(135deg, #6c63ff, #ff4eb0);
+            border-radius: 999px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: var(--shadow-brand);
+            transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-brand-hover);
+            opacity: 0.96;
+        }
+
+        .loading-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .loading-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-card .loading-thumbnail {
+            width: 100%;
+            padding-top: 56.25%;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .loading-card .loading-content {
+            padding: 1rem 1.2rem 1.2rem;
+        }
+
+        .loading-card .loading-title {
+            height: 18px;
+            width: 80%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-card .loading-meta {
+            height: 14px;
+            width: 60%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .continue-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 1rem;
+            }
+            .page-header {
+                padding: 1.2rem 1.4rem;
+            }
+            .page-header h1 {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .continue-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.8rem;
+            }
+            .continue-card .card-content {
+                padding: 0.7rem 0.8rem 0.8rem;
+            }
+            .continue-card .card-title {
+                font-size: 0.8rem;
+            }
+            .continue-card .card-meta .percentage {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="continue-watching-page">
+        <div class="page-header">
+            <div>
+                <h1>🔄 Endelea Kutazama</h1>
+                <p class="subtitle">Endelea pale ulipoishia</p>
+            </div>
+            <a href="dashboard.html" class="btn-nav">← Rudi Dashibodi</a>
+        </div>
+
+        <div id="loadingState" class="loading-grid">
+            <div class="loading-card"><div class="loading-thumbnail"></div><div class="loading-content"><div class="loading-title"></div><div class="loading-meta"></div></div></div>
+            <div class="loading-card"><div class="loading-thumbnail"></div><div class="loading-content"><div class="loading-title"></div><div class="loading-meta"></div></div></div>
+            <div class="loading-card"><div class="loading-thumbnail"></div><div class="loading-content"><div class="loading-title"></div><div class="loading-meta"></div></div></div>
+            <div class="loading-card"><div class="loading-thumbnail"></div><div class="loading-content"><div class="loading-title"></div><div class="loading-meta"></div></div></div>
+            <div class="loading-card"><div class="loading-thumbnail"></div><div class="loading-content"><div class="loading-title"></div><div class="loading-meta"></div></div></div>
+            <div class="loading-card"><div class="loading-thumbnail"></div><div class="loading-content"><div class="loading-title"></div><div class="loading-meta"></div></div></div>
+        </div>
+
+        <div id="contentContainer" style="display: none;">
+            <div id="continueGrid" class="continue-grid"></div>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="icon">🎬</div>
+                <h3>Hujaanza kutazama bado</h3>
+                <p>Anza kutazama movie au mfululizo na utaweza kuendelea pale ulipoishia.</p>
+                <a href="movies.html" class="btn-primary">🗂️ Nenda kwenye Filamu</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import api from './js/api.js';
+        import auth from './js/auth.js';
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!auth.checkAuth()) return;
+
+            const loadingState = document.getElementById('loadingState');
+            const contentContainer = document.getElementById('contentContainer');
+            const continueGrid = document.getElementById('continueGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            function formatTimeAgo(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+                if (diffMins < 1) return 'Sasa hivi';
+                if (diffMins < 60) return `${diffMins} dk iliyopita`;
+                if (diffHours < 24) return `${diffHours} sa iliyopita`;
+                if (diffDays < 7) return `${diffDays} siku iliyopita`;
+                return date.toLocaleDateString('sw');
+            }
+
+            function getBadge(accessType) {
+                const badges = {
+                    'subscription': { class: 'badge-subscription', label: '📺 Akaunti' },
+                    'paid_single': { class: 'badge-purchased', label: '💳 Imenunuliwa' },
+                    'free_trial_possible': { class: 'badge-free-trial', label: '🎁 Majaribio' },
+                    'denied': { class: 'badge-denied', label: '🔒 Imefungwa' }
+                };
+                return badges[accessType] || { class: 'badge-subscription', label: '📺 Akaunti' };
+            }
+
+            function renderItems(items) {
+                if (!items || items.length === 0) {
+                    loadingState.style.display = 'none';
+                    contentContainer.style.display = 'block';
+                    emptyState.style.display = 'block';
+                    continueGrid.innerHTML = '';
+                    return;
+                }
+
+                continueGrid.innerHTML = items.map(item => {
+                    const progress = Math.round(item.percentage || 0);
+                    const badge = getBadge(item.accessType);
+                    const isClickable = item.canWatch;
+
+                    const thumbnailHtml = item.poster 
+                        ? `<img src="${item.poster}" alt="${item.movie_title}" loading="lazy" />`
+                        : `<div class="placeholder">🎬</div>`;
+
+                    const onClickAttr = isClickable 
+                        ? `onclick="window.location.href='player.html?movie=${item.movie_id}${item.episode_id ? '&episode=' + item.episode_id : ''}&resume=${item.resume_at || 0}'"` 
+                        : '';
+
+                    return `
+                        <div class="continue-card" ${onClickAttr} style="${!isClickable ? 'cursor: not-allowed; opacity: 0.7;' : ''}">
+                            <div class="thumbnail">
+                                ${thumbnailHtml}
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: ${Math.min(100, progress)}%;"></div>
+                                </div>
+                                ${isClickable ? `
+                                    <div class="play-overlay">
+                                        <div class="play-icon">▶</div>
+                                    </div>
+                                ` : `
+                                    <div class="lock-overlay">
+                                        <span>🔒</span>
+                                    </div>
+                                `}
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">${item.display_title || item.movie_title}</div>
+                                <div class="card-meta">
+                                    <span class="percentage">${progress}%</span>
+                                    <span class="time-ago">${formatTimeAgo(item.last_updated)}</span>
+                                    <span class="badge ${badge.class}">${badge.label}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                loadingState.style.display = 'none';
+                contentContainer.style.display = 'block';
+                emptyState.style.display = 'none';
+            }
+
+            try {
+                const response = await api.getContinueWatching(50);
+                if (response.success && response.data) {
+                    renderItems(response.data.items);
+                } else {
+                    throw new Error(response.message || 'Failed to load data');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                loadingState.style.display = 'none';
+                contentContainer.style.display = 'block';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h3').textContent = '⚠️ Hitilafu';
+                emptyState.querySelector('p').textContent = 'Tumekumbana na tatizo. Tafadhali jaribu tena baadaye.';
+            }
+        });
+    </script>
+</body>
+</html>
