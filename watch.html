@@ -192,7 +192,7 @@
       border-color: rgba(108, 99, 255, 0.2);
     }
 
-    /* ===== Paywall Overlay (Subscribe / Buy gate) ===== */
+    /* ===== Paywall Overlay - FIXED ===== */
     .paywall-overlay {
       position: absolute;
       inset: 0;
@@ -206,24 +206,37 @@
       text-align: center;
     }
 
+    /* When paywall is visible, make it interactive */
+    .paywall-overlay[style*="display: flex"] {
+      pointer-events: auto;
+      cursor: default;
+    }
+
+    /* Ensure all children can receive pointer events */
+    .paywall-overlay * {
+      pointer-events: auto !important;
+    }
+
     .paywall-box {
-      max-width: 420px;
+      max-width: 480px;
       width: 100%;
-      padding: 32px 28px;
-      border-radius: 20px;
+      padding: 40px 32px;
+      border-radius: 24px;
       background: rgba(12, 17, 37, 0.98);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+      position: relative;
+      z-index: 501;
     }
 
     .paywall-icon {
-      font-size: 2.4rem;
+      font-size: 3rem;
       margin-bottom: 12px;
     }
 
     .paywall-box h2 {
-      margin: 0 0 12px;
-      font-size: 1.25rem;
+      margin: 0 0 8px;
+      font-size: 1.3rem;
       color: #fff;
     }
 
@@ -239,6 +252,256 @@
       flex-wrap: wrap;
       gap: 10px;
       justify-content: center;
+    }
+
+    .paywall-actions .watch-btn {
+      min-width: 140px;
+      justify-content: center;
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      position: relative;
+      z-index: 502;
+    }
+
+    /* ===== Payment Modal ===== */
+    .payment-modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      animation: fadeIn 0.3s ease;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .payment-modal-content {
+      background: linear-gradient(145deg, #141b33, #1a2140);
+      margin: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+      animation: slideUp 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .payment-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .payment-modal-header h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: #fff;
+    }
+
+    .payment-modal-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 28px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+      padding: 0 8px;
+    }
+
+    .payment-modal-close:hover {
+      color: #fff;
+    }
+
+    .payment-amount-display {
+      text-align: center;
+      padding: 16px;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .payment-amount-display .amount {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #f5f7ff;
+    }
+
+    .payment-amount-display .label {
+      font-size: 0.85rem;
+      color: var(--watch-muted);
+    }
+
+    .payment-method-section {
+      margin-bottom: 20px;
+    }
+
+    .payment-method-section label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #9aa2d7;
+      margin-bottom: 10px;
+    }
+
+    .payment-method-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .payment-method-btn {
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      color: var(--watch-text);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .payment-method-btn:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    .payment-method-btn.active {
+      border-color: #6c63ff;
+      background: rgba(108,99,255,0.1);
+      box-shadow: 0 0 20px rgba(108,99,255,0.05);
+    }
+
+    .payment-method-btn .icon {
+      font-size: 1.2rem;
+    }
+
+    .payment-form-group {
+      margin-bottom: 16px;
+    }
+
+    .payment-form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #9aa2d7;
+      margin-bottom: 5px;
+    }
+
+    .payment-form-group input,
+    .payment-form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      color: #f5f7ff;
+      font-size: 0.95rem;
+      transition: border-color 0.2s ease;
+      font-family: inherit;
+    }
+
+    .payment-form-group input:focus,
+    .payment-form-group select:focus {
+      outline: none;
+      border-color: #6c63ff;
+    }
+
+    .payment-form-group input::placeholder {
+      color: #4a5070;
+    }
+
+    .payment-form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .payment-submit-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, #6c63ff, #ff4eb0);
+      color: #fff;
+      margin-top: 8px;
+    }
+
+    .payment-submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(108,99,255,0.3);
+    }
+
+    .payment-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .payment-status {
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin: 12px 0;
+      display: none;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .payment-status.success {
+      display: block;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.2);
+      color: #4ade80;
+    }
+
+    .payment-status.error {
+      display: block;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #f87171;
+    }
+
+    .payment-status.info {
+      display: block;
+      background: rgba(108,99,255,0.1);
+      border: 1px solid rgba(108,99,255,0.2);
+      color: #818cf8;
+    }
+
+    .payment-loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     /* ===== Movie Info Panel ===== */
@@ -294,7 +557,7 @@
       white-space: nowrap;
     }
 
-    /* ===== Series / Season / Episode Navigation ===== */
+    /* ===== Series Navigation ===== */
     .series-nav {
       margin-top: 16px;
       padding: 16px 20px;
@@ -448,6 +711,26 @@
       background: rgba(255, 255, 255, 0.14);
     }
 
+    .watch-btn-subscribe {
+      background: linear-gradient(135deg, #6c63ff, #ff4eb0);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(108, 99, 255, 0.3);
+    }
+
+    .watch-btn-subscribe:hover {
+      box-shadow: 0 12px 32px rgba(108, 99, 255, 0.45);
+    }
+
+    .watch-btn-buy {
+      background: linear-gradient(135deg, #f59e0b, #f97316);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+    }
+
+    .watch-btn-buy:hover {
+      box-shadow: 0 12px 32px rgba(245, 158, 11, 0.45);
+    }
+
     /* ===== Rating Bar ===== */
     .rating-row {
       display: flex;
@@ -563,8 +846,8 @@
       color: var(--watch-muted);
     }
 
-    /* ===== Modal Styles ===== */
-    .modal {
+    /* ===== About Modal ===== */
+    .about-modal {
       position: fixed;
       z-index: 1000;
       left: 0;
@@ -575,13 +858,15 @@
       backdrop-filter: blur(8px);
       animation: fadeIn 0.3s ease;
       display: none;
+      align-items: center;
+      justify-content: center;
     }
 
-    .modal-content {
+    .about-modal-content {
       background: linear-gradient(135deg, #11152d, #1a1f3a);
-      margin: 10% auto;
+      margin: 20px;
       padding: 30px;
-      width: 90%;
+      width: 100%;
       max-width: 550px;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.08);
@@ -589,32 +874,33 @@
       animation: slideUp 0.3s ease;
       max-height: 80vh;
       overflow-y: auto;
+      position: relative;
     }
 
-    .modal-content h2 {
+    .about-modal-content h2 {
       color: #fff;
       margin-top: 0;
       font-size: 1.4rem;
     }
 
-    .modal-content h3 {
+    .about-modal-content h3 {
       color: #c7d2fe;
       margin-top: 1.2rem;
       font-size: 1.05rem;
     }
 
-    .modal-content p {
+    .about-modal-content p {
       color: #cbd5e1;
       line-height: 1.7;
     }
 
-    .modal-content ul {
+    .about-modal-content ul {
       color: #cbd5e1;
       line-height: 2;
       padding-left: 1.2rem;
     }
 
-    .modal-close {
+    .about-modal-close {
       color: #94a3b8;
       float: right;
       font-size: 28px;
@@ -625,7 +911,7 @@
       border: none;
     }
 
-    .modal-close:hover {
+    .about-modal-close:hover {
       color: #fff;
     }
 
@@ -639,6 +925,197 @@
       to { transform: translateY(0); opacity: 1; }
     }
 
+    /* ===== Rating Modal ===== */
+    .rating-modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.3s ease;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rating-modal-content {
+      background: linear-gradient(135deg, #11152d, #1a1f3a);
+      margin: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+      animation: slideUp 0.3s ease;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .rating-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .rating-modal-header h3 {
+      margin: 0;
+      color: #fff;
+      font-size: 1.2rem;
+    }
+
+    .rating-modal-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    .rating-modal-close:hover {
+      color: #fff;
+    }
+
+    .rating-stars {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 12px 0;
+    }
+
+    .rating-star-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.1);
+      background: transparent;
+      color: #9aa2d7;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .rating-star-btn:hover {
+      border-color: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    .rating-star-btn.selected {
+      background: rgba(108,99,255,0.3);
+      border-color: #6c63ff;
+      color: #fff;
+    }
+
+    .rating-star-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .rating-selected-display {
+      text-align: center;
+      color: #c7d2fe;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .rating-review-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      color: #f5f7ff;
+      font-size: 0.9rem;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .rating-review-textarea:focus {
+      outline: none;
+      border-color: #6c63ff;
+    }
+
+    .rating-review-textarea::placeholder {
+      color: #4a5070;
+    }
+
+    .rating-message {
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin: 12px 0;
+      display: none;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .rating-message.success {
+      display: block;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.2);
+      color: #4ade80;
+    }
+
+    .rating-message.error {
+      display: block;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #f87171;
+    }
+
+    .rating-modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+
+    .rating-modal-actions .btn-cancel {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: transparent;
+      color: #94a3b8;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .rating-modal-actions .btn-cancel:hover {
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+    }
+
+    .rating-modal-actions .btn-submit {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6c63ff, #ff4eb0);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .rating-modal-actions .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(108,99,255,0.3);
+    }
+
+    .rating-modal-actions .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     /* ===== Responsive ===== */
     @media (max-width: 768px) {
       .watch-shell { padding: 12px 12px 24px; }
@@ -647,8 +1124,11 @@
       .dash-nav { justify-content: flex-start; flex-wrap: wrap; }
       .movie-info-top { flex-direction: column; }
       .recommendation-row { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
-      .modal-content { margin: 20% auto; padding: 20px; }
+      .payment-modal-content { padding: 24px 20px; margin: 12px; }
+      .payment-method-grid { grid-template-columns: 1fr 1fr; }
+      .payment-form-row { grid-template-columns: 1fr; }
       .episode-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+      .paywall-box { padding: 28px 20px; }
     }
 
     @media (max-width: 480px) {
@@ -657,7 +1137,9 @@
       .recommendation-row { grid-template-columns: 1fr 1fr; }
       .episode-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
       .episode-btn { padding: 8px 10px; font-size: 0.7rem; }
-      .paywall-box { padding: 24px 20px; }
+      .payment-method-grid { grid-template-columns: 1fr; }
+      .paywall-box { padding: 24px 16px; }
+      .payment-modal-content { padding: 20px 16px; }
     }
 
     video::-webkit-media-controls-panel {
@@ -677,7 +1159,6 @@
       font-weight: 500;
     }
 
-    /* Type badge on watch page */
     .type-badge-watch {
       display: inline-flex;
       align-items: center;
@@ -708,11 +1189,6 @@
       color: var(--watch-muted);
       margin-top: 4px;
     }
-
-    /* Spinner */
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
   </style>
 </head>
 <body>
@@ -732,9 +1208,9 @@
     </header>
 
     <!-- About Modal -->
-    <div id="aboutModal" class="modal" style="display:none;">
-      <div class="modal-content">
-        <button class="modal-close">&times;</button>
+    <div id="aboutModal" class="about-modal" style="display:none;">
+      <div class="about-modal-content">
+        <button class="about-modal-close">&times;</button>
         <h2>Kuhusu TanzaFlix</h2>
         <p><strong>TanzaFlix</strong> ni jukwaa la kisasa la burudani ya mtandaoni linaloleta sinema, tamthilia, na mfululizo wa filamu kutoka Tanzania, Afrika Mashariki, na duniani kote.</p>
         <p>Lengo letu ni kuwaweka Watanzania na wapenzi wa Kiswahili karibu na burudani bora kwa lugha yao ya mama.</p>
@@ -760,17 +1236,17 @@
           <source id="watchSource" src="" type="video/mp4" />
           Kivinjari chako hakiwezi kucheza video hii.
         </video>
-      </div>
-
-      <!-- Paywall Overlay -->
-      <div id="paywallOverlay" class="paywall-overlay" style="display:none;">
-        <div class="paywall-box">
-          <div class="paywall-icon">🔒</div>
-          <h2>Muda wako wa kutazama bure umeisha</h2>
-          <p>Umeshatazama filamu/kipindi kimoja bure. Nunua filamu hii au jisajili ili uendelee kutazama filamu na mfululizo bila kikomo.</p>
-          <div class="paywall-actions">
-            <button id="buyMovieBtn" class="watch-btn watch-btn-play">💳 Nunua - TSh 2,000</button>
-            <a href="subscription.html" class="watch-btn watch-btn-secondary">⭐ Jisajili</a>
+        
+        <!-- Paywall Overlay - FIXED with inline style for visibility -->
+        <div id="paywallOverlay" class="paywall-overlay" style="display:none; pointer-events: auto; cursor: default;">
+          <div class="paywall-box" style="pointer-events: auto;">
+            <div class="paywall-icon">🔒</div>
+            <h2 id="paywallTitle">Muda wako wa kutazama bure umeisha</h2>
+            <p id="paywallMessage">Umeshatazama filamu/kipindi kimoja bure. Nunua filamu hii au jisajili ili uendelee kutazama filamu na mfululizo bila kikomo.</p>
+            <div class="paywall-actions">
+              <button id="buyMovieBtn" class="watch-btn watch-btn-buy" style="pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 502;">💳 Nunua Filamu</button>
+              <a href="subscription.html" class="watch-btn watch-btn-subscribe" style="pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 502;">⭐ Jisajili Sasa</a>
+            </div>
           </div>
         </div>
       </div>
@@ -840,6 +1316,116 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="payment-modal" style="display:none;">
+    <div class="payment-modal-content">
+      <div class="payment-modal-header">
+        <h2>💳 Malipo ya Filamu</h2>
+        <button class="payment-modal-close" id="paymentModalClose">&times;</button>
+      </div>
+
+      <div class="payment-amount-display">
+        <div class="label">Kiasi cha Kulipa</div>
+        <div class="amount" id="paymentAmount">TSh 0</div>
+        <div style="font-size:0.8rem;color:#6c63ff;margin-top:4px;" id="paymentMovieTitle"></div>
+      </div>
+
+      <div id="paymentStatus" class="payment-status"></div>
+
+      <div class="payment-method-section">
+        <label>Chagua Njia ya Malipo</label>
+        <div class="payment-method-grid">
+          <button class="payment-method-btn" data-method="mpesa">
+            <span class="icon">📱</span> M-Pesa
+          </button>
+          <button class="payment-method-btn" data-method="airtel_money">
+            <span class="icon">📱</span> Airtel Money
+          </button>
+          <button class="payment-method-btn" data-method="mix_by_yas">
+            <span class="icon">📱</span> Tigo Pesa
+          </button>
+          <button class="payment-method-btn" data-method="bank_card">
+            <span class="icon">💳</span> Kadi ya Benki
+          </button>
+        </div>
+      </div>
+
+      <form id="paymentForm">
+        <input type="hidden" id="paymentMovieId" value="" />
+        <input type="hidden" id="paymentMethod" value="" />
+
+        <div id="mobileMoneyFields">
+          <div class="payment-form-group">
+            <label>Namba ya Simu</label>
+            <input type="tel" id="paymentPhone" placeholder="e.g. 0677532140" />
+          </div>
+        </div>
+
+        <div id="cardFields" style="display:none;">
+          <div class="payment-form-group">
+            <label>Jina kwenye Kadi</label>
+            <input type="text" id="paymentCardHolder" placeholder="Jina kamili kama ilivyo kwenye kadi" />
+          </div>
+          <div class="payment-form-group">
+            <label>Namba ya Kadi</label>
+            <input type="text" id="paymentCardNumber" placeholder="4111 1111 1111 1111" maxlength="19" />
+          </div>
+          <div class="payment-form-row">
+            <div class="payment-form-group">
+              <label>Tarehe ya Kuisha</label>
+              <input type="text" id="paymentCardExpiry" placeholder="MM/YY" maxlength="5" />
+            </div>
+            <div class="payment-form-group">
+              <label>CVV</label>
+              <input type="password" id="paymentCardCvv" placeholder="123" maxlength="4" />
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="payment-submit-btn" id="paymentSubmitBtn">
+          ⚡ Malipo Sasa
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Rating Modal -->
+  <div id="ratingModal" class="rating-modal" style="display:none;">
+    <div class="rating-modal-content">
+      <div class="rating-modal-header">
+        <h3 id="ratingModalTitle">Kadiria Movie</h3>
+        <button class="rating-modal-close" id="ratingModalClose">&times;</button>
+      </div>
+      <form id="ratingForm">
+        <input type="hidden" id="ratingMovieId" value="" />
+        <div class="payment-form-group">
+          <label style="display:block;font-size:0.85rem;font-weight:600;color:#9aa2d7;margin-bottom:0.5rem;">
+            Kadiria (1 - 10)
+          </label>
+          <div class="rating-stars" id="ratingStars">
+            ${[1,2,3,4,5,6,7,8,9,10].map(r => `
+              <button type="button" class="rating-star-btn" data-value="${r}">${r}</button>
+            `).join('')}
+          </div>
+          <div id="ratingSelectedDisplay" class="rating-selected-display">
+            Hakuna rating iliyochaguliwa
+          </div>
+        </div>
+        <div class="payment-form-group">
+          <label style="display:block;font-size:0.85rem;font-weight:600;color:#9aa2d7;margin-bottom:0.4rem;">
+            Maoni (hiari)
+          </label>
+          <textarea id="ratingReview" class="rating-review-textarea" placeholder="Andika maoni yako kuhusu movie hii..."></textarea>
+        </div>
+        <div id="ratingMessage" class="rating-message"></div>
+        <div class="rating-modal-actions">
+          <button type="button" class="btn-cancel" id="ratingCancelBtn">Ghairi</button>
+          <button type="submit" class="btn-submit" id="submitRatingBtn">Tuma Rating</button>
+        </div>
+      </form>
     </div>
   </div>
 

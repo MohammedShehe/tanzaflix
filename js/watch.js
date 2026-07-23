@@ -1,4 +1,4 @@
-// js/watch.js - Watch Page with Rating, Country Filter, and Real-Time Video Tracking
+// js/watch.js - Watch Page with Professional Payment Flow
 
 import api from './api.js';
 import auth from './auth.js';
@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     const episodeCurrentLabel = document.getElementById('episodeCurrentLabel');
     const typeBadge = document.getElementById('watchTypeBadge');
     const paywallOverlay = document.getElementById('paywallOverlay');
+    const paywallTitle = document.getElementById('paywallTitle');
+    const paywallMessage = document.getElementById('paywallMessage');
     const buyMovieBtn = document.getElementById('buyMovieBtn');
     const watchYear = document.getElementById('watchYear');
     const watchGenre = document.getElementById('watchGenre');
@@ -37,6 +39,36 @@ document.addEventListener('DOMContentLoaded', async function() {
     const accessBadge = document.getElementById('accessBadge');
     const ratingText = document.getElementById('ratingText');
 
+    // Payment Modal Elements
+    const paymentModal = document.getElementById('paymentModal');
+    const paymentModalClose = document.getElementById('paymentModalClose');
+    const paymentAmount = document.getElementById('paymentAmount');
+    const paymentMovieTitle = document.getElementById('paymentMovieTitle');
+    const paymentMovieId = document.getElementById('paymentMovieId');
+    const paymentMethod = document.getElementById('paymentMethod');
+    const paymentPhone = document.getElementById('paymentPhone');
+    const paymentCardHolder = document.getElementById('paymentCardHolder');
+    const paymentCardNumber = document.getElementById('paymentCardNumber');
+    const paymentCardExpiry = document.getElementById('paymentCardExpiry');
+    const paymentCardCvv = document.getElementById('paymentCardCvv');
+    const paymentStatus = document.getElementById('paymentStatus');
+    const paymentSubmitBtn = document.getElementById('paymentSubmitBtn');
+    const paymentForm = document.getElementById('paymentForm');
+    const mobileMoneyFields = document.getElementById('mobileMoneyFields');
+    const cardFields = document.getElementById('cardFields');
+
+    // Rating Modal Elements
+    const ratingModal = document.getElementById('ratingModal');
+    const ratingModalClose = document.getElementById('ratingModalClose');
+    const ratingCancelBtn = document.getElementById('ratingCancelBtn');
+    const ratingModalTitle = document.getElementById('ratingModalTitle');
+    const ratingMovieId = document.getElementById('ratingMovieId');
+    const ratingReview = document.getElementById('ratingReview');
+    const ratingMessage = document.getElementById('ratingMessage');
+    const submitRatingBtn = document.getElementById('submitRatingBtn');
+    const ratingSelectedDisplay = document.getElementById('ratingSelectedDisplay');
+    const ratingStars = document.getElementById('ratingStars');
+
     let movieData = null;
     let currentSeason = 1;
     let currentEpisode = 0;
@@ -44,6 +76,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     let canWatch = false;
     let accessType = null;
     let isFirstTime = false;
+    let selectedPaymentMethod = null;
+    let selectedRating = 0;
+    let userHasRated = false;
+    let userRatingData = null;
+    let paymentReference = null;
+    let paymentCheckInterval = null;
     
     // Real-time tracking variables
     let lastProgressUpdate = 0;
@@ -52,6 +90,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     let currentEpisodeId = null;
     let totalDuration = 0;
     let hasMarkedComplete = false;
+
+    // Store movie data globally for the buy button
+    let currentMovieData = {
+        id: null,
+        title: null,
+        price: 0
+    };
 
     // Show loading state
     titleEl.textContent = 'Inapakia...';
@@ -66,129 +111,323 @@ document.addEventListener('DOMContentLoaded', async function() {
         'Movie ya Kikorea': '🇰🇷 Kikorea'
     };
 
-    // ===== Rating Modal =====
-    const ratingModal = document.createElement('div');
-    ratingModal.id = 'ratingModal';
-    ratingModal.className = 'modal';
-    ratingModal.style.display = 'none';
-    ratingModal.innerHTML = `
-        <div class="modal-content" style="max-width:480px;">
-            <div class="modal-header">
-                <h3 id="ratingModalTitle">Kadiria Movie</h3>
-                <button class="modal-close rating-modal-close">&times;</button>
-            </div>
-            <form id="ratingForm">
-                <input type="hidden" id="ratingMovieId" value="${movieId}" />
-                <div class="form-group" style="margin-bottom:1.2rem;">
-                    <label style="display:block;font-size:0.85rem;font-weight:600;color:#9aa2d7;margin-bottom:0.5rem;">
-                        Kadiria (1 - 10)
-                    </label>
-                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;" id="ratingStars">
-                        ${[1,2,3,4,5,6,7,8,9,10].map(r => `
-                            <button type="button" class="rating-star" data-value="${r}" style="
-                                width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);
-                                background:transparent;color:#9aa2d7;font-weight:700;font-size:0.9rem;
-                                cursor:pointer;transition:all 0.2s ease;
-                            ">${r}</button>
-                        `).join('')}
-                    </div>
-                    <div id="ratingSelectedDisplay" style="margin-top:0.5rem;color:#c7d2fe;font-size:0.9rem;">
-                        Hakuna rating iliyochaguliwa
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label style="display:block;font-size:0.85rem;font-weight:600;color:#9aa2d7;margin-bottom:0.4rem;">
-                        Maoni (hiari)
-                    </label>
-                    <textarea id="ratingReview" rows="3" placeholder="Andika maoni yako kuhusu movie hii..." style="
-                        width:100%;padding:0.7rem 1rem;background:rgba(255,255,255,0.05);
-                        border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#f5f7ff;
-                        font-family:inherit;font-size:0.9rem;resize:vertical;
-                    "></textarea>
-                </div>
-                <div id="ratingMessage" style="display:none;padding:0.8rem;border-radius:12px;margin:1rem 0;text-align:center;"></div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-cancel rating-modal-close">Ghairi</button>
-                    <button type="submit" class="btn-submit" id="submitRatingBtn">Tuma Rating</button>
-                </div>
-            </form>
-        </div>
-    `;
-    document.body.appendChild(ratingModal);
+    // ===== Payment Modal Functions =====
 
-    // Rating Modal Functions
-    let selectedRating = 0;
-    let userHasRated = false;
-    let userRatingData = null;
-
-    function openRatingModal() {
-        const modal = document.getElementById('ratingModal');
-        if (!modal) return;
+    function openPaymentModal(movieId, movieTitle, price) {
+        const displayPrice = parseFloat(price) || 0;
         
-        selectedRating = 0;
-        document.getElementById('ratingReview').value = '';
-        document.getElementById('ratingSelectedDisplay').textContent = 'Hakuna rating iliyochaguliwa';
-        document.querySelectorAll('.rating-star').forEach(el => {
-            el.style.background = 'transparent';
-            el.style.borderColor = 'rgba(255,255,255,0.1)';
-            el.style.color = '#9aa2d7';
+        console.log('Opening payment modal:', { movieId, movieTitle, price, displayPrice });
+        
+        paymentMovieId.value = movieId || '';
+        paymentAmount.textContent = `TSh ${Number(displayPrice).toLocaleString()}`;
+        paymentMovieTitle.textContent = movieTitle || 'Filamu';
+        paymentStatus.className = 'payment-status';
+        paymentStatus.style.display = 'none';
+        paymentStatus.textContent = '';
+        selectedPaymentMethod = null;
+        paymentMethod.value = '';
+        paymentPhone.value = '';
+        paymentCardHolder.value = '';
+        paymentCardNumber.value = '';
+        paymentCardExpiry.value = '';
+        paymentCardCvv.value = '';
+        paymentSubmitBtn.disabled = false;
+        paymentSubmitBtn.innerHTML = '⚡ Malipo Sasa';
+        
+        document.querySelectorAll('.payment-method-btn').forEach(btn => {
+            btn.classList.remove('active');
         });
-        document.getElementById('ratingMessage').style.display = 'none';
-        document.getElementById('submitRatingBtn').disabled = false;
-        document.getElementById('submitRatingBtn').textContent = 'Tuma Rating';
+        
+        mobileMoneyFields.style.display = 'block';
+        cardFields.style.display = 'none';
+        
+        // IMPORTANT: Show the payment modal
+        paymentModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
 
-        if (userHasRated && userRatingData) {
-            document.getElementById('ratingModalTitle').textContent = 'Rating Yako';
-            document.getElementById('ratingSelectedDisplay').textContent = `Rating yako: ${userRatingData.rating}/10`;
-            document.querySelectorAll('.rating-star').forEach(el => {
-                const val = parseInt(el.dataset.value);
-                if (val <= userRatingData.rating) {
-                    el.style.background = 'rgba(108,99,255,0.3)';
-                    el.style.borderColor = '#6c63ff';
-                    el.style.color = '#fff';
-                }
-            });
-            document.getElementById('submitRatingBtn').textContent = '✅ Tayari Umerate';
-            document.getElementById('submitRatingBtn').disabled = true;
-            if (userRatingData.review_text) {
-                document.getElementById('ratingReview').value = userRatingData.review_text;
+    function closePaymentModal() {
+        if (paymentCheckInterval) {
+            clearInterval(paymentCheckInterval);
+            paymentCheckInterval = null;
+        }
+        paymentModal.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+
+    function showPaymentStatus(message, type = 'info') {
+        paymentStatus.className = `payment-status ${type}`;
+        paymentStatus.textContent = message;
+        paymentStatus.style.display = 'block';
+    }
+
+    // Payment method selection
+    document.querySelectorAll('.payment-method-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const method = this.dataset.method;
+            selectedPaymentMethod = method;
+            paymentMethod.value = method;
+            
+            if (method === 'bank_card') {
+                mobileMoneyFields.style.display = 'none';
+                cardFields.style.display = 'block';
+            } else {
+                mobileMoneyFields.style.display = 'block';
+                cardFields.style.display = 'none';
             }
-        } else {
-            document.getElementById('ratingModalTitle').textContent = `Kadiria: ${movieData?.title || 'Movie'}`;
+            
+            paymentStatus.className = 'payment-status';
+            paymentStatus.style.display = 'none';
+        });
+    });
+
+    // Payment form submission
+    paymentForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!selectedPaymentMethod) {
+            showPaymentStatus('⚠️ Tafadhali chagua njia ya malipo.', 'error');
+            return;
         }
 
-        modal.style.display = 'flex';
+        const movieId = paymentMovieId.value;
+        let phone = '';
+        let cardData = null;
+
+        if (selectedPaymentMethod === 'bank_card') {
+            const cardNumber = paymentCardNumber.value.replace(/\s/g, '');
+            const expiry = paymentCardExpiry.value.replace(/\s/g, '');
+            const cvv = paymentCardCvv.value;
+            const cardHolder = paymentCardHolder.value.trim();
+
+            if (!cardNumber || cardNumber.length < 13) {
+                showPaymentStatus('⚠️ Namba ya kadi si sahihi. Tafadhali ingiza tarakimu 13-19.', 'error');
+                return;
+            }
+            if (!expiry || !expiry.match(/^\d{2}\/\d{2}$/)) {
+                showPaymentStatus('⚠️ Tarehe ya kuisha si sahihi. Tafadhali ingiza kwa muundo MM/YY.', 'error');
+                return;
+            }
+            if (!cvv || cvv.length < 3) {
+                showPaymentStatus('⚠️ CVV si sahihi. Tafadhali ingiza tarakimu 3-4.', 'error');
+                return;
+            }
+            if (!cardHolder || cardHolder.length < 3) {
+                showPaymentStatus('⚠️ Jina kwenye kadi si sahihi.', 'error');
+                return;
+            }
+
+            cardData = {
+                accountName: cardHolder,
+                cardNumber: cardNumber,
+                expiryDate: expiry,
+                cvv: cvv
+            };
+        } else {
+            phone = paymentPhone.value.replace(/\s/g, '');
+            if (!phone || phone.length < 9) {
+                showPaymentStatus('⚠️ Namba ya simu si sahihi. Tafadhali ingiza tarakimu 9-10.', 'error');
+                return;
+            }
+        }
+
+        paymentSubmitBtn.disabled = true;
+        paymentSubmitBtn.innerHTML = '<span class="payment-loading-spinner"></span> Inachakata...';
+        showPaymentStatus('⏳ Inaanzisha malipo...', 'info');
+
+        try {
+            const response = await api.createMoviePurchase(
+                movieId,
+                selectedPaymentMethod,
+                phone,
+                cardData
+            );
+
+            if (response.success) {
+                paymentReference = response.reference;
+                showPaymentStatus(
+                    `✅ Malipo yameanzishwa!\nReference: ${response.reference}\nKiasi: TSh ${Number(response.amount).toLocaleString()}\nTafadhali subiri uthibitisho.`,
+                    'success'
+                );
+                
+                paymentSubmitBtn.innerHTML = '⏳ Inasubiri uthibitisho...';
+                startPaymentPolling(response.reference);
+            } else {
+                throw new Error(response.message || 'Malipo yameshindwa');
+            }
+        } catch (error) {
+            let errorMsg = 'Tumeshindwa kuanzisha malipo. Tafadhali jaribu tena.';
+            const errorMessage = error.message || '';
+            
+            // Handle duplicate purchase / already purchased errors
+            if (errorMessage.includes('ALREADY_PURCHASED') || 
+                errorMessage.includes('Duplicate entry') ||
+                errorMessage.includes('already have access') ||
+                errorMessage.includes('already have a purchase') ||
+                errorMessage.includes('You already have access')) {
+                
+                errorMsg = '✅ Tayari umenunua filamu hii! Unaweza kuitazama sasa.';
+                showPaymentStatus(`✅ ${errorMsg}`, 'success');
+                paymentSubmitBtn.innerHTML = '✅ Tayari Imegharamiwa';
+                
+                // Reload the page after a moment to show the movie
+                setTimeout(() => {
+                    closePaymentModal();
+                    window.location.reload();
+                }, 2000);
+                return;
+            } 
+            // Handle pending purchase
+            else if (errorMessage.includes('PENDING_PURCHASE') || 
+                     errorMessage.includes('pending purchase')) {
+                errorMsg = '⏳ Malipo yako yanachakatwa. Tafadhali subiri uthibitisho.';
+                showPaymentStatus(`⏳ ${errorMsg}`, 'info');
+                paymentSubmitBtn.disabled = false;
+                paymentSubmitBtn.innerHTML = '⚡ Malipo Sasa';
+                return;
+            } 
+            // Handle bank card errors
+            else if (errorMessage.includes('bank_card') || 
+                     errorMessage.includes('Card') || 
+                     errorMessage.includes('card')) {
+                errorMsg = '💳 Tatizo la kadi ya benki. Hakikisha namba ya kadi, tarehe ya kuisha, na CVV ni sahihi.';
+            } 
+            // Handle phone errors
+            else if (errorMessage.includes('phone')) {
+                errorMsg = '📱 Namba ya simu si sahihi. Hakikisha unaingiza namba sahihi.';
+            }
+            
+            showPaymentStatus(`❌ ${errorMsg}`, 'error');
+            paymentSubmitBtn.disabled = false;
+            paymentSubmitBtn.innerHTML = '⚡ Malipo Sasa';
+        }
+    });
+
+    function startPaymentPolling(reference) {
+        let attempts = 0;
+        const maxAttempts = 36;
+        
+        if (paymentCheckInterval) {
+            clearInterval(paymentCheckInterval);
+        }
+        
+        paymentCheckInterval = setInterval(async () => {
+            attempts++;
+            
+            try {
+                const statusRes = await api.verifyMoviePurchase(reference);
+                
+                if (statusRes.success && statusRes.payment) {
+                    if (statusRes.payment.status === 'paid') {
+                        clearInterval(paymentCheckInterval);
+                        paymentCheckInterval = null;
+                        showPaymentStatus('✅ Malipo yamekamilika! Unaweza kutazama sasa.', 'success');
+                        paymentSubmitBtn.innerHTML = '✅ Malipo Yamekamilika';
+                        
+                        setTimeout(() => {
+                            closePaymentModal();
+                            window.location.reload();
+                        }, 2000);
+                    } else if (statusRes.payment.status === 'failed') {
+                        clearInterval(paymentCheckInterval);
+                        paymentCheckInterval = null;
+                        showPaymentStatus('❌ Malipo yameshindwa. Tafadhali jaribu tena.', 'error');
+                        paymentSubmitBtn.disabled = false;
+                        paymentSubmitBtn.innerHTML = '⚡ Malipo Sasa';
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(paymentCheckInterval);
+                        paymentCheckInterval = null;
+                        showPaymentStatus('⏱️ Muda wa malipo umeisha. Tafadhali jaribu tena.', 'error');
+                        paymentSubmitBtn.disabled = false;
+                        paymentSubmitBtn.innerHTML = '⚡ Malipo Sasa';
+                    }
+                }
+            } catch (e) {
+                if (attempts >= maxAttempts) {
+                    clearInterval(paymentCheckInterval);
+                    paymentCheckInterval = null;
+                    showPaymentStatus('⏱️ Muda wa malipo umeisha. Tafadhali jaribu tena.', 'error');
+                    paymentSubmitBtn.disabled = false;
+                    paymentSubmitBtn.innerHTML = '⚡ Malipo Sasa';
+                }
+            }
+        }, 5000);
+    }
+
+    // Close payment modal
+    paymentModalClose.addEventListener('click', closePaymentModal);
+    paymentModal.addEventListener('click', function(e) {
+        if (e.target === this) closePaymentModal();
+    });
+
+    // ===== Rating Modal Functions =====
+
+    function openRatingModal() {
+        if (!movieData) return;
+        
+        selectedRating = 0;
+        ratingReview.value = '';
+        ratingSelectedDisplay.textContent = 'Hakuna rating iliyochaguliwa';
+        ratingMessage.className = 'rating-message';
+        ratingMessage.style.display = 'none';
+        submitRatingBtn.disabled = false;
+        submitRatingBtn.textContent = 'Tuma Rating';
+        
+        document.querySelectorAll('.rating-star-btn').forEach(el => {
+            el.className = 'rating-star-btn';
+        });
+
+        if (userHasRated && userRatingData) {
+            ratingModalTitle.textContent = 'Rating Yako';
+            ratingSelectedDisplay.textContent = `Rating yako: ${userRatingData.rating}/10`;
+            document.querySelectorAll('.rating-star-btn').forEach(el => {
+                const val = parseInt(el.dataset.value);
+                if (val <= userRatingData.rating) {
+                    el.classList.add('selected');
+                }
+            });
+            submitRatingBtn.textContent = '✅ Tayari Umerate';
+            submitRatingBtn.disabled = true;
+            if (userRatingData.review_text) {
+                ratingReview.value = userRatingData.review_text;
+            }
+        } else {
+            ratingModalTitle.textContent = `Kadiria: ${movieData.title || 'Movie'}`;
+        }
+
+        ratingMovieId.value = movieData.id;
+        ratingModal.style.display = 'flex';
     }
 
     function closeRatingModal() {
-        const modal = document.getElementById('ratingModal');
-        if (modal) modal.style.display = 'none';
+        ratingModal.style.display = 'none';
     }
 
-    document.querySelectorAll('.rating-star').forEach(el => {
+    // Rating star selection
+    document.querySelectorAll('.rating-star-btn').forEach(el => {
         el.addEventListener('click', function() {
             if (userHasRated) return;
             
             const value = parseInt(this.dataset.value);
             selectedRating = value;
             
-            document.querySelectorAll('.rating-star').forEach(star => {
+            document.querySelectorAll('.rating-star-btn').forEach(star => {
                 const starVal = parseInt(star.dataset.value);
                 if (starVal <= value) {
-                    star.style.background = 'rgba(108,99,255,0.3)';
-                    star.style.borderColor = '#6c63ff';
-                    star.style.color = '#fff';
+                    star.classList.add('selected');
                 } else {
-                    star.style.background = 'transparent';
-                    star.style.borderColor = 'rgba(255,255,255,0.1)';
-                    star.style.color = '#9aa2d7';
+                    star.classList.remove('selected');
                 }
             });
             
-            document.getElementById('ratingSelectedDisplay').textContent = `Rating: ${value}/10`;
+            ratingSelectedDisplay.textContent = `Rating: ${value}/10`;
         });
     });
 
+    // Rating form submission
     document.getElementById('ratingForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -197,31 +436,26 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        const movieId = document.getElementById('ratingMovieId').value;
-        const review = document.getElementById('ratingReview').value.trim();
-        const messageEl = document.getElementById('ratingMessage');
+        const movieId = ratingMovieId.value;
+        const review = ratingReview.value.trim();
 
         if (!selectedRating || selectedRating < 1 || selectedRating > 10) {
-            messageEl.style.display = 'block';
-            messageEl.style.background = 'rgba(239,68,68,0.1)';
-            messageEl.style.border = '1px solid rgba(239,68,68,0.2)';
-            messageEl.style.color = '#f87171';
-            messageEl.textContent = '⚠️ Tafadhali chagua rating kati ya 1 na 10.';
+            ratingMessage.className = 'rating-message error';
+            ratingMessage.textContent = '⚠️ Tafadhali chagua rating kati ya 1 na 10.';
+            ratingMessage.style.display = 'block';
             return;
         }
 
-        document.getElementById('submitRatingBtn').disabled = true;
-        document.getElementById('submitRatingBtn').textContent = '⏳ Inatuma...';
+        submitRatingBtn.disabled = true;
+        submitRatingBtn.textContent = '⏳ Inatuma...';
 
         try {
             const response = await api.rateMovie(movieId, selectedRating, review || null);
             
             if (response.success) {
-                messageEl.style.display = 'block';
-                messageEl.style.background = 'rgba(34,197,94,0.1)';
-                messageEl.style.border = '1px solid rgba(34,197,94,0.2)';
-                messageEl.style.color = '#4ade80';
-                messageEl.textContent = '✅ Rating imetumwa kwa mafanikio!';
+                ratingMessage.className = 'rating-message success';
+                ratingMessage.textContent = '✅ Rating imetumwa kwa mafanikio!';
+                ratingMessage.style.display = 'block';
                 
                 userHasRated = true;
                 userRatingData = {
@@ -231,8 +465,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 updateRatingDisplay();
                 
-                document.getElementById('submitRatingBtn').textContent = '✅ Imefanikiwa';
-                document.getElementById('submitRatingBtn').disabled = true;
+                submitRatingBtn.textContent = '✅ Imefanikiwa';
+                submitRatingBtn.disabled = true;
                 
                 setTimeout(() => {
                     closeRatingModal();
@@ -241,20 +475,40 @@ document.addEventListener('DOMContentLoaded', async function() {
                 throw new Error(response.message || 'Rating failed');
             }
         } catch (error) {
-            console.error('Rating error:', error);
-            messageEl.style.display = 'block';
-            messageEl.style.background = 'rgba(239,68,68,0.1)';
-            messageEl.style.border = '1px solid rgba(239,68,68,0.2)';
-            messageEl.style.color = '#f87171';
-            messageEl.textContent = `❌ ${error.message || 'Tumeshindwa kutuma rating. Tafadhali jaribu tena.'}`;
-            document.getElementById('submitRatingBtn').disabled = false;
-            document.getElementById('submitRatingBtn').textContent = 'Tuma Rating';
+            ratingMessage.className = 'rating-message error';
+            ratingMessage.textContent = `❌ ${error.message || 'Tumeshindwa kutuma rating. Tafadhali jaribu tena.'}`;
+            ratingMessage.style.display = 'block';
+            submitRatingBtn.disabled = false;
+            submitRatingBtn.textContent = 'Tuma Rating';
         }
     });
 
-    document.querySelectorAll('.rating-modal-close').forEach(btn => {
-        btn.addEventListener('click', closeRatingModal);
+    // Close rating modal
+    ratingModalClose.addEventListener('click', closeRatingModal);
+    ratingCancelBtn.addEventListener('click', closeRatingModal);
+    ratingModal.addEventListener('click', function(e) {
+        if (e.target === this) closeRatingModal();
     });
+
+    // ===== Utility Functions =====
+
+    function formatRuntime(minutes) {
+        if (!minutes || minutes <= 0) return 'N/A';
+        if (typeof minutes === 'string' && (minutes.includes('h') || minutes.includes('m'))) {
+            return minutes;
+        }
+        const mins = parseInt(minutes);
+        if (isNaN(mins)) return 'N/A';
+        const hours = Math.floor(mins / 60);
+        const remainingMins = mins % 60;
+        if (hours > 0 && remainingMins > 0) {
+            return `${hours}h ${remainingMins}m`;
+        } else if (hours > 0) {
+            return `${hours}h`;
+        } else {
+            return `${remainingMins}m`;
+        }
+    }
 
     function updateRatingDisplay() {
         if (movieData?.rating) {
@@ -269,30 +523,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             const userRatingText = userHasRated ? ` • Rating yako: ${userRatingData?.rating}/10` : '';
             ratingText.innerHTML = `<strong>${avg.toFixed(1)}</strong> / 10 ★ (${total} ratings)${userRatingText}`;
-        }
-    }
-
-    function formatRuntime(minutes) {
-        if (!minutes || minutes <= 0) {
-            return 'N/A';
-        }
-        
-        if (typeof minutes === 'string' && (minutes.includes('h') || minutes.includes('m'))) {
-            return minutes;
-        }
-        
-        const mins = parseInt(minutes);
-        if (isNaN(mins)) return 'N/A';
-        
-        const hours = Math.floor(mins / 60);
-        const remainingMins = mins % 60;
-        
-        if (hours > 0 && remainingMins > 0) {
-            return `${hours}h ${remainingMins}m`;
-        } else if (hours > 0) {
-            return `${hours}h`;
-        } else {
-            return `${remainingMins}m`;
         }
     }
 
@@ -336,7 +566,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     openRatingModal();
                 }
             }, 2000);
-            
         } catch (error) {
             // Silently handle completion errors
         }
@@ -346,7 +575,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             const currentTime = Math.floor(video.currentTime);
             const duration = Math.floor(video.duration);
-            
             if (currentTime > 0 && currentTime < duration && !hasMarkedComplete) {
                 await trackProgress(currentTime, duration);
             }
@@ -360,11 +588,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     video.addEventListener('timeupdate', function() {
         const currentTime = this.currentTime;
         const duration = this.duration;
-        
         if (!duration || isNaN(duration) || duration === 0) return;
-        
         totalDuration = duration;
-        
         if (currentTime - lastProgressUpdate >= PROGRESS_INTERVAL && currentTime > 0) {
             lastProgressUpdate = currentTime;
             trackProgress(currentTime, duration);
@@ -373,7 +598,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     video.addEventListener('ended', function() {
         markComplete();
-        
         if (isSeries && movieData?.seasons) {
             const season = movieData.seasons.find(s => s.season_number === currentSeason);
             if (season?.episodes && currentEpisode < season.episodes.length - 1) {
@@ -413,25 +637,113 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ===== Load Movie Data =====
     try {
-        const response = await api.getUserMovie(movieId);
+        let moviePrice = 0;
+        let movieTitleValue = 'Filamu';
+        let movieIdValue = movieId;
+        let isPurchasePending = false;
+        let purchaseStatusText = null;
         
-        if (!response.success || !response.movie) {
-            throw new Error(response.message || 'Movie not found');
+        // Try user endpoint first (most important for access control)
+        try {
+            const userResponse = await api.getUserMovie(movieId);
+            if (userResponse.success && userResponse.movie) {
+                const userMovie = userResponse.movie;
+                movieIdValue = userMovie.id || movieId;
+                movieTitleValue = userMovie.title || 'Filamu';
+                moviePrice = parseFloat(userMovie.price) || 0;
+                
+                movieData = userMovie;
+                
+                // IMPORTANT: Use canWatch from the user response
+                if (userMovie.canWatch !== undefined && userMovie.canWatch !== null) {
+                    canWatch = userMovie.canWatch;
+                }
+                
+                // Check for pending purchase
+                if (userMovie.isPurchasePending) {
+                    isPurchasePending = true;
+                    purchaseStatusText = userMovie.purchaseStatus || 'pending';
+                }
+                
+                accessType = userMovie.accessType || null;
+                isSeries = userMovie.movie_type === 'series';
+                isFirstTime = userMovie.isFirstTime || false;
+                
+                if (movieData.rating) {
+                    userHasRated = movieData.rating.user_has_rated || false;
+                    userRatingData = movieData.rating.user_rating || null;
+                }
+            }
+        } catch (userError) {
+            console.warn('User endpoint error:', userError);
+        }
+        
+        // If we don't have movieData, try admin endpoint
+        if (!movieData) {
+            try {
+                const adminResponse = await api.adminGetMovie(movieId);
+                if (adminResponse.success && adminResponse.movie) {
+                    const adminMovie = adminResponse.movie;
+                    movieIdValue = adminMovie.id || movieId;
+                    movieTitleValue = adminMovie.title || 'Filamu';
+                    moviePrice = parseFloat(adminMovie.price) || 0;
+                }
+            } catch (adminError) {
+                console.warn('Admin endpoint error:', adminError);
+            }
+        }
+        
+        // If still no price, try the movies list endpoint
+        if (moviePrice === 0) {
+            try {
+                const moviesResponse = await api.getUserMovies();
+                if (moviesResponse.success && moviesResponse.movies) {
+                    const foundMovie = moviesResponse.movies.find(m => m.id == movieId);
+                    if (foundMovie) {
+                        movieTitleValue = foundMovie.title || 'Filamu';
+                        moviePrice = parseFloat(foundMovie.price) || 0;
+                    }
+                }
+            } catch (listError) {
+                console.warn('Movies list endpoint error:', listError);
+            }
         }
 
-        movieData = response.movie;
-        canWatch = movieData.canWatch || false;
-        accessType = movieData.accessType || null;
-        isSeries = movieData.movie_type === 'series';
-        isFirstTime = movieData.isFirstTime || false;
+        // Store movie data globally
+        currentMovieData = {
+            id: movieIdValue,
+            title: movieTitleValue,
+            price: moviePrice
+        };
 
-        if (movieData.rating) {
-            userHasRated = movieData.rating.user_has_rated || false;
-            userRatingData = movieData.rating.user_rating || null;
+        // If we don't have movieData from user endpoint, create a basic object
+        if (!movieData) {
+            movieData = {
+                id: movieIdValue,
+                title: movieTitleValue,
+                price: moviePrice,
+                canWatch: canWatch || false,
+                accessType: accessType || 'denied',
+                movie_type: 'single',
+                isFirstTime: false,
+                description: '',
+                year: '',
+                category: '',
+                movie_time: '',
+                language: '',
+                country: '',
+                poster: '',
+                rating: { average: 0, total: 0 },
+                more_like_this: []
+            };
+        } else {
+            movieData.title = movieTitleValue;
+            movieData.price = moviePrice;
+            movieData.canWatch = canWatch || movieData.canWatch || false;
         }
 
         // Populate UI
-        titleEl.textContent = movieData.title || 'Filamu';
+        titleEl.textContent = movieTitleValue;
         descEl.textContent = movieData.description || 'Mchezo wa kuvutia wenye hadithi kali.';
         watchYear.textContent = movieData.year || '2024';
         watchGenre.textContent = movieData.category || 'Action';
@@ -450,16 +762,26 @@ document.addEventListener('DOMContentLoaded', async function() {
             typeBadge.className = 'type-badge-watch single';
         }
 
-        if (canWatch) {
+        // Handle pending purchase case
+        if (isPurchasePending && !canWatch) {
+            streamingBadge.style.display = 'inline-flex';
+            streamingBadge.textContent = '⏳ Malipo Yanachakatwa...';
+            streamingBadge.style.background = 'rgba(251, 191, 36, 0.15)';
+            streamingBadge.style.borderColor = 'rgba(251, 191, 36, 0.2)';
+            streamingBadge.style.color = '#fbbf24';
+            accessBadge.style.display = 'none';
+        } else if (canWatch) {
             streamingBadge.style.display = 'inline-flex';
             accessBadge.style.display = 'none';
-            
             if (accessType === 'subscription') {
                 streamingBadge.textContent = '▶ Premium Streaming';
             } else if (accessType === 'free_trial') {
                 streamingBadge.textContent = '✅ Free Trial - First Time Watching';
-            } else if (accessType === 'paid_single') {
-                streamingBadge.textContent = '▶ Premium Streaming';
+            } else if (accessType === 'paid_single' || accessType === 'purchased') {
+                streamingBadge.textContent = '✅ Imegharamiwa - Tazama Sasa';
+                streamingBadge.style.background = 'rgba(34,197,94,0.15)';
+                streamingBadge.style.borderColor = 'rgba(34,197,94,0.2)';
+                streamingBadge.style.color = '#4ade80';
             } else {
                 streamingBadge.textContent = '▶ Premium Streaming';
             }
@@ -474,27 +796,138 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         updateRatingDisplay();
 
+        // ===== PAYWALL HANDLING =====
         if (!canWatch) {
+            // Show pending purchase message if applicable
+            if (isPurchasePending) {
+                paywallOverlay.style.display = 'flex';
+                seriesNav.style.display = 'none';
+                paywallTitle.textContent = '⏳ Malipo Yanachakatwa';
+                paywallMessage.textContent = 'Malipo yako ya filamu hii yanachakatwa. Tafadhali subiri kwa muda mfupi, kisha onyesha upya ukurasa.';
+                buyMovieBtn.textContent = '🔄 Onyesha Upya Ukurasa';
+                
+                // Override buy button for pending case
+                const newBuyBtn = buyMovieBtn.cloneNode(true);
+                buyMovieBtn.parentNode.replaceChild(newBuyBtn, buyMovieBtn);
+                const buyBtn = document.getElementById('buyMovieBtn');
+                buyBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.reload();
+                });
+                
+                // Show recommendations if available
+                if (movieData.more_like_this && movieData.more_like_this.length > 0) {
+                    renderRecommendations(movieData.more_like_this);
+                }
+                
+                return;
+            }
+            
             paywallOverlay.style.display = 'flex';
             seriesNav.style.display = 'none';
             
-            if (movieData.price) {
-                buyMovieBtn.textContent = `💳 Nunua - TSh ${movieData.price}`;
+            const price = currentMovieData.price;
+            const id = currentMovieData.id;
+            const title = currentMovieData.title;
+            
+            // Update paywall button with price
+            if (price > 0) {
+                buyMovieBtn.textContent = `💳 Nunua - TSh ${Number(price).toLocaleString()}`;
+            } else {
+                buyMovieBtn.textContent = '💳 Nunua Filamu';
             }
             
-            const paywallMessage = document.querySelector('.paywall-box p');
+            buyMovieBtn.dataset.movieId = id;
+            buyMovieBtn.dataset.movieTitle = title;
+            buyMovieBtn.dataset.moviePrice = price;
+            
+            console.log('Paywall set with:', { id, title, price });
+            
+            // Set appropriate messages
             if (accessType === 'trial_used') {
+                paywallTitle.textContent = 'Muda wako wa kutazama bure umeisha';
                 paywallMessage.textContent = 'Umeshatazama filamu/kipindi chako cha bure. Nunua filamu hii au jisajili ili uendelee kutazama filamu na mfululizo bila kikomo.';
             } else if (accessType === 'denied') {
+                paywallTitle.textContent = '🔒 Hakuna Ufikiaji';
                 paywallMessage.textContent = 'Unahitaji kujiandikisha au kununua filamu hii ili kuendelea kutazama. Jisajili sasa na upate ufikiaji wa filamu zote!';
+            } else {
+                paywallTitle.textContent = '🔒 Ufikiaji Unahitajika';
+                paywallMessage.textContent = 'Tafadhali jisajili au nunua filamu hii ili kuendelea kutazama.';
             }
             
             if (movieData.more_like_this && movieData.more_like_this.length > 0) {
                 renderRecommendations(movieData.more_like_this);
             }
+            
+            // ===== Buy Button Click Handler =====
+            const newBuyBtn = buyMovieBtn.cloneNode(true);
+            buyMovieBtn.parentNode.replaceChild(newBuyBtn, buyMovieBtn);
+            
+            const buyBtn = document.getElementById('buyMovieBtn');
+            
+            buyBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('Buy button clicked!');
+                
+                // Get data from dataset
+                let movieId = this.dataset.movieId;
+                let movieTitle = this.dataset.movieTitle;
+                let moviePrice = this.dataset.moviePrice;
+                
+                // If dataset values are empty, use currentMovieData
+                if (!movieId || movieId === 'undefined' || movieId === 'null') {
+                    movieId = currentMovieData.id;
+                }
+                
+                if (!movieTitle || movieTitle === 'undefined' || movieTitle === 'null' || movieTitle === 'Inapakia...') {
+                    movieTitle = currentMovieData.title || 'Filamu';
+                }
+                
+                if (moviePrice === '0' || moviePrice === 0 || moviePrice === undefined || moviePrice === 'undefined' || moviePrice === 'null' || moviePrice === '') {
+                    moviePrice = currentMovieData.price || 0;
+                }
+                
+                // If still no movieId, try from URL
+                if (!movieId || movieId === 'undefined' || movieId === 'null') {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    movieId = urlParams.get('id');
+                }
+                
+                // If still no movieId, show error
+                if (!movieId || movieId === 'undefined' || movieId === 'null') {
+                    alert('Taarifa za filamu hazipatikani. Tafadhali jaribu tena.');
+                    return;
+                }
+                
+                // Ensure price is a number
+                let price = 0;
+                if (moviePrice !== undefined && moviePrice !== null && moviePrice !== '' && moviePrice !== 'undefined' && moviePrice !== 'null') {
+                    price = parseFloat(moviePrice);
+                    if (isNaN(price)) price = 0;
+                }
+                
+                // Ensure title is set
+                if (!movieTitle || movieTitle === 'undefined' || movieTitle === 'null' || movieTitle === 'Inapakia...') {
+                    movieTitle = 'Filamu';
+                }
+                
+                console.log('Final payment values:', { movieId, movieTitle, price });
+                
+                // Update the button's dataset with the correct values for future clicks
+                this.dataset.movieId = movieId;
+                this.dataset.movieTitle = movieTitle;
+                this.dataset.moviePrice = price;
+                
+                // Open payment modal
+                openPaymentModal(movieId, movieTitle, price);
+            });
+            
             return;
         }
 
+        // If can watch, load video
         if (!isSeries) {
             if (movieData.video) {
                 source.src = movieData.video;
@@ -541,21 +974,66 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
     } catch (error) {
-        console.error('Error loading movie:', error);
-        document.querySelector('.movie-info').innerHTML = `
-            <div style="text-align:center;padding:2rem;color:var(--watch-muted);">
-                <p style="font-size:1.2rem;color:#f87171;">Error loading movie</p>
-                <p>${error.message}</p>
-                <a href="movies.html" style="color:#6c63ff;text-decoration:none;font-weight:600;">← Rudi kwenye Movies</a>
-            </div>
-        `;
+        const errorMessage = error.message || 'Movie not found';
+        const isAccessDenied = errorMessage.includes('subscribe') || 
+                              errorMessage.includes('purchase') || 
+                              errorMessage.includes('access') ||
+                              errorMessage.includes('403');
+        
+        if (isAccessDenied) {
+            paywallOverlay.style.display = 'flex';
+            paywallTitle.textContent = '🔒 Ufikiaji Unahitajika';
+            paywallMessage.textContent = 'Unahitaji kujiandikisha au kununua filamu hii ili kuendelea kutazama. Jisajili sasa na upate ufikiaji wa filamu zote!';
+            buyMovieBtn.textContent = '💳 Nunua Filamu';
+            
+            const newBuyBtn = buyMovieBtn.cloneNode(true);
+            buyMovieBtn.parentNode.replaceChild(newBuyBtn, buyMovieBtn);
+            
+            const buyBtn = document.getElementById('buyMovieBtn');
+            
+            buyBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const movieIdFromUrl = urlParams.get('id');
+                
+                let movieId = this.dataset.movieId || movieIdFromUrl;
+                let movieTitle = this.dataset.movieTitle || titleEl.textContent || 'Filamu';
+                let moviePrice = parseFloat(this.dataset.moviePrice) || 0;
+                
+                if (!movieId || movieId === 'undefined' || movieId === 'null') {
+                    movieId = movieIdFromUrl;
+                }
+                
+                if (!movieId) {
+                    alert('Taarifa za filamu hazipatikani. Tafadhali jaribu tena.');
+                    return;
+                }
+                
+                openPaymentModal(movieId, movieTitle, moviePrice);
+            });
+        } else {
+            const movieInfo = document.querySelector('.movie-info');
+            movieInfo.innerHTML = `
+                <div style="text-align:center;padding:2rem;color:var(--watch-muted);">
+                    <p style="font-size:1.2rem;color:#f87171;">Error loading movie</p>
+                    <p>${errorMessage}</p>
+                    <div style="margin-top:1.5rem;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                        <a href="subscription.html" class="watch-btn watch-btn-subscribe">⭐ Jisajili Sasa</a>
+                        <a href="movies.html" style="color:#6c63ff;text-decoration:none;font-weight:600;padding:10px 20px;border:1px solid rgba(108,99,255,0.3);border-radius:999px;">← Rudi kwenye Movies</a>
+                    </div>
+                </div>
+            `;
+        }
     }
+
+    // ===== Render Functions =====
 
     function renderRecommendations(moreLikeThis) {
         const recRow = document.getElementById('recommendationRow');
         recRow.innerHTML = moreLikeThis.map(rec => {
             const recRuntime = formatRuntime(rec.movie_time);
-            
             return `
                 <div class="rec-card" data-id="${rec.id}">
                     <span class="rec-category">${rec.category || 'Filamu'}</span>
@@ -604,7 +1082,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         episodeGrid.innerHTML = season.episodes.map((ep, index) => {
             const isActive = index === currentEpisode;
             const epDuration = formatRuntime(ep.duration);
-            
             return `
                 <button class="episode-btn ${isActive ? 'active' : ''}" data-season="${seasonNumber}" data-episode="${index}">
                     <span class="ep-num">E${String(ep.episode_number || index + 1).padStart(2, '0')}</span>
@@ -690,157 +1167,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         playBtn.textContent = '▶ Replay';
     });
 
-    // ===== Buy Movie Button =====
-    buyMovieBtn.addEventListener('click', async function() {
-        try {
-            this.textContent = '⏳ Inachakata...';
-            this.disabled = true;
-            
-            const useCard = confirm('Je, unataka kulipa kwa Kadi ya Benki?\n\n"OK" = Kadi ya Benki\n"Cancel" = M-Pesa/Airtel/Tigo');
-            
-            let method, phone, cardData = null;
-            
-            if (useCard) {
-                method = 'bank_card';
-                
-                const cardNumber = prompt('Ingiza namba ya kadi (tarakimu 16, e.g., 4111111111111111):');
-                if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) {
-                    alert('Namba ya kadi si sahihi. Tafadhali jaribu tena.');
-                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                    this.disabled = false;
-                    return;
-                }
-                
-                const cardHolder = prompt('Ingiza jina kamili kwenye kadi (e.g., MOHAMMED AMINU):');
-                if (!cardHolder || cardHolder.length < 3) {
-                    alert('Jina kwenye kadi si sahihi. Tafadhali jaribu tena.');
-                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                    this.disabled = false;
-                    return;
-                }
-                
-                const expiry = prompt('Ingiza tarehe ya kuisha (MM/YY, e.g., 12/26):');
-                if (!expiry || !expiry.match(/^\d{2}\/\d{2}$/)) {
-                    alert('Tarehe ya kuisha si sahihi. Tafadhali ingiza kwa muundo MM/YY.');
-                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                    this.disabled = false;
-                    return;
-                }
-                
-                const cvv = prompt('Ingiza CVV (tarakimu 3-4 kwenye nyuma ya kadi):');
-                if (!cvv || cvv.length < 3) {
-                    alert('CVV si sahihi. Tafadhali ingiza tarakimu 3-4.');
-                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                    this.disabled = false;
-                    return;
-                }
-                
-                cardData = {
-                    accountName: cardHolder,
-                    cardNumber: cardNumber.replace(/\s/g, ''),
-                    expiryDate: expiry.replace(/\s/g, ''),
-                    cvv: cvv
-                };
-                
-                phone = '';
-                
-            } else {
-                const methodChoice = prompt(`Chagua njia ya malipo:\n1. M-Pesa\n2. Airtel Money\n3. Tigo Pesa\n\nIngiza namba (1-3):`);
-                
-                if (!methodChoice) {
-                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                    this.disabled = false;
-                    return;
-                }
-                
-                const methodMap = {
-                    '1': 'mpesa',
-                    '2': 'airtel_money',
-                    '3': 'mix_by_yas'
-                };
-                
-                method = methodMap[methodChoice] || 'mpesa';
-                
-                phone = prompt('Ingiza namba yako ya simu (e.g., 0677532140):');
-                if (!phone || phone.length < 9) {
-                    alert('Namba ya simu si sahihi. Tafadhali ingiza tarakimu 9-10.');
-                    this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                    this.disabled = false;
-                    return;
-                }
-            }
-            
-            const response = await api.createMoviePurchase(movieId, method, phone, cardData);
-            
-            if (response.success) {
-                const msg = method === 'bank_card' 
-                    ? '✅ Malipo ya kadi yameanzishwa!\nTafadhali subiri uthibitisho wa malipo.'
-                    : `✅ Malipo yameanzishwa!\nReference: ${response.reference}\nKiasi: TSh ${response.amount}\nTafadhali subiri uthibitisho kwenye simu yako.`;
-                
-                alert(msg);
-                
-                let attempts = 0;
-                const maxAttempts = 36;
-                
-                const checkStatus = setInterval(async () => {
-                    attempts++;
-                    
-                    try {
-                        const statusRes = await api.verifyMoviePurchase(response.reference);
-                        
-                        if (statusRes.success && statusRes.payment.status === 'paid') {
-                            clearInterval(checkStatus);
-                            alert('✅ Malipo yamekamilika! Unaweza kutazama sasa.');
-                            window.location.reload();
-                            
-                        } else if (statusRes.success && statusRes.payment.status === 'failed') {
-                            clearInterval(checkStatus);
-                            alert('❌ Malipo yameshindwa. Tafadhali jaribu tena.');
-                            this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                            this.disabled = false;
-                            
-                        } else if (attempts >= maxAttempts) {
-                            clearInterval(checkStatus);
-                            alert('⏱️ Muda wa malipo umeisha. Hakuna kiasi kilichotolewa kutoka akaunti yako. Tafadhali jaribu tena.');
-                            this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                            this.disabled = false;
-                        }
-                    } catch (e) {
-                        if (attempts >= maxAttempts) {
-                            clearInterval(checkStatus);
-                            alert('⏱️ Muda wa malipo umeisha. Tafadhali jaribu tena.');
-                            this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                            this.disabled = false;
-                        }
-                    }
-                }, 5000);
-                
-                setTimeout(() => {
-                    clearInterval(checkStatus);
-                }, maxAttempts * 5000 + 5000);
-                
-            } else {
-                alert(`❌ Malipo yameshindwa: ${response.message || 'Tafadhali jaribu tena.'}`);
-                this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-                this.disabled = false;
-            }
-            
-        } catch (error) {
-            console.error('Purchase error:', error);
-            
-            let errorMsg = 'Tumeshindwa kuanzisha malipo. Tafadhali jaribu tena.';
-            if (error.message.includes('bank_card') || error.message.includes('Card')) {
-                errorMsg = '💳 Tatizo la kadi ya benki. Hakikisha namba ya kadi, tarehe ya kuisha, na CVV ni sahihi.';
-            } else if (error.message.includes('phone')) {
-                errorMsg = '📱 Namba ya simu si sahihi. Hakikisha unaingiza namba sahihi.';
-            }
-            
-            alert(`❌ Error: ${errorMsg}`);
-            this.textContent = `💳 Nunua - TSh ${movieData.price}`;
-            this.disabled = false;
-        }
-    });
-
     // ===== Add Rating Button =====
     const actionsContainer = document.querySelector('.movie-actions');
     if (actionsContainer) {
@@ -861,11 +1187,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 // ===== About Modal Functions =====
 function openAboutModal() {
     const modal = document.getElementById('aboutModal');
-    if (modal) modal.style.display = 'block';
+    if (modal) modal.style.display = 'flex';
 }
 
 function closeModals() {
-    document.querySelectorAll('.modal').forEach(m => {
+    document.querySelectorAll('.about-modal, .payment-modal, .rating-modal').forEach(m => {
         m.style.display = 'none';
     });
 }
@@ -886,11 +1212,11 @@ document.querySelectorAll('.nav-link').forEach(link => {
     });
 });
 
-document.querySelectorAll('.modal-close').forEach(btn => {
+document.querySelectorAll('.about-modal-close').forEach(btn => {
     btn.addEventListener('click', closeModals);
 });
 
-document.querySelectorAll('.modal').forEach(modal => {
+document.querySelectorAll('.about-modal').forEach(modal => {
     modal.addEventListener('click', function(e) {
         if (e.target === this) closeModals();
     });
