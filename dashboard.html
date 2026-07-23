@@ -119,6 +119,101 @@
       display: none !important;
     }
 
+    /* Watch History Styles */
+    .watch-history-list {
+      list-style: none;
+      padding: 0;
+      margin: var(--space-3) 0 0;
+    }
+
+    .watch-history-list li {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-2);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background var(--dur-med) ease;
+    }
+
+    .watch-history-list li:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .watch-history-list .history-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .watch-history-list .history-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .watch-history-list .history-title {
+      font-weight: 600;
+      color: #f0f3ff;
+      font-size: 0.95rem;
+    }
+
+    .watch-history-list .history-meta {
+      font-size: 0.8rem;
+      color: #9aa2d7;
+      margin-top: 0.1rem;
+    }
+
+    .watch-history-list .history-badge {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .history-badge.completed {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.1);
+    }
+
+    .history-badge.incomplete {
+      background: rgba(251, 191, 36, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.1);
+    }
+
+    .history-badge.subscription {
+      background: rgba(108, 99, 255, 0.12);
+      color: #818cf8;
+      border: 1px solid rgba(108, 99, 255, 0.1);
+    }
+
+    .history-badge.free_trial {
+      background: rgba(52, 211, 153, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.1);
+    }
+
+    .history-badge.paid_single {
+      background: rgba(251, 146, 60, 0.12);
+      color: #fb923c;
+      border: 1px solid rgba(251, 146, 60, 0.1);
+    }
+
+    .watch-history-empty {
+      color: #9aa2d7;
+      font-size: 0.9rem;
+      padding: var(--space-3) 0;
+      text-align: center;
+    }
+
+    /* Spinner animation */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .profile-card {
@@ -136,6 +231,10 @@
       .header-right {
         justify-content: center;
         flex-wrap: wrap;
+      }
+      .watch-history-list li {
+        flex-wrap: wrap;
+        gap: var(--space-2);
       }
     }
   </style>
@@ -230,6 +329,14 @@
         <h2>100%</h2>
         <p><strong>Usalama wa Akaunti:</strong> Ulinzi thabiti wa akaunti yako kwa kutumia JWT na mifumo ya kisasa ya usimbaji nenosiri. Taarifa zako za malipo ziko salama 100%.</p>
         <p><strong>Ushuhuda wa Vipindi:</strong> Hifadhi kumbukumbu ya sehemu ulizotazama (Watch History) ili usipoteze mlolongo wa kisa chako hata ukitofautisha kifaa unachotazamia.</p>
+      </article>
+
+      <!-- Watch History Card -->
+      <article class="dash-card">
+        <p class="card-label">Historia ya Utazamaji</p>
+        <div id="watchHistoryContainer">
+          <!-- Dynamically rendered -->
+        </div>
       </article>
 
       <!-- Recommendations Card -->

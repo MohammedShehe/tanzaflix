@@ -79,8 +79,8 @@
       position: relative;
     }
 
-    /* ===== Category Filters ===== */
-    .category-filters {
+    /* ===== Country Filters ===== */
+    .country-filters {
       display: flex;
       flex-direction: column;
       gap: var(--space-5);
@@ -90,9 +90,10 @@
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.05);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      margin-bottom: var(--space-6);
     }
 
-    .category-filter-header {
+    .country-filter-header {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -100,7 +101,7 @@
       text-align: center;
     }
 
-    .category-hint {
+    .country-hint {
       margin: 0;
       color: #d1e9ff;
       font-family: var(--font-display);
@@ -109,7 +110,7 @@
       letter-spacing: 0.02em;
     }
 
-    .category-arrow {
+    .country-arrow {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -129,14 +130,14 @@
       50% { transform: translateY(4px); opacity: 1; }
     }
 
-    .category-filter-chips {
+    .country-filter-chips {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: var(--space-3);
     }
 
-    .category-filter-link {
+    .country-filter-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -154,7 +155,7 @@
       letter-spacing: 0.01em;
     }
 
-    .category-filter-link::before {
+    .country-filter-link::before {
       content: '';
       position: absolute;
       inset: 0;
@@ -163,27 +164,50 @@
       transition: opacity var(--dur-med) ease;
     }
 
-    .category-filter-link:hover,
-    .category-filter-link:focus-visible {
+    .country-filter-link:hover,
+    .country-filter-link:focus-visible {
       transform: translateY(-2px);
       border-color: rgba(108, 99, 255, 0.3);
       box-shadow: 0 8px 24px rgba(108, 99, 255, 0.15);
       color: #ffffff;
     }
 
-    .category-filter-link:hover::before {
+    .country-filter-link:hover::before {
       opacity: 1;
     }
 
-    .category-filter-link:active {
+    .country-filter-link:active {
       transform: translateY(0);
     }
 
-    .category-filter-link.active {
+    .country-filter-link.active {
       background: linear-gradient(135deg, rgba(108, 99, 255, 0.25), rgba(255, 78, 176, 0.15));
       border-color: rgba(108, 99, 255, 0.3);
       box-shadow: 0 4px 16px rgba(108, 99, 255, 0.12);
       color: #ffffff;
+    }
+
+    /* Translation Badge */
+    .translation-badge {
+      display: inline-block;
+      padding: 0.2rem 0.7rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .translation-badge.translated {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.12);
+    }
+
+    .translation-badge.original {
+      background: rgba(251, 191, 36, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.12);
     }
 
     /* ===== Movies Grid ===== */
@@ -292,6 +316,10 @@
       color: #818cf8;
       font-weight: 600;
       margin: 0 0 var(--space-2);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
     }
 
     .movie-card h2 {
@@ -328,14 +356,14 @@
       border: 1px solid rgba(108, 99, 255, 0.1);
     }
 
-    .movie-card .movie-meta .category-tag {
-      background: rgba(255, 78, 176, 0.08);
+    .movie-card .movie-meta .country-tag {
+      background: rgba(52, 211, 153, 0.08);
       padding: 0.2rem 0.7rem;
       border-radius: var(--radius-pill);
       font-size: 0.75rem;
       font-weight: 600;
-      color: #f472b6;
-      border: 1px solid rgba(255, 78, 176, 0.08);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.08);
     }
 
     /* Type badge - Single Movie or Series */
@@ -422,16 +450,16 @@
         padding: var(--space-6) var(--space-5);
       }
 
-      .category-filters {
+      .country-filters {
         padding: var(--space-5);
       }
 
-      .category-filter-header {
+      .country-filter-header {
         flex-direction: column;
         gap: var(--space-2);
       }
 
-      .category-arrow {
+      .country-arrow {
         width: 2.4rem;
         height: 2.4rem;
         font-size: 1.2rem;
@@ -457,7 +485,7 @@
         font-size: 1.3rem;
       }
 
-      .category-filter-link {
+      .country-filter-link {
         font-size: 0.8rem;
         padding: 0.5rem 1rem;
       }
@@ -529,10 +557,10 @@
 
     <div class="movies-hero">
       <h1 class="movies-hero-title">Tazama Filamu Bora</h1>
-      <p class="movies-hero-copy">Chagua kategoria na uanze kutazama filamu za Bongo, Kihindi, Kiingereza, Kiarabu, na zinginezo. Burudani yako inakungoja.</p>
+      <p class="movies-hero-copy">Chagua nchi na uanze kutazama filamu za Bongo, Kihindi, Kiingereza, Kiarabu, na zinginezo. Burudani yako inakungoja.</p>
     </div>
 
-    <div id="categoryFilters" class="category-filters">
+    <div id="countryFilters" class="country-filters">
       <!-- Dynamic content -->
     </div>
 

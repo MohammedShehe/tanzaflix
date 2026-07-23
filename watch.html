@@ -162,6 +162,36 @@
       opacity: 1;
     }
 
+    /* ===== Access Badge ===== */
+    .access-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .access-badge.premium {
+      background: rgba(229, 9, 20, 0.15);
+      color: #ff6b7a;
+      border-color: rgba(229, 9, 20, 0.2);
+    }
+
+    .access-badge.free-trial {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      border-color: rgba(34, 197, 94, 0.15);
+    }
+
+    .access-badge.subscribed {
+      background: rgba(108, 99, 255, 0.15);
+      color: #818cf8;
+      border-color: rgba(108, 99, 255, 0.2);
+    }
+
     /* ===== Paywall Overlay (Subscribe / Buy gate) ===== */
     .paywall-overlay {
       position: absolute;
@@ -260,9 +290,6 @@
       padding: 4px 14px;
       border-radius: 999px;
       background: rgba(229, 9, 20, 0.15);
-      color: #ff6b7a;
-      font-size: 0.8rem;
-      font-weight: 700;
       border: 1px solid rgba(229, 9, 20, 0.2);
       white-space: nowrap;
     }
@@ -681,6 +708,11 @@
       color: var(--watch-muted);
       margin-top: 4px;
     }
+
+    /* Spinner */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -750,6 +782,7 @@
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px;">
               <h1 id="watchTitle" class="movie-title">Inapakia...</h1>
               <span id="watchTypeBadge" class="type-badge-watch single">Single Movie</span>
+              <span id="accessBadge" class="access-badge" style="display:none;"></span>
             </div>
             <div class="movie-meta">
               <span id="watchYear">2024</span>
@@ -759,9 +792,11 @@
               <span id="watchRuntime">2h 10m</span>
               <span class="dot">•</span>
               <span id="watchLang">Kiswahili</span>
+              <span class="dot">•</span>
+              <span id="watchCountry">🇹🇿 Bongo</span>
             </div>
           </div>
-          <div class="movie-badge">▶ Premium Streaming</div>
+          <div class="movie-badge" id="streamingBadge">▶ Premium Streaming</div>
         </div>
 
         <!-- Series Navigation -->
@@ -783,7 +818,7 @@
           <div class="rating-bar" aria-label="rating bar">
             <div class="rating-fill"></div>
           </div>
-          <span class="rating-text"><strong>8.9</strong> / 10 ★</span>
+          <span class="rating-text" id="ratingText"><strong>8.9</strong> / 10 ★</span>
         </div>
 
         <!-- Actions -->

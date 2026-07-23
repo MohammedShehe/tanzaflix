@@ -1,4 +1,4 @@
-// js/movies.js - Movies Page with Ratings
+// js/movies.js - Movies Page with Country Filtering
 
 import api from './api.js';
 import auth from './auth.js';
@@ -10,31 +10,34 @@ document.addEventListener('DOMContentLoaded', async function() {
     const params = new URLSearchParams(window.location.search);
     const translated = params.get('translated') === '1';
     const moviesList = document.getElementById('moviesList');
-    const categoryFilters = document.getElementById('categoryFilters');
+    const countryFilters = document.getElementById('countryFilters');
 
     // Set title based on translation preference
     document.getElementById('moviesTitle').textContent = translated 
         ? 'Michezo / Movies zilizotafsiriwa' 
         : 'Michezo / Movies hazijatafsiriwa';
 
-    // ===== Category Filters =====
-    const categories = [
+    // ===== Country Filters =====
+    // Exact country names matching backend enum
+    const countries = [
         { id: 'all', label: 'Zote' },
-        { id: 'Action', label: 'Action' },
-        { id: 'Love story', label: 'Love Story' },
-        { id: 'Drama', label: 'Drama' },
-        { id: 'Mix', label: 'Mix' }
+        { id: 'Bongo Movie', label: 'Bongo Movie' },
+        { id: 'Movie ya Kiarabu', label: 'Movie ya Kiarabu' },
+        { id: 'Movie ya Kifilipino', label: 'Movie ya Kifilipino' },
+        { id: 'Movie ya Kihindi', label: 'Movie ya Kihindi' },
+        { id: 'Movie ya Kitaliano', label: 'Movie ya Kitaliano' },
+        { id: 'Movie ya Kikorea', label: 'Movie ya Kikorea' }
     ];
 
-    categoryFilters.innerHTML = `
-        <div class="category-filter-header">
-            <span class="category-hint">Chagua Kategoria</span>
-            <span class="category-arrow">↓</span>
+    countryFilters.innerHTML = `
+        <div class="country-filter-header">
+            <span class="country-hint">🌍 Chagua Nchi</span>
+            <span class="country-arrow">↓</span>
         </div>
-        <div class="category-filter-chips" id="categoryChips">
-            ${categories.map(cat => `
-                <a href="#" class="category-filter-link ${cat.id === 'all' ? 'active' : ''}" data-category="${cat.id}">
-                    ${cat.label}
+        <div class="country-filter-chips" id="countryChips">
+            ${countries.map(c => `
+                <a href="#" class="country-filter-link ${c.id === 'all' ? 'active' : ''}" data-country="${c.id}">
+                    ${c.label}
                 </a>
             `).join('')}
         </div>
@@ -42,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ===== Load Movies =====
     let moviesData = [];
-    let selectedCategory = 'all';
+    let selectedCountry = 'all';
 
     async function loadMovies() {
         try {
@@ -56,7 +59,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             const response = await api.getUserMovies();
             
             if (response.success && response.movies) {
-                moviesData = response.movies;
+                // ===== FILTER BY TRANSLATION STATUS =====
+                let filteredMovies = response.movies;
+                
+                if (translated) {
+                    filteredMovies = response.movies.filter(m => m.is_translated === true || m.is_translated === 1);
+                } else {
+                    filteredMovies = response.movies.filter(m => m.is_translated === false || m.is_translated === 0);
+                }
+                
+                moviesData = filteredMovies;
                 filterAndRenderMovies();
             } else {
                 throw new Error(response.message || 'Failed to load movies');
@@ -66,21 +78,25 @@ document.addEventListener('DOMContentLoaded', async function() {
             moviesList.innerHTML = `
                 <div class="empty-state">
                     <p style="color:#f87171;">❌ Error loading movies: ${error.message}</p>
-                    <p style="color:#9aa2d7;margin-top:1rem;">Tafadhasi jaribu tena baadaye.</p>
+                    <p style="color:#9aa2d7;margin-top:1rem;">Tafadhali jaribu tena baadaye.</p>
                 </div>
             `;
         }
     }
 
     function filterAndRenderMovies() {
-        const filtered = selectedCategory === 'all' 
+        // Filter by country (using exact country name as stored in DB)
+        let filtered = selectedCountry === 'all' 
             ? moviesData 
-            : moviesData.filter(m => m.category === selectedCategory);
+            : moviesData.filter(m => m.country === selectedCountry);
 
         if (filtered.length === 0) {
+            const message = translated 
+                ? 'Hakuna movies zilizotafsiriwa kutoka nchi hii' 
+                : 'Hakuna movies hazijatafsiriwa kutoka nchi hii';
             moviesList.innerHTML = `
                 <div class="empty-state">
-                    <p style="color:#9aa2d7;">Hakuna movies katika kategoria hii</p>
+                    <p style="color:#9aa2d7;">${message}</p>
                 </div>
             `;
             return;
@@ -91,12 +107,20 @@ document.addEventListener('DOMContentLoaded', async function() {
                 ? '<span class="type-badge series">📺 Series</span>' 
                 : '<span class="type-badge single">🎬 Single</span>';
             
+            // Translation badge
+            const translationBadge = movie.is_translated 
+                ? '<span class="translation-badge translated">✅ Imetafsiriwa</span>'
+                : '<span class="translation-badge original">📝 Asili</span>';
+            
             // Rating display
             const avgRating = movie.rating?.average || 0;
             const totalRatings = movie.rating?.total || 0;
             const ratingDisplay = totalRatings > 0 
                 ? `<span style="color:#fbbf24;">★</span> ${avgRating.toFixed(1)} (${totalRatings})` 
                 : '⭐ Hakuna rating';
+
+            // Country display - use exact country name from backend
+            const countryDisplay = movie.country || 'N/A';
 
             return `
                 <div class="movie-card" data-id="${movie.id}">
@@ -109,12 +133,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                             <span>▶ Tazama</span>
                         </div>
                     </div>
-                    <div class="card-label">${typeBadge}</div>
+                    <div class="card-label">
+                        ${typeBadge}
+                        ${translationBadge}
+                    </div>
                     <h2>${movie.title}</h2>
                     <div class="movie-meta">
                         <span>${movie.year || 'N/A'}</span>
                         <span class="lang-tag">${movie.language || 'N/A'}</span>
-                        <span class="category-tag">${movie.category || 'N/A'}</span>
+                        <span class="country-tag">${countryDisplay}</span>
                     </div>
                     <div style="margin: 0.3rem 0 0.5rem; font-size:0.85rem; color:#b8c4ff;">
                         ${ratingDisplay}
@@ -141,16 +168,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // ===== Category Filter Click Handlers =====
-    document.getElementById('categoryChips').addEventListener('click', function(e) {
-        const link = e.target.closest('.category-filter-link');
+    // ===== Country Filter Click Handlers =====
+    document.getElementById('countryChips').addEventListener('click', function(e) {
+        const link = e.target.closest('.country-filter-link');
         if (!link) return;
         e.preventDefault();
 
-        document.querySelectorAll('.category-filter-link').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.country-filter-link').forEach(el => el.classList.remove('active'));
         link.classList.add('active');
 
-        selectedCategory = link.dataset.category;
+        selectedCountry = link.dataset.country;
         filterAndRenderMovies();
     });
 
@@ -170,58 +197,33 @@ function closeModals() {
     });
 }
 
-// ===== Navigation click handlers - FIXED =====
+// ===== Navigation click handlers =====
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
         const id = this.id;
         
-        // Handle About modal
         if (id === 'navAbout') {
             e.preventDefault();
             openAboutModal();
             return;
         }
         
-        // Handle Payment/Subscription
         if (id === 'navPayment') {
             e.preventDefault();
             window.location.href = 'subscription.html';
             return;
         }
         
-        // Handle Ratings - Navigate to admin.html with ratings tab
-        if (id === 'navRatings' || this.textContent.trim() === 'Ratings') {
-            e.preventDefault();
-            window.location.href = 'admin.html?tab=ratings';
-            return;
-        }
-        
-        // Handle navigation links with actual href
         if (href && !href.startsWith('#') && href !== '#' && href !== '') {
-            // Allow normal navigation
             return;
         }
         
-        // Prevent default for empty or # links
         if (href === '#' || href === '' || href === null) {
             e.preventDefault();
         }
     });
 });
-
-// ===== Also handle Ratings link specifically =====
-// Find the Ratings nav link by its text content or id
-const ratingsLink = document.querySelector('.nav-link#navRatings') || 
-                    document.querySelector('.nav-link:not(#navAbout):not(#navPayment)')?.textContent?.trim() === 'Ratings' ? 
-                    document.querySelector('.nav-link:not(#navAbout):not(#navPayment)') : null;
-
-if (ratingsLink) {
-    ratingsLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        window.location.href = 'admin.html?tab=ratings';
-    });
-}
 
 // ===== Modal close handlers =====
 document.querySelectorAll('.modal-close').forEach(btn => {

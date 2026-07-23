@@ -1,4 +1,4 @@
-// js/watch.js - Watch Page with Rating
+// js/watch.js - Watch Page with Rating, Country Filter, and Professional History
 
 import api from './api.js';
 import auth from './auth.js';
@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     const watchGenre = document.getElementById('watchGenre');
     const watchRuntime = document.getElementById('watchRuntime');
     const watchLang = document.getElementById('watchLang');
+    const watchCountry = document.getElementById('watchCountry');
+    const streamingBadge = document.getElementById('streamingBadge');
+    const accessBadge = document.getElementById('accessBadge');
+    const ratingText = document.getElementById('ratingText');
 
     let movieData = null;
     let currentSeason = 1;
@@ -39,9 +43,20 @@ document.addEventListener('DOMContentLoaded', async function() {
     let isSeries = false;
     let canWatch = false;
     let accessType = null;
+    let isFirstTime = false;
 
     // Show loading state
     titleEl.textContent = 'Inapakia...';
+
+    // ===== Country Display Map =====
+    const countryMap = {
+        'Bongo Movie': '🇹🇿 Bongo',
+        'Movie ya Kiarabu': '🇸🇦 Kiarabu',
+        'Movie ya Kifilipino': '🇵🇭 Kifilipino',
+        'Movie ya Kihindi': '🇮🇳 Kihindi',
+        'Movie ya Kitaliano': '🇮🇹 Kitaliano',
+        'Movie ya Kikorea': '🇰🇷 Kikorea'
+    };
 
     // ===== Rating Modal =====
     const ratingModal = document.createElement('div');
@@ -241,24 +256,45 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ===== Update Rating Display =====
     function updateRatingDisplay() {
-        const ratingContainer = document.querySelector('.rating-row');
-        if (!ratingContainer) return;
-        
-        const ratingBar = ratingContainer.querySelector('.rating-fill');
-        const ratingText = ratingContainer.querySelector('.rating-text');
-        
         if (movieData?.rating) {
             const avg = movieData.rating.average || 0;
             const total = movieData.rating.total || 0;
             const percentage = avg > 0 ? (avg / 10) * 100 : 0;
             
+            const ratingBar = document.querySelector('.rating-fill');
             if (ratingBar) {
                 ratingBar.style.width = `${Math.min(percentage, 100)}%`;
             }
-            if (ratingText) {
-                const userRatingText = userHasRated ? ` • Rating yako: ${userRatingData?.rating}/10` : '';
-                ratingText.innerHTML = `<strong>${avg.toFixed(1)}</strong> / 10 ★ (${total} ratings)${userRatingText}`;
-            }
+            
+            const userRatingText = userHasRated ? ` • Rating yako: ${userRatingData?.rating}/10` : '';
+            ratingText.innerHTML = `<strong>${avg.toFixed(1)}</strong> / 10 ★ (${total} ratings)${userRatingText}`;
+        }
+    }
+
+    // ===== Format Runtime Helper =====
+    function formatRuntime(minutes) {
+        if (!minutes || minutes <= 0) {
+            return 'N/A';
+        }
+        
+        // If it's already a string like "2h 10m", return as-is
+        if (typeof minutes === 'string' && (minutes.includes('h') || minutes.includes('m'))) {
+            return minutes;
+        }
+        
+        // Convert number to hours and minutes
+        const mins = parseInt(minutes);
+        if (isNaN(mins)) return 'N/A';
+        
+        const hours = Math.floor(mins / 60);
+        const remainingMins = mins % 60;
+        
+        if (hours > 0 && remainingMins > 0) {
+            return `${hours}h ${remainingMins}m`;
+        } else if (hours > 0) {
+            return `${hours}h`;
+        } else {
+            return `${remainingMins}m`;
         }
     }
 
@@ -274,6 +310,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         canWatch = movieData.canWatch || false;
         accessType = movieData.accessType || null;
         isSeries = movieData.movie_type === 'series';
+        isFirstTime = movieData.isFirstTime || false;
 
         // Check if user has rated this movie
         if (movieData.rating) {
@@ -286,8 +323,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         descEl.textContent = movieData.description || 'Mchezo wa kuvutia wenye hadithi kali.';
         watchYear.textContent = movieData.year || '2024';
         watchGenre.textContent = movieData.category || 'Action';
-        watchRuntime.textContent = movieData.movie_time || '2h 10m';
+        
+        // ===== FORMAT AND DISPLAY RUNTIME PROPERLY =====
+        const runtimeDisplay = formatRuntime(movieData.movie_time);
+        watchRuntime.textContent = runtimeDisplay;
+        
         watchLang.textContent = movieData.language || 'Kiswahili';
+        watchCountry.textContent = countryMap[movieData.country] || movieData.country || 'N/A';
 
         // Set type badge
         if (isSeries) {
@@ -296,6 +338,30 @@ document.addEventListener('DOMContentLoaded', async function() {
         } else {
             typeBadge.textContent = '🎬 Single Movie';
             typeBadge.className = 'type-badge-watch single';
+        }
+
+        // ===== SET ACCESS BADGE =====
+        if (canWatch) {
+            if (accessType === 'subscription') {
+                streamingBadge.textContent = '▶ Premium Streaming';
+                streamingBadge.style.display = 'inline-flex';
+                accessBadge.style.display = 'none';
+            } else if (accessType === 'free_trial') {
+                streamingBadge.textContent = '✅ Free Trial - First Time Watching';
+                streamingBadge.style.display = 'inline-flex';
+                accessBadge.style.display = 'none';
+            } else if (accessType === 'paid_single') {
+                streamingBadge.textContent = '▶ Premium Streaming';
+                streamingBadge.style.display = 'inline-flex';
+                accessBadge.style.display = 'none';
+            } else {
+                streamingBadge.textContent = '▶ Premium Streaming';
+                streamingBadge.style.display = 'inline-flex';
+                accessBadge.style.display = 'none';
+            }
+        } else {
+            streamingBadge.style.display = 'none';
+            accessBadge.style.display = 'none';
         }
 
         // Set poster
@@ -320,6 +386,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                 paywallMessage.textContent = 'Umeshatazama filamu/kipindi chako cha bure. Nunua filamu hii au jisajili ili uendelee kutazama filamu na mfululizo bila kikomo.';
             } else if (accessType === 'denied') {
                 paywallMessage.textContent = 'Unahitaji kujiandikisha au kununua filamu hii ili kuendelea kutazama. Jisajili sasa na upate ufikiaji wa filamu zote!';
+            }
+            
+            // Still load recommendations even if can't watch
+            if (movieData.more_like_this && movieData.more_like_this.length > 0) {
+                renderRecommendations(movieData.more_like_this);
             }
             return;
         }
@@ -369,20 +440,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Recommendations
         if (movieData.more_like_this && movieData.more_like_this.length > 0) {
-            const recRow = document.getElementById('recommendationRow');
-            recRow.innerHTML = movieData.more_like_this.map(rec => `
-                <div class="rec-card" data-id="${rec.id}">
-                    <span class="rec-category">${rec.category || 'Filamu'}</span>
-                    <strong>${rec.title}</strong>
-                    <span class="rec-meta">${rec.movie_time || '2h'}</span>
-                </div>
-            `).join('');
-            
-            document.querySelectorAll('.rec-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    window.location.href = `watch.html?id=${this.dataset.id}`;
-                });
-            });
+            renderRecommendations(movieData.more_like_this);
         }
 
     } catch (error) {
@@ -394,6 +452,29 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <a href="movies.html" style="color:#6c63ff;text-decoration:none;font-weight:600;">← Rudi kwenye Movies</a>
             </div>
         `;
+    }
+
+    // ===== Render Recommendations =====
+    function renderRecommendations(moreLikeThis) {
+        const recRow = document.getElementById('recommendationRow');
+        recRow.innerHTML = moreLikeThis.map(rec => {
+            // Format the runtime for each recommendation
+            const recRuntime = formatRuntime(rec.movie_time);
+            
+            return `
+                <div class="rec-card" data-id="${rec.id}">
+                    <span class="rec-category">${rec.category || 'Filamu'}</span>
+                    <strong>${rec.title}</strong>
+                    <span class="rec-meta">${recRuntime}</span>
+                </div>
+            `;
+        }).join('');
+        
+        document.querySelectorAll('.rec-card').forEach(card => {
+            card.addEventListener('click', function() {
+                window.location.href = `watch.html?id=${this.dataset.id}`;
+            });
+        });
     }
 
     // ===== Series Navigation Functions =====
@@ -427,11 +508,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         episodeGrid.innerHTML = season.episodes.map((ep, index) => {
             const isActive = index === currentEpisode;
+            // Format episode duration
+            const epDuration = formatRuntime(ep.duration);
+            
             return `
                 <button class="episode-btn ${isActive ? 'active' : ''}" data-season="${seasonNumber}" data-episode="${index}">
                     <span class="ep-num">E${String(ep.episode_number || index + 1).padStart(2, '0')}</span>
                     <span class="ep-title">${ep.episode_title || `Episode ${index + 1}`}</span>
-                    <span class="ep-duration">${ep.duration || '45m'}</span>
+                    <span class="ep-duration">${epDuration}</span>
                 </button>
             `;
         }).join('');
@@ -467,7 +551,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         titleEl.textContent = `${movieData.title} - E${String(ep.episode_number || episodeIndex + 1).padStart(2, '0')}`;
         episodeCurrentLabel.textContent = `S${String(seasonNumber).padStart(2, '0')} E${String(ep.episode_number || episodeIndex + 1).padStart(2, '0')} - ${ep.episode_title || 'Episode'}`;
         descEl.textContent = `${movieData.description || ''} Episode ${ep.episode_number || episodeIndex + 1}: ${ep.episode_title || ''}`;
-        watchRuntime.textContent = ep.duration || '45m';
+        
+        // Format episode duration
+        const epDuration = formatRuntime(ep.duration);
+        watchRuntime.textContent = epDuration;
 
         document.querySelectorAll('.episode-btn').forEach(btn => {
             btn.classList.toggle('active', 
