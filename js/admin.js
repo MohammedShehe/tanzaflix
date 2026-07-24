@@ -1224,5 +1224,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     } catch (e) {}
 
-    console.log('🔐 Admin Panel Loaded');
 });

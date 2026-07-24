@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Exact country names matching backend enum
     const countries = [
         { id: 'all', label: 'Zote' },
+        { id: 'Movie ya Kiengereza', label: 'Movie ya Kiengereza' },
         { id: 'Bongo Movie', label: 'Bongo Movie' },
         { id: 'Movie ya Kiarabu', label: 'Movie ya Kiarabu' },
         { id: 'Movie ya Kifilipino', label: 'Movie ya Kifilipino' },
@@ -242,4 +243,3 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-console.log('🎬 TanzaFlix Movies page loaded');

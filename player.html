@@ -222,9 +222,8 @@
                         totalDuration || null
                     );
                     showProgressSaved();
-                    console.log(`✅ Progress saved: ${formatTime(currentTime)} / ${formatTime(totalDuration)}`);
                 } catch (error) {
-                    console.warn('Failed to save progress:', error);
+                    // Silent fail
                 }
             }
 
@@ -292,9 +291,6 @@
                             
                             if (resumeTime < video.duration) {
                                 video.currentTime = resumeTime;
-                                console.log(`⏩ Resumed at ${formatTime(resumeTime)}`);
-                            } else {
-                                console.log('⚠️ Resume time exceeds duration, starting from beginning');
                             }
                             
                             loadingOverlay.classList.add('hidden');
@@ -356,7 +352,6 @@
                     video.addEventListener('ended', async function() {
                         try {
                             await api.markCompleted(movieId, episodeId || null);
-                            console.log('🎉 Movie marked as completed!');
                             const badge = document.createElement('div');
                             badge.className = 'resume-badge';
                             badge.style.background = 'rgba(34, 197, 94, 0.15)';
@@ -365,12 +360,11 @@
                             badge.innerHTML = '✅ Imekamilika!';
                             resumeBadgeContainer.appendChild(badge);
                         } catch (error) {
-                            console.warn('Failed to mark as completed:', error);
+                            // Silent fail
                         }
                     });
 
                 } catch (error) {
-                    console.error('Error loading content:', error);
                     loadingOverlay.classList.add('hidden');
                     movieTitle.textContent = '⚠️ Hitilafu';
                     movieMeta.textContent = error.message || 'Imeshindwa kupakia video';

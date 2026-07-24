@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }
         } catch (e) {
-            return false;
+            // Silent fail
         }
         return false;
     }
@@ -121,7 +121,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (response.success) {
                 subscriptionStatus = response;
                 if (response.subscription) {
-                    // Update local storage with latest data
                     const subData = {
                         isSubscribed: response.subscription.is_active,
                         planId: response.subscription.plan_id,
@@ -139,9 +138,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return response;
             }
         } catch (error) {
-            console.error('Error fetching subscription status:', error);
-            return null;
+            // Silent fail
         }
+        return null;
     }
 
     // ===== Render Active Subscription Banner =====
@@ -157,7 +156,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const now = new Date();
         const daysLeft = Math.max(0, Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24)));
         
-        // Check if subscription is in cancelling state
         const isCancelling = currentSubscription.status === 'cancelling' || 
                             (currentSubscription.cancellation && currentSubscription.cancellation.status === 'pending');
         
@@ -200,7 +198,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             </div>
         `;
 
-        // Show/hide cancellation button
         if (cancelSubscriptionBtn) {
             if (isCancelling) {
                 cancelSubscriptionBtn.textContent = '⏳ Ombi la Kughairi Limetumwa';
@@ -272,7 +269,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     card.dataset.planPrice = `TSh ${plan.price.toLocaleString()}`;
                     card.dataset.planAmount = plan.price;
                     
-                    // Check if user already has this plan
                     if (currentSubscription && currentSubscription.planId === plan.id && currentSubscription.isSubscribed) {
                         card.classList.add('subscribed');
                         const badge = document.createElement('span');
@@ -305,7 +301,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 });
             }
         } catch (error) {
-            console.error('Error loading plans:', error);
             showError('⚠️ Hatukuweza kupakia mipango ya usajili. Tafadhali jaribu tena baadaye.', 'error');
         }
     }
@@ -371,7 +366,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         cancelSubscriptionBtn.addEventListener('click', function() {
             if (this.disabled) return;
             
-            // Show cancel modal
             if (cancelModal) {
                 cancelModal.classList.add('active');
                 cancelModal.style.display = 'flex';
@@ -395,7 +389,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 setButtonLoading(btn, false);
                 
                 if (response.success) {
-                    // Close modal
                     if (cancelModal) {
                         cancelModal.classList.remove('active');
                         cancelModal.style.display = 'none';
@@ -403,11 +396,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                     
                     showToast('✅ Usajili umeghairiwa. Utapata ufikiaji hadi mwisho wa kipindi chako.', 'warning');
                     
-                    // Refresh subscription status
                     await fetchSubscriptionStatus();
                     renderActiveSubscription();
                     
-                    // Update UI
                     if (cancelSubscriptionBtn) {
                         cancelSubscriptionBtn.textContent = '⏳ Ombi la Kughairi Limetumwa';
                         cancelSubscriptionBtn.disabled = true;
@@ -418,7 +409,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     alert(`❌ ${response.message || 'Imeshindwa kughairi usajili'}`);
                 }
             } catch (error) {
-                console.error('Cancel subscription error:', error);
                 setButtonLoading(btn, false);
                 alert(`❌ Error: ${error.message}`);
             }
@@ -545,7 +535,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                             paymentSuccess.style.display = 'block';
                             hideError();
                             
-                            // Refresh subscription status
                             await fetchSubscriptionStatus();
                             renderActiveSubscription();
                             
@@ -576,7 +565,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                             showError('⏱️ Muda wa malipo umeisha. Hakuna kiasi kilichotolewa kutoka akaunti yako. Tafadhali jaribu tena.', 'error');
                         }
                     } catch (e) {
-                        console.warn('Status check failed:', e);
                         if (attempts >= maxAttempts) {
                             clearInterval(checkStatus);
                             paymentProcessing.style.display = 'none';
@@ -603,7 +591,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             
         } catch (error) {
-            console.error('Payment error:', error);
             paymentProcessing.style.display = 'none';
             payNowBtn.style.display = 'block';
             payNowBtn.disabled = false;
@@ -651,8 +638,36 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    // ===== Show Toast Notification =====
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            background: ${type === 'warning' ? 'rgba(251, 191, 36, 0.95)' : 'rgba(34, 197, 94, 0.95)'};
+            color: #0a0a1a;
+            font-weight: 600;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            z-index: 999;
+            animation: fadeSlideIn 0.4s ease;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(20px)';
+            toast.style.transition = 'all 0.4s ease';
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
+
     // ===== Initialize =====
-    // First fetch subscription status from API
     await fetchSubscriptionStatus();
     
     const hasSubscription = currentSubscription && currentSubscription.isSubscribed;
@@ -663,7 +678,4 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     togglePaymentFields();
-
-    console.log('💰 TanzaFlix Subscription page loaded');
-    console.log(hasSubscription ? '✅ User has active subscription' : '👤 User is not subscribed');
 });

@@ -45,7 +45,6 @@ async function initializeDashboard() {
     await loadData();
     
     isInitialized = true;
-    console.log('📊 Activities Dashboard Loaded');
 }
 
 // ===== Real-time Clock =====

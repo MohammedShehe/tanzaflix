@@ -398,5 +398,4 @@ document.addEventListener('DOMContentLoaded', function() {
     showStep(1);
     forgotEmail.value = '';
 
-    console.log('🔐 Forgot Password page initialized');
 });

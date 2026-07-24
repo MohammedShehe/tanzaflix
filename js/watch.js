@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Country Display Map
     const countryMap = {
+        'Movie ya Kiengereza': '🇺🇸 Kiengereza',
         'Bongo Movie': '🇹🇿 Bongo',
         'Movie ya Kiarabu': '🇸🇦 Kiarabu',
         'Movie ya Kifilipino': '🇵🇭 Kifilipino',
@@ -115,8 +116,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     function openPaymentModal(movieId, movieTitle, price) {
         const displayPrice = parseFloat(price) || 0;
-        
-        console.log('Opening payment modal:', { movieId, movieTitle, price, displayPrice });
         
         paymentMovieId.value = movieId || '';
         paymentAmount.textContent = `TSh ${Number(displayPrice).toLocaleString()}`;
@@ -141,9 +140,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         mobileMoneyFields.style.display = 'block';
         cardFields.style.display = 'none';
         
-        // IMPORTANT: Show the payment modal
         paymentModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
+        document.body.style.overflow = 'hidden';
     }
 
     function closePaymentModal() {
@@ -152,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             paymentCheckInterval = null;
         }
         paymentModal.style.display = 'none';
-        document.body.style.overflow = ''; // Restore scrolling
+        document.body.style.overflow = '';
     }
 
     function showPaymentStatus(message, type = 'info') {
@@ -262,7 +260,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             let errorMsg = 'Tumeshindwa kuanzisha malipo. Tafadhali jaribu tena.';
             const errorMessage = error.message || '';
             
-            // Handle duplicate purchase / already purchased errors
             if (errorMessage.includes('ALREADY_PURCHASED') || 
                 errorMessage.includes('Duplicate entry') ||
                 errorMessage.includes('already have access') ||
@@ -273,14 +270,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 showPaymentStatus(`✅ ${errorMsg}`, 'success');
                 paymentSubmitBtn.innerHTML = '✅ Tayari Imegharamiwa';
                 
-                // Reload the page after a moment to show the movie
                 setTimeout(() => {
                     closePaymentModal();
                     window.location.reload();
                 }, 2000);
                 return;
             } 
-            // Handle pending purchase
             else if (errorMessage.includes('PENDING_PURCHASE') || 
                      errorMessage.includes('pending purchase')) {
                 errorMsg = '⏳ Malipo yako yanachakatwa. Tafadhali subiri uthibitisho.';
@@ -289,13 +284,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                 paymentSubmitBtn.innerHTML = '⚡ Malipo Sasa';
                 return;
             } 
-            // Handle bank card errors
             else if (errorMessage.includes('bank_card') || 
                      errorMessage.includes('Card') || 
                      errorMessage.includes('card')) {
                 errorMsg = '💳 Tatizo la kadi ya benki. Hakikisha namba ya kadi, tarehe ya kuisha, na CVV ni sahihi.';
             } 
-            // Handle phone errors
             else if (errorMessage.includes('phone')) {
                 errorMsg = '📱 Namba ya simu si sahihi. Hakikisha unaingiza namba sahihi.';
             }
@@ -654,12 +647,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 movieData = userMovie;
                 
-                // IMPORTANT: Use canWatch from the user response
                 if (userMovie.canWatch !== undefined && userMovie.canWatch !== null) {
                     canWatch = userMovie.canWatch;
                 }
                 
-                // Check for pending purchase
                 if (userMovie.isPurchasePending) {
                     isPurchasePending = true;
                     purchaseStatusText = userMovie.purchaseStatus || 'pending';
@@ -675,10 +666,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }
         } catch (userError) {
-            console.warn('User endpoint error:', userError);
+            // Silently handle error
         }
         
-        // If we don't have movieData, try admin endpoint
         if (!movieData) {
             try {
                 const adminResponse = await api.adminGetMovie(movieId);
@@ -689,11 +679,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                     moviePrice = parseFloat(adminMovie.price) || 0;
                 }
             } catch (adminError) {
-                console.warn('Admin endpoint error:', adminError);
+                // Silently handle error
             }
         }
         
-        // If still no price, try the movies list endpoint
         if (moviePrice === 0) {
             try {
                 const moviesResponse = await api.getUserMovies();
@@ -705,7 +694,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
                 }
             } catch (listError) {
-                console.warn('Movies list endpoint error:', listError);
+                // Silently handle error
             }
         }
 
@@ -716,7 +705,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             price: moviePrice
         };
 
-        // If we don't have movieData from user endpoint, create a basic object
         if (!movieData) {
             movieData = {
                 id: movieIdValue,
@@ -762,7 +750,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             typeBadge.className = 'type-badge-watch single';
         }
 
-        // Handle pending purchase case
         if (isPurchasePending && !canWatch) {
             streamingBadge.style.display = 'inline-flex';
             streamingBadge.textContent = '⏳ Malipo Yanachakatwa...';
@@ -798,7 +785,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // ===== PAYWALL HANDLING =====
         if (!canWatch) {
-            // Show pending purchase message if applicable
             if (isPurchasePending) {
                 paywallOverlay.style.display = 'flex';
                 seriesNav.style.display = 'none';
@@ -806,7 +792,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 paywallMessage.textContent = 'Malipo yako ya filamu hii yanachakatwa. Tafadhali subiri kwa muda mfupi, kisha onyesha upya ukurasa.';
                 buyMovieBtn.textContent = '🔄 Onyesha Upya Ukurasa';
                 
-                // Override buy button for pending case
                 const newBuyBtn = buyMovieBtn.cloneNode(true);
                 buyMovieBtn.parentNode.replaceChild(newBuyBtn, buyMovieBtn);
                 const buyBtn = document.getElementById('buyMovieBtn');
@@ -815,7 +800,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     window.location.reload();
                 });
                 
-                // Show recommendations if available
                 if (movieData.more_like_this && movieData.more_like_this.length > 0) {
                     renderRecommendations(movieData.more_like_this);
                 }
@@ -830,7 +814,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             const id = currentMovieData.id;
             const title = currentMovieData.title;
             
-            // Update paywall button with price
             if (price > 0) {
                 buyMovieBtn.textContent = `💳 Nunua - TSh ${Number(price).toLocaleString()}`;
             } else {
@@ -841,9 +824,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             buyMovieBtn.dataset.movieTitle = title;
             buyMovieBtn.dataset.moviePrice = price;
             
-            console.log('Paywall set with:', { id, title, price });
-            
-            // Set appropriate messages
             if (accessType === 'trial_used') {
                 paywallTitle.textContent = 'Muda wako wa kutazama bure umeisha';
                 paywallMessage.textContent = 'Umeshatazama filamu/kipindi chako cha bure. Nunua filamu hii au jisajili ili uendelee kutazama filamu na mfululizo bila kikomo.';
@@ -859,7 +839,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 renderRecommendations(movieData.more_like_this);
             }
             
-            // ===== Buy Button Click Handler =====
             const newBuyBtn = buyMovieBtn.cloneNode(true);
             buyMovieBtn.parentNode.replaceChild(newBuyBtn, buyMovieBtn);
             
@@ -869,14 +848,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                console.log('Buy button clicked!');
-                
-                // Get data from dataset
                 let movieId = this.dataset.movieId;
                 let movieTitle = this.dataset.movieTitle;
                 let moviePrice = this.dataset.moviePrice;
                 
-                // If dataset values are empty, use currentMovieData
                 if (!movieId || movieId === 'undefined' || movieId === 'null') {
                     movieId = currentMovieData.id;
                 }
@@ -889,38 +864,30 @@ document.addEventListener('DOMContentLoaded', async function() {
                     moviePrice = currentMovieData.price || 0;
                 }
                 
-                // If still no movieId, try from URL
                 if (!movieId || movieId === 'undefined' || movieId === 'null') {
                     const urlParams = new URLSearchParams(window.location.search);
                     movieId = urlParams.get('id');
                 }
                 
-                // If still no movieId, show error
                 if (!movieId || movieId === 'undefined' || movieId === 'null') {
                     alert('Taarifa za filamu hazipatikani. Tafadhali jaribu tena.');
                     return;
                 }
                 
-                // Ensure price is a number
                 let price = 0;
                 if (moviePrice !== undefined && moviePrice !== null && moviePrice !== '' && moviePrice !== 'undefined' && moviePrice !== 'null') {
                     price = parseFloat(moviePrice);
                     if (isNaN(price)) price = 0;
                 }
                 
-                // Ensure title is set
                 if (!movieTitle || movieTitle === 'undefined' || movieTitle === 'null' || movieTitle === 'Inapakia...') {
                     movieTitle = 'Filamu';
                 }
                 
-                console.log('Final payment values:', { movieId, movieTitle, price });
-                
-                // Update the button's dataset with the correct values for future clicks
                 this.dataset.movieId = movieId;
                 this.dataset.movieTitle = movieTitle;
                 this.dataset.moviePrice = price;
                 
-                // Open payment modal
                 openPaymentModal(movieId, movieTitle, price);
             });
             
