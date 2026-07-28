@@ -239,6 +239,280 @@
       to { transform: rotate(360deg); }
     }
 
+    /* ===== Developer Slider / Carousel Styles ===== */
+    .slider-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-md);
+      min-height: 280px;
+    }
+
+    .slider-track {
+      display: flex;
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform;
+    }
+
+    .slider-slide {
+      min-width: 100%;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .slider-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: var(--space-3);
+      padding: 0.25rem 0;
+    }
+
+    .slider-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      cursor: pointer;
+      transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
+      padding: 0;
+    }
+
+    .slider-dot.active {
+      background: var(--brand-violet);
+      transform: scale(1.2);
+      box-shadow: 0 0 12px rgba(108, 99, 255, 0.4);
+    }
+
+    .slider-dot:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .slider-arrows {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-3);
+      margin-top: var(--space-2);
+    }
+
+    .slider-arrow {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
+    }
+
+    .slider-arrow:hover {
+      background: rgba(108, 99, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    .slider-arrow:active {
+      transform: scale(0.95);
+    }
+
+    /* Developer Cards inside slider */
+    .developer-grid-slider {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+      padding: var(--space-1) 0;
+    }
+
+    .developer-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: center;
+      transition: transform var(--dur-med) ease, border-color var(--dur-med) ease, box-shadow var(--dur-med) ease;
+    }
+
+    .developer-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(108, 99, 255, 0.25);
+      box-shadow: 0 8px 24px rgba(108, 99, 255, 0.08);
+    }
+
+    .developer-card .dev-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(108, 99, 255, 0.3);
+      margin-bottom: var(--space-2);
+      transition: border-color var(--dur-med) ease;
+    }
+
+    .developer-card:hover .dev-avatar {
+      border-color: rgba(108, 99, 255, 0.6);
+    }
+
+    .developer-card .dev-name {
+      font-weight: 700;
+      color: #f0f3ff;
+      font-size: 1rem;
+      margin: 0 0 0.1rem;
+    }
+
+    .developer-card .dev-role {
+      font-size: 0.8rem;
+      color: #818cf8;
+      font-weight: 600;
+      margin: 0 0 0.3rem;
+    }
+
+    .developer-card .dev-contact {
+      font-size: 0.75rem;
+      color: #9aa2d7;
+      line-height: 1.6;
+    }
+
+    .developer-card .dev-contact a {
+      color: #818cf8;
+      text-decoration: none;
+      transition: color var(--dur-fast) ease;
+    }
+
+    .developer-card .dev-contact a:hover {
+      color: #a5b4fc;
+      text-decoration: underline;
+    }
+
+    /* Ad Cards inside slider */
+    .ad-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+      padding: var(--space-1) 0;
+    }
+
+    .ad-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: transform var(--dur-med) ease, border-color var(--dur-med) ease, box-shadow var(--dur-med) ease;
+    }
+
+    .ad-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(108, 99, 255, 0.2);
+      box-shadow: 0 8px 24px rgba(108, 99, 255, 0.08);
+    }
+
+    .ad-card .ad-image-link {
+      display: block;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .ad-card .ad-image-link:hover .ad-image {
+      transform: scale(1.03);
+    }
+
+    .ad-card .ad-image {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+      background: linear-gradient(135deg, #1a1a2e, #2d2b4e);
+      transition: transform 0.3s ease;
+    }
+
+    .ad-card .ad-placeholder {
+      width: 100%;
+      height: 140px;
+      display: grid;
+      place-items: center;
+      font-size: 3rem;
+      background: linear-gradient(135deg, #1a1a2e, #2d2b4e);
+      color: var(--brand-violet);
+    }
+
+    .ad-card .ad-body {
+      padding: var(--space-3);
+      text-align: center;
+    }
+
+    .ad-card .ad-title {
+      font-weight: 700;
+      color: #f0f3ff;
+      font-size: 0.95rem;
+      margin: 0 0 0.2rem;
+    }
+
+    .ad-card .ad-title a {
+      color: #f0f3ff;
+      text-decoration: none;
+      transition: color var(--dur-fast) ease;
+    }
+
+    .ad-card .ad-title a:hover {
+      color: var(--brand-violet);
+    }
+
+    .ad-card .ad-subtitle {
+      font-size: 0.8rem;
+      color: #9aa2d7;
+      margin: 0;
+    }
+
+    .ad-card .ad-cta {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.3rem 1rem;
+      background: linear-gradient(135deg, var(--brand-violet), var(--brand-pink));
+      border-radius: var(--radius-pill);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+    }
+
+    .ad-card .ad-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+    }
+
+    .slide-label {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #9aa2d7;
+      margin-top: var(--space-2);
+      opacity: 0.6;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 600px) {
+      .developer-grid-slider,
+      .ad-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .slider-container {
+        min-height: 380px;
+      }
+      
+      .ad-card .ad-image {
+        height: 100px;
+      }
+      
+      .ad-card .ad-placeholder {
+        height: 100px;
+        font-size: 2rem;
+      }
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .profile-card {
@@ -386,6 +660,154 @@
           <li><strong>Michezo ya Kimataifa iliyotafsiriwa (World Series):</strong> Tamthilia za Kikorea (K-Drama), Kifilipino, na Kituruki zilizotafsiriwa kwa Kiswahili, pamoja na sauti za ma-DJ maarufu nchini.</li>
         </ul>
       </article>
+
+      <!-- Developers Slider Card -->
+      <article class="dash-card">
+        <p class="card-label">👨‍💻 Wasanidi Programu &amp; Matangazo</p>
+        <div class="slider-container" id="developerSlider">
+          <div class="slider-track" id="sliderTrack">
+            <!-- Slide 1: Developers -->
+            <div class="slider-slide" data-index="0">
+              <div class="developer-grid-slider">
+                <!-- Frontend Developer & CEO -->
+                <div class="developer-card">
+                  <img src="images/majid.jpeg" alt="Abdul Majid Panass" class="dev-avatar" onerror="this.style.display='none'">
+                  <p class="dev-name">Abdul Majid Panass</p>
+                  <p class="dev-role">🚀 Frontend Developer &amp; CEO</p>
+                  <div class="dev-contact">
+                    📞 <a href="tel:0774581923">0774581923</a><br>
+                    ✉️ <a href="mailto:abdulajmiyypanass@gmail.com">abdulajmiyypanass@gmail.com</a>
+                  </div>
+                </div>
+                <!-- Backend Developer -->
+                <div class="developer-card">
+                  <img src="images/mo.jpeg" alt="MO11" class="dev-avatar" onerror="this.style.display='none'">
+                  <p class="dev-name">MO11</p>
+                  <p class="dev-role">⚙️ Backend Developer</p>
+                  <div class="dev-contact">
+                    📞 <a href="tel:0677532140">0677532140</a><br>
+                    ✉️ <a href="mailto:molittle1011@gmail.com">molittle1011@gmail.com</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Slide 2: Ads -->
+            <div class="slider-slide" data-index="1">
+              <div class="ad-grid">
+                <div class="ad-card">
+                  <a href="https://tanzaflix.com/movies" target="_blank" class="ad-image-link" title="Filamu Mpya Kila Wiki">
+                    <img src="images/ad1.jpg" alt="Filamu Mpya Kila Wiki" class="ad-image" onerror="this.style.display='none'">
+                    <div class="ad-placeholder" style="display:none;">📺</div>
+                  </a>
+                  <div class="ad-body">
+                    <p class="ad-title"><a href="https://tanzaflix.com/movies" target="_blank">🎬 Filamu Mpya Kila Wiki</a></p>
+                    <p class="ad-subtitle">Jiunge sasa upate filamu za kipekee</p>
+                    <a href="https://tanzaflix.com/movies" target="_blank" class="ad-cta">Tazama Sasa →</a>
+                  </div>
+                </div>
+                <div class="ad-card">
+                  <a href="https://tanzaflix.com/subscription" target="_blank" class="ad-image-link" title="Ofa Maalum">
+                    <img src="images/ad2.jpg" alt="Ofa Maalum" class="ad-image" onerror="this.style.display='none'">
+                    <div class="ad-placeholder" style="display:none;">🎉</div>
+                  </a>
+                  <div class="ad-body">
+                    <p class="ad-title"><a href="https://tanzaflix.com/subscription" target="_blank">🎁 Ofa Maalum</a></p>
+                    <p class="ad-subtitle">Punguzo 50% kwa usajili wa mwezi</p>
+                    <a href="https://tanzaflix.com/subscription" target="_blank" class="ad-cta">Jiunge Sasa →</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Slide 3: Ads -->
+            <div class="slider-slide" data-index="2">
+              <div class="ad-grid">
+                <div class="ad-card">
+                  <a href="https://tanzaflix.com/awards" target="_blank" class="ad-image-link" title="Tamthilia Bora">
+                    <img src="images/ad3.jpg" alt="Tamthilia Bora" class="ad-image" onerror="this.style.display='none'">
+                    <div class="ad-placeholder" style="display:none;">🌟</div>
+                  </a>
+                  <div class="ad-body">
+                    <p class="ad-title"><a href="https://tanzaflix.com/awards" target="_blank">🌟 Tamthilia Bora</a></p>
+                    <p class="ad-subtitle">Tazama tamthilia zilizoshinda tuzo</p>
+                    <a href="https://tanzaflix.com/awards" target="_blank" class="ad-cta">Tazama Sasa →</a>
+                  </div>
+                </div>
+                <div class="ad-card">
+                  <a href="https://tanzaflix.com/mobile" target="_blank" class="ad-image-link" title="Tazama Popote">
+                    <img src="images/ad4.jpg" alt="Tazama Popote" class="ad-image" onerror="this.style.display='none'">
+                    <div class="ad-placeholder" style="display:none;">📱</div>
+                  </a>
+                  <div class="ad-body">
+                    <p class="ad-title"><a href="https://tanzaflix.com/mobile" target="_blank">📱 Tazama Popote</a></p>
+                    <p class="ad-subtitle">Inapatikana kwenye simu na TV</p>
+                    <a href="https://tanzaflix.com/mobile" target="_blank" class="ad-cta">Pakua Sasa →</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Slide 4: Ads -->
+            <div class="slider-slide" data-index="3">
+              <div class="ad-grid">
+                <div class="ad-card">
+                  <a href="https://tanzaflix.com/music" target="_blank" class="ad-image-link" title="Muziki na Burudani">
+                    <img src="images/ad5.jpg" alt="Muziki na Burudani" class="ad-image" onerror="this.style.display='none'">
+                    <div class="ad-placeholder" style="display:none;">🎵</div>
+                  </a>
+                  <div class="ad-body">
+                    <p class="ad-title"><a href="https://tanzaflix.com/music" target="_blank">🎵 Muziki na Burudani</a></p>
+                    <p class="ad-subtitle">Nyimbo na video za kisasa</p>
+                    <a href="https://tanzaflix.com/music" target="_blank" class="ad-cta">Sikiliza Sasa →</a>
+                  </div>
+                </div>
+                <div class="ad-card">
+                  <a href="https://tanzaflix.com/popular" target="_blank" class="ad-image-link" title="Vipindi Vipendwa">
+                    <img src="images/ad1.jpg" alt="Vipindi Vipendwa" class="ad-image" onerror="this.style.display='none'">
+                    <div class="ad-placeholder" style="display:none;">🏆</div>
+                  </a>
+                  <div class="ad-body">
+                    <p class="ad-title"><a href="https://tanzaflix.com/popular" target="_blank">🏆 Vipindi Vipendwa</a></p>
+                    <p class="ad-subtitle">Orodha ya vipindi vinavyoongoza</p>
+                    <a href="https://tanzaflix.com/popular" target="_blank" class="ad-cta">Tazama Sasa →</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Slide 5: Ads -->
+            <div class="slider-slide" data-index="4">
+              <div class="ad-grid">
+                <div class="ad-card">
+                  <a href="https://tanzaflix.com/international" target="_blank" class="ad-image-link" title="Sinema za Kigeni">
+                    <img src="images/ad2.jpg" alt="Sinema za Kigeni" class="ad-image" onerror="this.style.display='none'">
+                    <div class="ad-placeholder" style="display:none;">🎬</div>
+                  </a>
+                  <div class="ad-body">
+                    <p class="ad-title"><a href="https://tanzaflix.com/international" target="_blank">🎬 Sinema za Kigeni</a></p>
+                    <p class="ad-subtitle">Filamu za kimataifa zilizotafsiriwa</p>
+                    <a href="https://tanzaflix.com/international" target="_blank" class="ad-cta">Tazama Sasa →</a>
+                  </div>
+                </div>
+                <div class="ad-card">
+                  <a href="https://tanzaflix.com/bongo" target="_blank" class="ad-image-link" title="Bongo Movies">
+                    <img src="images/ad3.jpg" alt="Bongo Movies" class="ad-image" onerror="this.style.display='none'">
+                    <div class="ad-placeholder" style="display:none;">🇹🇿</div>
+                  </a>
+                  <div class="ad-body">
+                    <p class="ad-title"><a href="https://tanzaflix.com/bongo" target="_blank">🇹🇿 Bongo Movies</a></p>
+                    <p class="ad-subtitle">Filamu za Kitanzania za ubora</p>
+                    <a href="https://tanzaflix.com/bongo" target="_blank" class="ad-cta">Tazama Sasa →</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slider-dots" id="sliderDots"></div>
+          <div class="slider-arrows">
+            <button class="slider-arrow" id="sliderPrev" aria-label="Previous slide">◀</button>
+            <button class="slider-arrow" id="sliderNext" aria-label="Next slide">▶</button>
+          </div>
+          <div class="slide-label" id="slideLabel">Slide 1 / 5</div>
+        </div>
+      </article>
     </section>
 
     <!-- Action Panel -->
@@ -406,5 +828,144 @@
   </div>
 
   <script type="module" src="js/dashboard.js"></script>
+  <script>
+    // ===== Slider/Carousel Functionality =====
+    document.addEventListener('DOMContentLoaded', function() {
+      const track = document.getElementById('sliderTrack');
+      const dotsContainer = document.getElementById('sliderDots');
+      const prevBtn = document.getElementById('sliderPrev');
+      const nextBtn = document.getElementById('sliderNext');
+      const slideLabel = document.getElementById('slideLabel');
+      const slides = track ? track.querySelectorAll('.slider-slide') : [];
+      const totalSlides = slides.length;
+      let currentIndex = 0;
+      let autoPlayInterval = null;
+      const AUTO_PLAY_DELAY = 5000; // 5 seconds
+
+      if (totalSlides === 0) return;
+
+      // Create dots
+      function createDots() {
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+          const dot = document.createElement('button');
+          dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
+          dot.setAttribute('data-index', i);
+          dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+          dot.addEventListener('click', function() {
+            goToSlide(parseInt(this.getAttribute('data-index')));
+          });
+          dotsContainer.appendChild(dot);
+        }
+      }
+
+      // Go to specific slide
+      function goToSlide(index) {
+        if (index < 0) index = totalSlides - 1;
+        if (index >= totalSlides) index = 0;
+        
+        currentIndex = index;
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        
+        // Update dots
+        document.querySelectorAll('.slider-dot').forEach((dot, i) => {
+          dot.classList.toggle('active', i === currentIndex);
+        });
+        
+        // Update label
+        if (slideLabel) {
+          slideLabel.textContent = `Slide ${currentIndex + 1} / ${totalSlides}`;
+        }
+        
+        // Reset auto-play timer
+        resetAutoPlay();
+      }
+
+      // Next slide
+      function nextSlide() {
+        goToSlide(currentIndex + 1);
+      }
+
+      // Previous slide
+      function prevSlide() {
+        goToSlide(currentIndex - 1);
+      }
+
+      // Reset auto-play timer
+      function resetAutoPlay() {
+        if (autoPlayInterval) {
+          clearInterval(autoPlayInterval);
+          autoPlayInterval = null;
+        }
+        startAutoPlay();
+      }
+
+      // Start auto-play
+      function startAutoPlay() {
+        if (autoPlayInterval) return;
+        autoPlayInterval = setInterval(nextSlide, AUTO_PLAY_DELAY);
+      }
+
+      // Stop auto-play
+      function stopAutoPlay() {
+        if (autoPlayInterval) {
+          clearInterval(autoPlayInterval);
+          autoPlayInterval = null;
+        }
+      }
+
+      // Initialize
+      createDots();
+      goToSlide(0);
+      startAutoPlay();
+
+      // Event listeners
+      if (prevBtn) prevBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        prevSlide();
+      });
+
+      if (nextBtn) nextBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        nextSlide();
+      });
+
+      // Pause auto-play on hover
+      const sliderContainer = document.getElementById('developerSlider');
+      if (sliderContainer) {
+        sliderContainer.addEventListener('mouseenter', stopAutoPlay);
+        sliderContainer.addEventListener('mouseleave', startAutoPlay);
+        
+        // Touch support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        sliderContainer.addEventListener('touchstart', function(e) {
+          touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        sliderContainer.addEventListener('touchend', function(e) {
+          touchEndX = e.changedTouches[0].screenX;
+          const diff = touchStartX - touchEndX;
+          if (Math.abs(diff) > 50) {
+            if (diff > 0) {
+              nextSlide();
+            } else {
+              prevSlide();
+            }
+          }
+        }, { passive: true });
+      }
+
+      // Keyboard support
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight') {
+          nextSlide();
+        } else if (e.key === 'ArrowLeft') {
+          prevSlide();
+        }
+      });
+    });
+  </script>
 </body>
 </html>

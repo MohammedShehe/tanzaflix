@@ -1595,3 +1595,255 @@ a:focus-visible {
     padding: var(--space-5);
   }
 }
+
+/* ==========================================================================
+   Developer Card Styles (Dashboard)
+   ========================================================================== */
+.developer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.developer-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+  transition: transform var(--dur-med) ease, border-color var(--dur-med) ease, box-shadow var(--dur-med) ease;
+}
+
+.developer-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(108, 99, 255, 0.25);
+  box-shadow: 0 8px 24px rgba(108, 99, 255, 0.08);
+}
+
+.developer-card .dev-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(108, 99, 255, 0.3);
+  margin-bottom: var(--space-2);
+  transition: border-color var(--dur-med) ease;
+}
+
+.developer-card:hover .dev-avatar {
+  border-color: rgba(108, 99, 255, 0.6);
+}
+
+.developer-card .dev-name {
+  font-weight: 700;
+  color: #f0f3ff;
+  font-size: 1rem;
+  margin: 0 0 0.1rem;
+}
+
+.developer-card .dev-role {
+  font-size: 0.8rem;
+  color: #818cf8;
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+}
+
+.developer-card .dev-contact {
+  font-size: 0.75rem;
+  color: #9aa2d7;
+  line-height: 1.6;
+}
+
+.developer-card .dev-contact a {
+  color: #818cf8;
+  text-decoration: none;
+  transition: color var(--dur-fast) ease;
+}
+
+.developer-card .dev-contact a:hover {
+  color: #a5b4fc;
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .developer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Developer Slider / Carousel Styles (Dashboard)
+   ========================================================================== */
+.slider-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  min-height: 280px;
+}
+
+.slider-track {
+  display: flex;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+.slider-slide {
+  min-width: 100%;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.slider-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: var(--space-3);
+  padding: 0.25rem 0;
+}
+
+.slider-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  cursor: pointer;
+  transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
+  padding: 0;
+}
+
+.slider-dot.active {
+  background: var(--brand-violet);
+  transform: scale(1.2);
+  box-shadow: 0 0 12px rgba(108, 99, 255, 0.4);
+}
+
+.slider-dot:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.slider-arrows {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.slider-arrow {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.slider-arrow:hover {
+  background: rgba(108, 99, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.slider-arrow:active {
+  transform: scale(0.95);
+}
+
+/* Developer Cards inside slider */
+.developer-grid-slider {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  padding: var(--space-1) 0;
+}
+
+/* Ad Cards inside slider */
+.ad-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  padding: var(--space-1) 0;
+}
+
+.ad-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform var(--dur-med) ease, border-color var(--dur-med) ease, box-shadow var(--dur-med) ease;
+}
+
+.ad-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(108, 99, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(108, 99, 255, 0.08);
+}
+
+.ad-card .ad-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+  background: linear-gradient(135deg, #1a1a2e, #2d2b4e);
+}
+
+.ad-card .ad-placeholder {
+  width: 100%;
+  height: 140px;
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
+  background: linear-gradient(135deg, #1a1a2e, #2d2b4e);
+  color: var(--brand-violet);
+}
+
+.ad-card .ad-body {
+  padding: var(--space-3);
+  text-align: center;
+}
+
+.ad-card .ad-title {
+  font-weight: 700;
+  color: #f0f3ff;
+  font-size: 0.95rem;
+  margin: 0 0 0.2rem;
+}
+
+.ad-card .ad-subtitle {
+  font-size: 0.8rem;
+  color: #9aa2d7;
+  margin: 0;
+}
+
+.slide-label {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #9aa2d7;
+  margin-top: var(--space-2);
+  opacity: 0.6;
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 600px) {
+  .developer-grid-slider,
+  .ad-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .slider-container {
+    min-height: 380px;
+  }
+  
+  .ad-card .ad-image {
+    height: 100px;
+  }
+  
+  .ad-card .ad-placeholder {
+    height: 100px;
+    font-size: 2rem;
+  }
+}
