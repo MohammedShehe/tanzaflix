@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const ratingMessage = document.getElementById('ratingMessage');
     const submitRatingBtn = document.getElementById('submitRatingBtn');
     const ratingSelectedDisplay = document.getElementById('ratingSelectedDisplay');
-    const ratingStars = document.getElementById('ratingStars');
+    const ratingStarsContainer = document.getElementById('ratingStars');
 
     let movieData = null;
     let currentSeason = 1;
@@ -111,6 +111,40 @@ document.addEventListener('DOMContentLoaded', async function() {
         'Movie ya Kitaliano': '🇮🇹 Kitaliano',
         'Movie ya Kikorea': '🇰🇷 Kikorea'
     };
+
+    // ===== Render Rating Stars =====
+    function renderRatingStars() {
+        if (!ratingStarsContainer) return;
+        
+        ratingStarsContainer.innerHTML = '';
+        for (let i = 1; i <= 10; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'rating-star-btn';
+            btn.dataset.value = i;
+            btn.textContent = i;
+            
+            btn.addEventListener('click', function() {
+                if (userHasRated) return;
+                
+                const value = parseInt(this.dataset.value);
+                selectedRating = value;
+                
+                document.querySelectorAll('.rating-star-btn').forEach(star => {
+                    const starVal = parseInt(star.dataset.value);
+                    if (starVal <= value) {
+                        star.classList.add('selected');
+                    } else {
+                        star.classList.remove('selected');
+                    }
+                });
+                
+                ratingSelectedDisplay.textContent = `Rating: ${value}/10`;
+            });
+            
+            ratingStarsContainer.appendChild(btn);
+        }
+    }
 
     // ===== Payment Modal Functions =====
 
@@ -369,6 +403,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         submitRatingBtn.disabled = false;
         submitRatingBtn.textContent = 'Tuma Rating';
         
+        // Reset all star buttons
         document.querySelectorAll('.rating-star-btn').forEach(el => {
             el.className = 'rating-star-btn';
         });
@@ -399,26 +434,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         ratingModal.style.display = 'none';
     }
 
-    // Rating star selection
-    document.querySelectorAll('.rating-star-btn').forEach(el => {
-        el.addEventListener('click', function() {
-            if (userHasRated) return;
-            
-            const value = parseInt(this.dataset.value);
-            selectedRating = value;
-            
-            document.querySelectorAll('.rating-star-btn').forEach(star => {
-                const starVal = parseInt(star.dataset.value);
-                if (starVal <= value) {
-                    star.classList.add('selected');
-                } else {
-                    star.classList.remove('selected');
-                }
-            });
-            
-            ratingSelectedDisplay.textContent = `Rating: ${value}/10`;
-        });
-    });
+    // Rating star selection - handled by renderRatingStars
 
     // Rating form submission
     document.getElementById('ratingForm').addEventListener('submit', async function(e) {
@@ -519,7 +535,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    // ===== Real-Time Video Tracking =====
+    // ===== Real-Time Video Tracking (Silent - No Toast) =====
     
     async function trackProgress(currentTime, duration) {
         if (!isTrackingEnabled || hasMarkedComplete) return;
@@ -781,6 +797,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             video.poster = movieData.poster;
         }
 
+        // Initialize rating stars
+        renderRatingStars();
         updateRatingDisplay();
 
         // ===== PAYWALL HANDLING =====

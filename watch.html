@@ -192,7 +192,7 @@
       border-color: rgba(108, 99, 255, 0.2);
     }
 
-    /* ===== Paywall Overlay - FIXED ===== */
+    /* ===== Paywall Overlay ===== */
     .paywall-overlay {
       position: absolute;
       inset: 0;
@@ -206,13 +206,11 @@
       text-align: center;
     }
 
-    /* When paywall is visible, make it interactive */
     .paywall-overlay[style*="display: flex"] {
       pointer-events: auto;
       cursor: default;
     }
 
-    /* Ensure all children can receive pointer events */
     .paywall-overlay * {
       pointer-events: auto !important;
     }
@@ -1237,7 +1235,7 @@
           Kivinjari chako hakiwezi kucheza video hii.
         </video>
         
-        <!-- Paywall Overlay - FIXED with inline style for visibility -->
+        <!-- Paywall Overlay -->
         <div id="paywallOverlay" class="paywall-overlay" style="display:none; pointer-events: auto; cursor: default;">
           <div class="paywall-box" style="pointer-events: auto;">
             <div class="paywall-icon">🔒</div>
@@ -1406,9 +1404,7 @@
             Kadiria (1 - 10)
           </label>
           <div class="rating-stars" id="ratingStars">
-            ${[1,2,3,4,5,6,7,8,9,10].map(r => `
-              <button type="button" class="rating-star-btn" data-value="${r}">${r}</button>
-            `).join('')}
+            <!-- Rating buttons will be rendered by JavaScript -->
           </div>
           <div id="ratingSelectedDisplay" class="rating-selected-display">
             Hakuna rating iliyochaguliwa
