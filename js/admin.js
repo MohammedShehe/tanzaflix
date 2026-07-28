@@ -156,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let moviesData = [];
     let usersData = [];
     let subscriptionsData = [];
+    let adsData = [];
 
     // ===== DOM Elements =====
     const tabs = document.querySelectorAll('.nav-item');
@@ -165,6 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
         transactions: document.getElementById('transactionsTab'),
         subscriptions: document.getElementById('subscriptionsTab'),
         ratings: document.getElementById('ratingsTab'),
+        ads: document.getElementById('adsTab'),
     };
 
     // ===== Function to switch tabs =====
@@ -191,12 +193,13 @@ document.addEventListener('DOMContentLoaded', function() {
         else if (tabName === 'transactions') loadTransactions();
         else if (tabName === 'ratings') loadRatings();
         else if (tabName === 'subscriptions') loadSubscriptions();
+        else if (tabName === 'ads') loadAds();
     }
 
     // ===== Check URL hash for initial tab =====
     function getTabFromHash() {
         const hash = window.location.hash.replace('#', '');
-        const validTabs = ['movies', 'users', 'subscriptions', 'transactions', 'ratings'];
+        const validTabs = ['movies', 'users', 'subscriptions', 'transactions', 'ratings', 'ads'];
         if (hash && validTabs.includes(hash)) {
             return hash;
         }
@@ -663,6 +666,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('statSingleMovies').textContent = stats.movies_by_type?.find(t => t.movie_type === 'single')?.count || 0;
                 document.getElementById('statSeriesMovies').textContent = stats.movies_by_type?.find(t => t.movie_type === 'series')?.count || 0;
                 document.getElementById('statRecentMovies').textContent = stats.recent_30_days || 0;
+                document.getElementById('statTotalSeasons').textContent = stats.series_stats?.total_seasons || 0;
+                document.getElementById('statTotalEpisodes').textContent = stats.series_stats?.total_episodes || 0;
+                
+                // Average price
+                const paidMovies = stats.price_distribution?.find(p => p.price_type === 'Paid');
+                const freeMovies = stats.price_distribution?.find(p => p.price_type === 'Free');
+                document.getElementById('statAvgPrice').textContent = paidMovies?.avg_price ? `TSh ${Math.round(paidMovies.avg_price).toLocaleString()}` : 'TSh 0';
+                document.getElementById('statPaidMovies').textContent = paidMovies?.count || 0;
             }
         } catch (error) {
             console.warn('Error loading movie stats:', error);
@@ -1146,6 +1157,223 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // ===== ADS FUNCTIONS =====
+    
+    // Load Ads
+    async function loadAds() {
+        try {
+            const [adsResponse, statsResponse] = await Promise.all([
+                api.adminGetAds(),
+                api.adminGetAdStats()
+            ]);
+            
+            if (adsResponse.success && adsResponse.ads) {
+                adsData = adsResponse.ads;
+                renderAds(adsResponse.ads);
+            }
+            
+            if (statsResponse.success && statsResponse.statistics) {
+                renderAdStats(statsResponse.statistics);
+            }
+        } catch (error) {
+            console.error('Error loading ads:', error);
+            const tbody = document.getElementById('adsTableBody');
+            if (tbody) {
+                tbody.innerHTML = 
+                    `<tr><td colspan="9" class="empty-state">Error loading ads: ${error.message}</td></tr>`;
+            }
+        }
+    }
+
+    function renderAds(ads) {
+        const tbody = document.getElementById('adsTableBody');
+        if (!tbody) return;
+        
+        if (!ads || ads.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Hakuna matangazo yaliyosajiliwa</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = ads.map(ad => {
+            const statusClass = ad.status === 'active' ? 'active' : 'inactive';
+            const statusLabel = ad.status === 'active' ? '✅ Inatumika' : '❌ Haijatumika';
+            const ctr = ad.views > 0 ? ((ad.clicks / ad.views) * 100).toFixed(2) : '0.00';
+            
+            return `
+            <tr>
+                <td>
+                    ${ad.image_url ? 
+                        `<img src="${ad.image_url}" alt="${ad.title}" class="ad-image-preview" />` : 
+                        '<span style="color:var(--text-muted);font-size:0.7rem;">Hakuna picha</span>'
+                    }
+                </td>
+                <td><strong>${ad.title}</strong></td>
+                <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    <a href="${ad.url}" target="_blank" style="color:#818cf8;text-decoration:none;font-size:0.8rem;">${ad.url}</a>
+                </td>
+                <td><span class="ad-status-badge ${statusClass}">${statusLabel}</span></td>
+                <td>${ad.views || 0}</td>
+                <td>${ad.clicks || 0}</td>
+                <td>${ctr}%</td>
+                <td style="font-size:0.75rem;color:var(--text-secondary);">${new Date(ad.created_at).toLocaleDateString('sw')}</td>
+                <td>
+                    <button class="action-btn action-btn-edit" onclick="window.editAd(${ad.id})"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn action-btn-delete" onclick="window.deleteAd(${ad.id})"><i class="fas fa-trash"></i></button>
+                    <button class="action-btn ${ad.status === 'active' ? 'action-btn-delete' : 'action-btn-edit'}" 
+                            onclick="window.toggleAdStatus(${ad.id})" 
+                            title="${ad.status === 'active' ? 'Zima' : 'Washa'}">
+                        <i class="fas ${ad.status === 'active' ? 'fa-pause' : 'fa-play'}"></i>
+                    </button>
+                </td>
+            </tr>
+        `}).join('');
+    }
+
+    function renderAdStats(stats) {
+        if (!stats) return;
+        
+        document.getElementById('statTotalAds').textContent = stats.total_ads || 0;
+        document.getElementById('statActiveAds').textContent = stats.active_ads || 0;
+        document.getElementById('statInactiveAds').textContent = stats.inactive_ads || 0;
+        document.getElementById('statTotalViews').textContent = stats.total_views || 0;
+        document.getElementById('statTotalClicks').textContent = stats.total_clicks || 0;
+        document.getElementById('statOverallCTR').textContent = stats.overall_ctr ? `${stats.overall_ctr}%` : '0%';
+    }
+
+    // Open Ad Modal
+    function openAdModal(ad = null) {
+        const modal = document.getElementById('adModal');
+        const form = document.getElementById('adForm');
+        const title = document.getElementById('adModalTitle');
+        
+        if (!modal || !form) return;
+
+        form.reset();
+        document.getElementById('adId').value = '';
+        document.getElementById('adImagePreview').style.display = 'none';
+        document.getElementById('adImage').required = true;
+
+        if (ad) {
+            title.textContent = 'Hariri Tangazo';
+            document.getElementById('adId').value = ad.id;
+            document.getElementById('adTitle').value = ad.title || '';
+            document.getElementById('adUrl').value = ad.url || '';
+            document.getElementById('adStatus').value = ad.status || 'active';
+            
+            if (ad.image_url) {
+                document.getElementById('adCurrentImage').src = ad.image_url;
+                document.getElementById('adImagePreview').style.display = 'block';
+            }
+            
+            document.getElementById('adImage').required = false;
+        } else {
+            title.textContent = 'Ongeza Tangazo';
+            document.getElementById('adStatus').value = 'active';
+            document.getElementById('adImage').required = true;
+        }
+
+        openModal('adModal');
+    }
+
+    window.editAd = function(id) {
+        const ad = adsData.find(a => a.id === id);
+        if (ad) {
+            openAdModal(ad);
+        }
+    };
+
+    window.deleteAd = function(id) {
+        deleteTarget = id;
+        deleteType = 'ad';
+        document.getElementById('confirmMessage').textContent = 'Je, una uhakika unataka kufuta tangazo hili? Kitendo hiki hakiwezi kutenduliwa.';
+        openModal('confirmModal');
+    };
+
+    window.toggleAdStatus = async function(id) {
+        try {
+            const response = await api.adminToggleAdStatus(id);
+            if (response.success) {
+                showToast(response.message || 'Hali ya tangazo imebadilishwa');
+                loadAds();
+            } else {
+                alert(`❌ ${response.message || 'Imeshindwa kubadilisha hali'}`);
+            }
+        } catch (error) {
+            console.error('Toggle ad status error:', error);
+            alert(`❌ Error: ${error.message}`);
+        }
+    };
+
+    // Ad Form Submit
+    document.getElementById('adForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitAdBtn');
+        const id = document.getElementById('adId')?.value || '';
+        
+        setButtonLoading(submitBtn, true, id ? 'Inasasisha...' : 'Inaongeza...');
+        
+        const formData = new FormData();
+        formData.append('title', document.getElementById('adTitle').value.trim());
+        formData.append('url', document.getElementById('adUrl').value.trim());
+        formData.append('status', document.getElementById('adStatus').value);
+        
+        const imageInput = document.getElementById('adImage');
+        if (imageInput?.files?.[0]) {
+            formData.append('image', imageInput.files[0]);
+        } else if (!id) {
+            alert('❌ Tafadhali weka picha ya tangazo.');
+            setButtonLoading(submitBtn, false);
+            return;
+        }
+        
+        try {
+            let response;
+            if (id) {
+                response = await api.adminUpdateAd(id, formData);
+            } else {
+                response = await api.adminCreateAd(formData);
+            }
+            
+            setButtonLoading(submitBtn, false);
+            if (response.success) {
+                showToast(id ? '✅ Tangazo limehaririwa!' : '✅ Tangazo limeongezwa!');
+                closeModal('adModal');
+                loadAds();
+            } else {
+                alert(`❌ ${response.message || 'Operation failed'}`);
+            }
+        } catch (error) {
+            setButtonLoading(submitBtn, false);
+            alert(`❌ Error: ${error.message}`);
+        }
+    });
+
+    // Add Ad Button
+    document.getElementById('addAdBtn')?.addEventListener('click', function() {
+        openAdModal(null);
+    });
+
+    // Refresh Ads Button
+    document.getElementById('refreshAdsBtn')?.addEventListener('click', function() {
+        loadAds();
+        showToast('🔄 Matangazo yameburudishwa');
+    });
+
+    // Ad Image Preview
+    document.getElementById('adImage')?.addEventListener('change', function() {
+        const preview = document.getElementById('adImagePreview');
+        const img = document.getElementById('adCurrentImage');
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
     // ===== Confirm Delete =====
     document.getElementById('confirmDeleteBtn')?.addEventListener('click', async function() {
         const btn = this;
@@ -1160,6 +1388,10 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (deleteType === 'user') {
                 response = await api.adminDeleteUser(deleteTarget);
                 if (response.success) { showToast('✅ Mtumiaji amefutwa!'); loadUsers(); }
+                else alert(`❌ ${response.message || 'Delete failed'}`);
+            } else if (deleteType === 'ad') {
+                response = await api.adminDeleteAd(deleteTarget);
+                if (response.success) { showToast('✅ Tangazo limefutwa!'); loadAds(); }
                 else alert(`❌ ${response.message || 'Delete failed'}`);
             }
         } catch (error) {

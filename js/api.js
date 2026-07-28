@@ -464,7 +464,6 @@ class ApiService {
         return this.request(`/admin/activities/statistics?period=${period}`);
     }
 
-
     // ==================== CONTINUE WATCHING ====================
     async getContinueWatching(limit = 10) {
         return this.request(`/user/movies/continue-watching?limit=${limit}`);
@@ -487,6 +486,69 @@ class ApiService {
             method: 'POST',
             body: JSON.stringify({ movieId, episodeId }),
         });
+    }
+
+    // ==================== ADS ENDPOINTS ====================
+    
+    // Admin: Get all ads
+    async adminGetAds() {
+        return this.request('/ads');
+    }
+
+    // Admin: Get single ad
+    async adminGetAd(id) {
+        return this.request(`/ads/${id}`);
+    }
+
+    // Admin: Create ad
+    async adminCreateAd(formData) {
+        return fetch(`${this.baseUrl}/ads`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.token}`,
+            },
+            body: formData,
+        }).then(res => res.json());
+    }
+
+    // Admin: Update ad
+    async adminUpdateAd(id, formData) {
+        return fetch(`${this.baseUrl}/ads/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${this.token}`,
+            },
+            body: formData,
+        }).then(res => res.json());
+    }
+
+    // Admin: Delete ad
+    async adminDeleteAd(id) {
+        return this.request(`/ads/${id}`, {
+            method: 'DELETE',
+        });
+    }
+
+    // Admin: Toggle ad status
+    async adminToggleAdStatus(id) {
+        return this.request(`/ads/${id}/toggle`, {
+            method: 'PATCH',
+        });
+    }
+
+    // Admin: Get ad stats
+    async adminGetAdStats() {
+        return this.request('/ads/stats');
+    }
+
+    // User: Get active ads
+    async getActiveAds() {
+        return this.request('/ads/active');
+    }
+
+    // User: Track ad click
+    async trackAdClick(id) {
+        return this.request(`/ads/${id}/click`);
     }
 }
 

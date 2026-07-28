@@ -853,6 +853,90 @@
       transition: width 0.6s ease;
     }
 
+    /* Ads Tab Styles */
+    .ads-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .ads-stat-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: rgba(255, 255, 255, 0.035);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      transition: border-color var(--transition), background var(--transition);
+    }
+
+    .ads-stat-card:hover {
+      border-color: var(--border-color-strong);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .ads-stat-icon {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(251, 146, 60, 0.15);
+      border-radius: var(--radius-md);
+      font-size: 1.1rem;
+      color: #fb923c;
+    }
+
+    .ads-stat-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ads-stat-label {
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      margin: 0 0 0.1rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .ads-stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .ad-image-preview {
+      max-width: 80px;
+      max-height: 60px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      border: 1px solid var(--border-color);
+    }
+
+    .ad-status-badge {
+      padding: 0.2rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .ad-status-badge.active {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .ad-status-badge.inactive {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
     @media (max-width: 992px) {
       .episode-item {
         grid-template-columns: 1fr 1fr;
@@ -881,18 +965,21 @@
       }
       .movies-stats-grid,
       .users-stats-grid,
-      .ratings-stats-grid {
+      .ratings-stats-grid,
+      .ads-stats-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 0.75rem;
       }
       .movies-stat-card,
       .users-stat-card,
-      .ratings-stat-card {
+      .ratings-stat-card,
+      .ads-stat-card {
         padding: 0.9rem 1rem;
       }
       .movies-stat-value,
       .users-stat-value,
-      .ratings-stat-value {
+      .ratings-stat-value,
+      .ads-stat-value {
         font-size: 1rem;
       }
       .users-stats-wrapper {
@@ -913,31 +1000,36 @@
     @media (max-width: 480px) {
       .movies-stats-grid,
       .users-stats-grid,
-      .ratings-stats-grid {
+      .ratings-stats-grid,
+      .ads-stats-grid {
         grid-template-columns: 1fr 1fr;
         gap: 0.6rem;
       }
       .movies-stat-card,
       .users-stat-card,
-      .ratings-stat-card {
+      .ratings-stat-card,
+      .ads-stat-card {
         padding: 0.7rem 0.8rem;
         gap: 0.6rem;
       }
       .movies-stat-icon,
       .users-stat-icon,
-      .ratings-stat-icon {
+      .ratings-stat-icon,
+      .ads-stat-icon {
         width: 32px;
         height: 32px;
         font-size: 0.9rem;
       }
       .movies-stat-value,
       .users-stat-value,
-      .ratings-stat-value {
+      .ratings-stat-value,
+      .ads-stat-value {
         font-size: 0.95rem;
       }
       .movies-stat-label,
       .users-stat-label,
-      .ratings-stat-label {
+      .ratings-stat-label,
+      .ads-stat-label {
         font-size: 0.6rem;
       }
       .users-stats-mini-grid {
@@ -1017,6 +1109,10 @@
         <button class="nav-item" data-tab="ratings">
             <i class="fas fa-star"></i>
             <span>Ratings</span>
+        </button>
+        <button class="nav-item" data-tab="ads">
+            <i class="fas fa-ad"></i>
+            <span>Matangazo</span>
         </button>
     </nav>
 
@@ -1447,6 +1543,84 @@
           </div>
         </div>
       </section>
+
+      <!-- Ads Tab -->
+      <section id="adsTab" class="tab-content">
+        <div class="tab-header">
+          <h2><i class="fas fa-ad"></i> Usimamizi wa Matangazo</h2>
+          <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+            <button class="refresh-btn" id="refreshAdsBtn">
+              <i class="fas fa-sync-alt"></i>
+              <span>Refresh</span>
+            </button>
+            <button class="add-btn" id="addAdBtn">
+              <i class="fas fa-plus"></i>
+              <span>Ongeza Tangazo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ads Stats -->
+        <div class="ads-stats-grid" id="adsStatsGrid">
+          <div class="ads-stat-card">
+            <div class="ads-stat-icon"><i class="fas fa-ad"></i></div>
+            <div class="ads-stat-info">
+              <p class="ads-stat-label">Jumla ya Matangazo</p>
+              <p class="ads-stat-value" id="statTotalAds">0</p>
+            </div>
+          </div>
+          <div class="ads-stat-card" style="border-color:rgba(34,197,94,0.15);">
+            <div class="ads-stat-icon" style="background:rgba(34,197,94,0.15);color:#4ade80;"><i class="fas fa-check-circle"></i></div>
+            <div class="ads-stat-info">
+              <p class="ads-stat-label">Inatumika</p>
+              <p class="ads-stat-value" id="statActiveAds">0</p>
+            </div>
+          </div>
+          <div class="ads-stat-card" style="border-color:rgba(239,68,68,0.15);">
+            <div class="ads-stat-icon" style="background:rgba(239,68,68,0.15);color:#f87171;"><i class="fas fa-times-circle"></i></div>
+            <div class="ads-stat-info">
+              <p class="ads-stat-label">Haijatumika</p>
+              <p class="ads-stat-value" id="statInactiveAds">0</p>
+            </div>
+          </div>
+          <div class="ads-stat-card">
+            <div class="ads-stat-icon"><i class="fas fa-eye"></i></div>
+            <div class="ads-stat-info">
+              <p class="ads-stat-label">Jumla ya Maoni</p>
+              <p class="ads-stat-value" id="statTotalViews">0</p>
+            </div>
+          </div>
+          <div class="ads-stat-card">
+            <div class="ads-stat-icon"><i class="fas fa-mouse-pointer"></i></div>
+            <div class="ads-stat-info">
+              <p class="ads-stat-label">Jumla ya Kubofya</p>
+              <p class="ads-stat-value" id="statTotalClicks">0</p>
+              <p class="ads-stat-sub">CTR: <span id="statOverallCTR">0%</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="admin-table" id="adsTable">
+            <thead>
+              <tr>
+                <th>Picha</th>
+                <th>Jina</th>
+                <th>URL</th>
+                <th>Hali</th>
+                <th>Maoni</th>
+                <th>Kubofya</th>
+                <th>CTR</th>
+                <th>Tarehe</th>
+                <th>Vitendo</th>
+              </tr>
+            </thead>
+            <tbody id="adsTableBody">
+              <!-- Ads will be rendered here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -1661,6 +1835,54 @@
         <div class="modal-actions">
           <button type="button" class="btn-cancel" onclick="closeModal('userModal')">Ghairi</button>
           <button type="submit" class="btn-submit" id="submitUserBtn">Hifadhi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Ad Modal -->
+  <div class="modal" id="adModal">
+    <div class="modal-content" style="max-width: 550px;">
+      <div class="modal-header">
+        <h3 id="adModalTitle">Ongeza Tangazo</h3>
+        <button class="modal-close" onclick="closeModal('adModal')">&times;</button>
+      </div>
+      <form id="adForm" enctype="multipart/form-data">
+        <input type="hidden" id="adId" />
+
+        <div class="form-group">
+          <label>Jina la Tangazo</label>
+          <input type="text" id="adTitle" placeholder="Jina la tangazo" required />
+        </div>
+
+        <div class="form-group">
+          <label>URL ya Tangazo</label>
+          <input type="url" id="adUrl" placeholder="https://mfano.com" required />
+          <small>Anwani ya wavuti ambapo mtumiaji ataelekezwa</small>
+        </div>
+
+        <div class="form-group">
+          <label>Picha ya Tangazo</label>
+          <input type="file" id="adImage" accept="image/*" required />
+          <small>PNG, JPEG, WEBP, GIF (max 5MB)</small>
+        </div>
+
+        <div id="adImagePreview" style="display:none; margin-top:0.5rem;">
+          <label style="font-size:0.75rem;color:var(--text-secondary);">Picha ya sasa:</label>
+          <img id="adCurrentImage" src="" alt="Picha ya tangazo" style="max-width:100%;max-height:150px;border-radius:var(--radius-sm);border:1px solid var(--border-color);display:block;margin-top:0.3rem;" />
+        </div>
+
+        <div class="form-group">
+          <label>Hali</label>
+          <select id="adStatus">
+            <option value="active">Inatumika</option>
+            <option value="inactive">Haijatumika</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" onclick="closeModal('adModal')">Ghairi</button>
+          <button type="submit" class="btn-submit" id="submitAdBtn">Hifadhi</button>
         </div>
       </form>
     </div>

@@ -367,11 +367,221 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    // ===== Load Active Ads for Slider =====
+    async function loadActiveAds() {
+        try {
+            const response = await api.getActiveAds();
+            if (response.success && response.ads && response.ads.length > 0) {
+                renderAdsInSlider(response.ads);
+                return response.ads;
+            }
+            // If no ads, hide the ad slides or show placeholder
+            const sliderTrack = document.getElementById('sliderTrack');
+            if (sliderTrack) {
+                const adSlides = sliderTrack.querySelectorAll('.slider-slide[data-type="ad"]');
+                adSlides.forEach(slide => slide.style.display = 'none');
+            }
+            return [];
+        } catch (error) {
+            console.warn('Could not load active ads:', error);
+            return [];
+        }
+    }
+
+    // ===== Render Ads in Slider =====
+    function renderAdsInSlider(ads) {
+        const sliderTrack = document.getElementById('sliderTrack');
+        if (!sliderTrack) return;
+
+        // Remove existing ad slides (keep developer slide at index 0)
+        const existingAdSlides = sliderTrack.querySelectorAll('.slider-slide[data-type="ad"]');
+        existingAdSlides.forEach(slide => slide.remove());
+
+        // Group ads in pairs (2 per slide)
+        const adPairs = [];
+        for (let i = 0; i < ads.length; i += 2) {
+            adPairs.push(ads.slice(i, i + 2));
+        }
+
+        if (adPairs.length === 0) {
+            // Show a placeholder if no ads
+            const placeholderSlide = document.createElement('div');
+            placeholderSlide.className = 'slider-slide';
+            placeholderSlide.dataset.type = 'ad';
+            placeholderSlide.dataset.index = 1;
+            placeholderSlide.innerHTML = `
+                <div style="display:grid;place-items:center;min-height:200px;color:#9aa2d7;text-align:center;padding:2rem;">
+                    <p style="font-size:1.2rem;">📢 Hakuna matangazo kwa sasa</p>
+                    <p style="font-size:0.85rem;">Check back later for updates!</p>
+                </div>
+            `;
+            sliderTrack.appendChild(placeholderSlide);
+            updateSliderDots();
+            return;
+        }
+
+        // Create slides for each pair of ads
+        adPairs.forEach((pair, index) => {
+            const slide = document.createElement('div');
+            slide.className = 'slider-slide';
+            slide.dataset.type = 'ad';
+            slide.dataset.index = index + 1; // +1 because index 0 is developer slide
+
+            const adGrid = document.createElement('div');
+            adGrid.className = 'ad-grid';
+
+            pair.forEach(ad => {
+                const adCard = document.createElement('div');
+                adCard.className = 'ad-card';
+
+                const imageHtml = ad.image_url
+                    ? `<img src="${ad.image_url}" alt="${ad.title}" class="ad-image" loading="lazy" />`
+                    : `<div class="ad-placeholder">📢</div>`;
+
+                adCard.innerHTML = `
+                    <a href="#" class="ad-image-link" data-ad-id="${ad.id}" data-url="${ad.url}" title="${ad.title}">
+                        ${imageHtml}
+                    </a>
+                    <div class="ad-body">
+                        <p class="ad-title"><a href="#" class="ad-link" data-ad-id="${ad.id}" data-url="${ad.url}">${ad.title}</a></p>
+                        <p class="ad-subtitle">Sponsored</p>
+                        <a href="#" class="ad-cta ad-link" data-ad-id="${ad.id}" data-url="${ad.url}">Tembelea →</a>
+                    </div>
+                `;
+
+                adGrid.appendChild(adCard);
+            });
+
+            slide.appendChild(adGrid);
+            sliderTrack.appendChild(slide);
+        });
+
+        // Add click tracking to all ad links
+        document.querySelectorAll('.ad-link, .ad-image-link').forEach(el => {
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                const adId = this.dataset.adId;
+                const url = this.dataset.url;
+                if (adId && url) {
+                    trackAdClick(adId, url);
+                }
+            });
+        });
+
+        // Update dots
+        updateSliderDots();
+    }
+
+    // ===== Track Ad Click =====
+    async function trackAdClick(adId, url) {
+        try {
+            // Track the click via API
+            await api.trackAdClick(adId);
+            // Redirect to the ad URL
+            window.open(url, '_blank');
+        } catch (error) {
+            console.warn('Error tracking ad click:', error);
+            // Still redirect even if tracking fails
+            window.open(url, '_blank');
+        }
+    }
+
+    // ===== Update Slider Dots =====
+    function updateSliderDots() {
+        const sliderTrack = document.getElementById('sliderTrack');
+        const dotsContainer = document.getElementById('sliderDots');
+        if (!sliderTrack || !dotsContainer) return;
+
+        const slides = sliderTrack.querySelectorAll('.slider-slide');
+        const totalSlides = slides.length;
+
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'slider-dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('data-index', i);
+            dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+            dot.addEventListener('click', function() {
+                goToSlide(parseInt(this.getAttribute('data-index')));
+            });
+            dotsContainer.appendChild(dot);
+        }
+
+        // Update slide label
+        const slideLabel = document.getElementById('slideLabel');
+        if (slideLabel) {
+            slideLabel.textContent = `Slide 1 / ${totalSlides}`;
+        }
+    }
+
+    // ===== Slider/Carousel Functions =====
+    let currentSlideIndex = 0;
+    let autoPlayInterval = null;
+    const AUTO_PLAY_DELAY = 5000;
+
+    function goToSlide(index) {
+        const track = document.getElementById('sliderTrack');
+        const slides = track ? track.querySelectorAll('.slider-slide') : [];
+        const totalSlides = slides.length;
+        
+        if (totalSlides === 0) return;
+        
+        if (index < 0) index = totalSlides - 1;
+        if (index >= totalSlides) index = 0;
+        
+        currentSlideIndex = index;
+        track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+        
+        // Update dots
+        document.querySelectorAll('.slider-dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i === currentSlideIndex);
+        });
+        
+        // Update label
+        const slideLabel = document.getElementById('slideLabel');
+        if (slideLabel) {
+            slideLabel.textContent = `Slide ${currentSlideIndex + 1} / ${totalSlides}`;
+        }
+        
+        resetAutoPlay();
+    }
+
+    function nextSlide() {
+        goToSlide(currentSlideIndex + 1);
+    }
+
+    function prevSlide() {
+        goToSlide(currentSlideIndex - 1);
+    }
+
+    function resetAutoPlay() {
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        }
+        startAutoPlay();
+    }
+
+    function startAutoPlay() {
+        if (autoPlayInterval) return;
+        const slides = document.querySelectorAll('.slider-slide');
+        if (slides.length <= 1) return;
+        autoPlayInterval = setInterval(nextSlide, AUTO_PLAY_DELAY);
+    }
+
+    function stopAutoPlay() {
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        }
+    }
+
     // ===== Load Everything =====
     await loadProfile();
     await loadContinueWatching();
     await loadWatchHistory();
     await loadSubscriptionStatus();
+    await loadActiveAds();
 
     // ===== Choice Card Click =====
     function setupCard(el) {
@@ -385,6 +595,62 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     setupCard(document.getElementById('translatedOption'));
     setupCard(document.getElementById('originalOption'));
+
+    // ===== Initialize Slider Controls =====
+    const prevBtn = document.getElementById('sliderPrev');
+    const nextBtn = document.getElementById('sliderNext');
+    const sliderContainer = document.getElementById('developerSlider');
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            prevSlide();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            nextSlide();
+        });
+    }
+
+    // Pause auto-play on hover
+    if (sliderContainer) {
+        sliderContainer.addEventListener('mouseenter', stopAutoPlay);
+        sliderContainer.addEventListener('mouseleave', startAutoPlay);
+        
+        // Touch support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        sliderContainer.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        sliderContainer.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        }, { passive: true });
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight') {
+            nextSlide();
+        } else if (e.key === 'ArrowLeft') {
+            prevSlide();
+        }
+    });
+
+    startAutoPlay();
 });
 
 // ===== About Modal Functions =====
@@ -430,4 +696,3 @@ document.addEventListener('keydown', function(e) {
         closeModals();
     }
 });
-
