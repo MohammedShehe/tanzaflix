@@ -204,8 +204,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             paymentMethod.value = method;
             
             if (method === 'bank_card') {
+                // Snippe hosts card checkout – no local card fields
                 mobileMoneyFields.style.display = 'none';
-                cardFields.style.display = 'block';
+                cardFields.style.display = 'none';
             } else {
                 mobileMoneyFields.style.display = 'block';
                 cardFields.style.display = 'none';
@@ -230,34 +231,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         let cardData = null;
 
         if (selectedPaymentMethod === 'bank_card') {
-            const cardNumber = paymentCardNumber.value.replace(/\s/g, '');
-            const expiry = paymentCardExpiry.value.replace(/\s/g, '');
-            const cvv = paymentCardCvv.value;
-            const cardHolder = paymentCardHolder.value.trim();
-
-            if (!cardNumber || cardNumber.length < 13) {
-                showPaymentStatus('⚠️ Namba ya kadi si sahihi. Tafadhali ingiza tarakimu 13-19.', 'error');
-                return;
-            }
-            if (!expiry || !expiry.match(/^\d{2}\/\d{2}$/)) {
-                showPaymentStatus('⚠️ Tarehe ya kuisha si sahihi. Tafadhali ingiza kwa muundo MM/YY.', 'error');
-                return;
-            }
-            if (!cvv || cvv.length < 3) {
-                showPaymentStatus('⚠️ CVV si sahihi. Tafadhali ingiza tarakimu 3-4.', 'error');
-                return;
-            }
-            if (!cardHolder || cardHolder.length < 3) {
-                showPaymentStatus('⚠️ Jina kwenye kadi si sahihi.', 'error');
-                return;
-            }
-
-            cardData = {
-                accountName: cardHolder,
-                cardNumber: cardNumber,
-                expiryDate: expiry,
-                cvv: cvv
-            };
+            // Snippe hosted card page – no local card details
+            cardData = null;
+            phone = (paymentPhone && paymentPhone.value) ? paymentPhone.value.replace(/\s/g, '') : '';
         } else {
             phone = paymentPhone.value.replace(/\s/g, '');
             if (!phone || phone.length < 9) {
@@ -280,8 +256,16 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (response.success) {
                 paymentReference = response.reference;
+
+                // Redirect to Snippe card checkout if payment URL returned
+                if (response.paymentUrl) {
+                    showPaymentStatus('✅ Inaelekezwa kwenye ukurasa wa malipo ya kadi...', 'success');
+                    window.location.href = response.paymentUrl;
+                    return;
+                }
+
                 showPaymentStatus(
-                    `✅ Malipo yameanzishwa!\nReference: ${response.reference}\nKiasi: TSh ${Number(response.amount).toLocaleString()}\nTafadhali subiri uthibitisho.`,
+                    `✅ Malipo yameanzishwa!\nReference: ${response.reference}\nKiasi: TSh ${Number(response.amount).toLocaleString()}\nAngalia simu yako na weka PIN (USSD).`,
                     'success'
                 );
                 

@@ -80,17 +80,24 @@ document.addEventListener('DOMContentLoaded', async function() {
         const method = paymentMethod.value;
         
         if (method === 'Card') {
+            // Snippe hosts card checkout – no local card fields needed
             phoneField.style.display = 'none';
-            cardFields.classList.add('visible');
+            cardFields.classList.remove('visible');
             phoneInput.removeAttribute('required');
+            const hint = document.getElementById('paymentHint');
+            if (hint) hint.textContent = 'Utapelekwa kwenye ukurasa salama wa Snippe kuingiza taarifa za kadi.';
         } else if (method === '') {
             phoneField.style.display = 'block';
             cardFields.classList.remove('visible');
             phoneInput.removeAttribute('required');
+            const hint = document.getElementById('paymentHint');
+            if (hint) hint.textContent = 'Chagua njia ya malipo unayotaka kutumia';
         } else {
             phoneField.style.display = 'block';
             cardFields.classList.remove('visible');
             phoneInput.setAttribute('required', 'required');
+            const hint = document.getElementById('paymentHint');
+            if (hint) hint.textContent = 'USSD push itatumwa kwenye namba yako – weka PIN ili kuthibitisha.';
         }
         hideError();
     }
@@ -447,42 +454,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         let cardData = null;
 
         if (method === 'Card') {
+            // Snippe hosts the card form – we only need to initiate and redirect
             backendMethod = 'bank_card';
-            
-            const cardNumber = document.getElementById('cardNumber').value.trim();
-            const cardHolderName = document.getElementById('cardHolderName').value.trim();
-            const cardExpiry = document.getElementById('cardExpiry').value.trim();
-            const cardCvv = document.getElementById('cardCvv').value.trim();
-
-            if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) {
-                showError('⚠️ Tafadhali ingiza namba halali ya kadi (tarakimu 16).', 'error');
-                return;
-            }
-
-            if (!cardHolderName || cardHolderName.length < 3) {
-                showError('⚠️ Tafadhali ingiza jina kwenye kadi.', 'error');
-                return;
-            }
-
-            if (!cardExpiry || !cardExpiry.match(/^\d{2}\/\d{2}$/)) {
-                showError('⚠️ Tafadhali ingiza tarehe ya kuisha kwa muundo MM/YY.', 'error');
-                return;
-            }
-
-            if (!cardCvv || cardCvv.length < 3) {
-                showError('⚠️ Tafadhali ingiza CVV halali (tarakimu 3-4).', 'error');
-                return;
-            }
-
-            cardData = {
-                accountName: cardHolderName,
-                cardNumber: cardNumber.replace(/\s/g, ''),
-                expiryDate: cardExpiry.replace(/\s/g, ''),
-                cvv: cardCvv
-            };
-            
-            phone = '';
-
+            phone = phoneInput.value.trim() || '';
+            cardData = null;
         } else {
             if (method === 'M-Pesa') {
                 backendMethod = 'mpesa';
@@ -490,8 +465,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 backendMethod = 'airtel_money';
             } else if (method === 'Tigo Pesa') {
                 backendMethod = 'mix_by_yas';
+            } else if (method === 'Halotel') {
+                backendMethod = 'halotel';
             } else {
-                backendMethod = method.toLowerCase();
+                backendMethod = method.toLowerCase().replace(/\s+/g, '_');
             }
 
             phone = phoneInput.value.trim();
@@ -516,8 +493,15 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             if (response.success) {
                 const reference = response.reference;
+
+                // Card: redirect to Snippe hosted payment page
+                if (response.paymentUrl) {
+                    showError('✅ Inaelekezwa kwenye ukurasa wa malipo ya kadi...', 'warning');
+                    window.location.href = response.paymentUrl;
+                    return;
+                }
                 
-                showError('✅ Malipo yameanzishwa! Tunasubiri uthibitisho...', 'warning');
+                showError('✅ Malipo yameanzishwa! Angalia simu yako na weka PIN (USSD)...', 'warning');
                 
                 let attempts = 0;
                 const maxAttempts = 36;
